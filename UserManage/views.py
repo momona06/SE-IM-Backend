@@ -11,10 +11,6 @@ from utils.utils_time import get_timestamp
 
 
 def register(req: HttpRequest):
-    """
-    :param req:
-    :return:
-    """
     # body的json内容处理
     if req.method == "POST":
 
@@ -41,10 +37,6 @@ def register(req: HttpRequest):
 
 
 def login(req: HttpRequest):
-    """
-    :param req:
-    :return:
-    """
     if req.method == "POST":
         body = json.loads(req.body.decode("utf-8"))
         username = str(body["username"])
