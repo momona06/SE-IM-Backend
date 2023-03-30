@@ -2,6 +2,10 @@ from django.urls import path, include
 import UserManage.views as views
 
 urlpatterns = [
-    path('user/login', views.login),
-    path('user/register', views.register),
+    path('login', views.user_login_pre_treat),
+    path('register', views.user_register),
+    path('email', views.bind_email),
+    path('cancel', views.cancel),
+    path('logout', views.logout),
+    path('revise', views.revise)
 ]
