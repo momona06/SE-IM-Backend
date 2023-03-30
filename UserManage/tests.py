@@ -1,7 +1,147 @@
 from django.test import TestCase
+from UserManage.models import IM_User
+from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+import secrets
+import json
+
 class UserManageTest(TestCase):
-    def test_example(self):
-        self.assertTrue(True)
-    def test_example2(self):
-        self.assertFalse(False)
-# Create your tests here.
+
+
+    def user_register(self, username, password):
+        payload = {
+            "username": username,
+            "password": password
+        }
+        return self.client.post("/register", data=payload, content_type="application/json")
+
+    def user_login(self, username, password, email=""):
+        payload = {
+            "username": username,
+            "password": password,
+            "email": email
+        }
+        return self.client.post("/login", data=payload, content_type="application/json")
+
+    def user_logout(self, username, token):
+        payload = {
+            "username": username,
+            "token": token
+        }
+        return self.client.delete("/logout", data=payload, content_type="application/json")
+
+    def user_cancel(self, username, input_password):
+        payload = {
+            "username": username,
+            "input_password": input_password
+        }
+        return self.client.delete("/cancel", data=payload, content_type="application/json")
+
+    def user_revise(self, revise_field, revise_content, username, input_password, token):
+        payload = {
+            "revise_field": revise_field,
+            "revise_content": revise_content,
+            "username": username,
+            "input_password": input_password,
+            "token": token
+        }
+        return self.client.put("/revise", data=payload, content_type="application/json")
+
+
+    def test_register(self):
+        username = secrets.token_hex(4)
+        password = secrets.token_hex(4)
+        res = self.user_register(username, password)
+
+        #self.assertJSONEqual(res.content, {"code": 0, "info": "Succeed", "isCreate": True})
+        #self.assertEqual(res.content["code"], 0)
+        user_model = get_user_model()
+        self.assertTrue(user_model.objects.filter(username=username).exists())
+        #self.assertTrue(IM_User.objects.filter(user=user).exists())
+
+
+
+    '''
+    def test_login(self):
+
+        #a = secrets.token_hex(1)
+
+        username = secrets.token_hex(10)
+        password = secrets.token_hex(10)
+        res_reg = self.user_register(username, password)
+        res_lin = self.user_login(username, password)
+        self.assertEqual(res_lin.content["code"], 0)
+        user_model = get_user_model()
+        self.assertTrue(user_model.objects.filter(username=username).exists())
+        user = user_model.objects.filter(username=username).first()
+        im_user = IM_User.objects.filter(user=user).first()
+        is_login = im_user.is_login
+        self.assertEqual(is_login, True)
+        
+    '''
+    def test_login_logout(self):
+
+        username = secrets.token_hex(10)
+        password = secrets.token_hex(10)
+        res_reg = self.user_register(username, password)
+        res_lin = self.user_login(username, password)
+        #self.assertEqual(res_reg.content["code"], 0)
+        #self.assertEqual(res_lin.content["code"], 0)
+        user_model = get_user_model()
+        self.assertTrue(user_model.objects.filter(username=username).exists())
+        user = user_model.objects.filter(username=username).first()
+        im_user = IM_User.objects.filter(user=user).first()
+        self.assertEqual(im_user.is_login, True)
+
+        token = res_lin.json()["token"]
+        res_lout = self.user_logout(username, token)
+        im_user = IM_User.objects.filter(user=user).first()
+        self.assertEqual(res_lout.json()["code"], 0)
+        self.assertEqual(im_user.is_login, False)
+
+    def test_cancel(self):
+        username = secrets.token_hex(10)
+        password = secrets.token_hex(10)
+        input_password = password
+
+        res_reg = self.user_register(username, password)
+        res_lin = self.user_login(username, password)
+        #self.assertEqual(res_lin.content["code"], 0)
+
+        user_model = get_user_model()
+        self.assertTrue(user_model.objects.filter(username=username).exists())
+        user = user_model.objects.filter(username=username).first()
+        im_user = IM_User.objects.filter(user=user).first()
+
+        self.assertEqual(im_user.is_login, True)
+
+        res_cel = self.user_cancel(username, input_password)
+        self.assertFalse(user_model.objects.filter(username=username).exists())
+
+
+    def test_revise(self):
+        username = secrets.token_hex(10)
+        password = secrets.token_hex(10)
+        input_password = password
+        res_reg = self.user_register(username, password)
+        res_lin = self.user_login(username, password)
+        # self.assertEqual(res_reg.content.json()["code"], 0)
+        # self.assertEqual(res_lin.content.json()["code"], 0)
+
+        user_model = get_user_model()
+        self.assertTrue(user_model.objects.filter(username=username).exists())
+        user = user_model.objects.filter(username=username).first()
+        im_user = IM_User.objects.filter(user=user).first()
+
+        token = res_lin.json()['token']
+
+        # no email yet
+        revise_field_list = ["username", "password"]
+        revise_content_list = [secrets.token_hex(10), secrets.token_hex(10)]
+        #for field, content in zip(revise_field_list, revise_content_list):
+        res_rev = self.user_revise(revise_field_list[1], revise_content_list[1], username, input_password, token)
+            #self.assertEqual(res_rev.json()["code"], 0)
+            #self.assertEqual(res_rev.json()["info"],"dd")
+
+        token = res_lin.json()["token"]
+        res_lout = self.user_logout(username, token)
