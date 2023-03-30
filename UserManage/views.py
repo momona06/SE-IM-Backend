@@ -31,7 +31,7 @@ def revise(req: HttpRequest):
             im_user = IM_User.objects.filter(user=user_rev).first()
             if token != im_user.token:
                 return JsonResponse({
-                    "code": -1,
+                    "code": -2,
                     "info": "Token Error"
                 })
             else:
@@ -154,7 +154,7 @@ def user_register(request: HttpRequest):
 
                 # unique
                 if user is not None:
-                    return JsonResponse({"code": -1, "info": "User already exists", })
+                    return JsonResponse({"code": -3, "info": "User already exists", })
 
                 tem_user = User.objects.create_user(username=username, password=password)
 
@@ -167,7 +167,7 @@ def user_register(request: HttpRequest):
                 })
             else:
                 return JsonResponse({
-                    "code": -1,
+                    "code": -2,
                     "info": "Invalid Userdata",
                 })
         except Exception as e:
@@ -195,14 +195,14 @@ def user_login_pre_treat(request: HttpRequest):
         if not username == "":
             if not check_user_data_valid(username, password):
                 return JsonResponse({
-                    "code": -1,
+                    "code": -2,
                     "info": "Invalid Userdata"
                 })
             return user_login(request,username, password, "username")
         elif not email == "":
             if not check_user_data_valid(password=password) or check_email_valid(email):
                 return JsonResponse({
-                    "code": -1,
+                    "code": -2,
                     "info": "Invalid Userdata"
                 })
             return user_login(request,email, password, "email")
@@ -235,7 +235,7 @@ def user_login(request, identity, password, login_filter):
 
         if not user:
             return JsonResponse({
-                "code": -1,
+                "code": -4,
                 "info": "User not exists",
             })
         else:
@@ -252,6 +252,7 @@ def user_login(request, identity, password, login_filter):
                     print(tem_im_user.is_login)
                     if tem_im_user.is_login:
                         return JsonResponse({
+                        "code": -3,
                         "info": "User Already Login",
                         })
                     else:
