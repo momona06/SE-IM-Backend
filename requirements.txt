@@ -1,6 +1,6 @@
 django==4.1.3
 
-python3-openssl
+pyopenssl
 
 django-cors-headers
 
