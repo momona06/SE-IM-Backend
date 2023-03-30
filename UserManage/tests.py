@@ -2,8 +2,8 @@ from django.test import TestCase
 from UserManage.models import IM_User
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
-import secrets
 import json
+import random
 
 class UserManageTest(TestCase):
 
@@ -49,8 +49,11 @@ class UserManageTest(TestCase):
 
 
     def test_register(self):
-        username = secrets.token_hex(4)
-        password = secrets.token_hex(4)
+        #username = secrets.token_hex(4)
+        #password = secrets.token_hex(4)
+        username = random.randint(100_000_000_000, 999_999_999_999)
+        password = random.randint(100_000_000_000, 999_999_999_999)
+
         res = self.user_register(username, password)
 
         #self.assertJSONEqual(res.content, {"code": 0, "info": "Succeed", "isCreate": True})
@@ -81,8 +84,11 @@ class UserManageTest(TestCase):
     '''
     def test_login_logout(self):
 
-        username = secrets.token_hex(10)
-        password = secrets.token_hex(10)
+        #username = secrets.token_hex(10)
+        #password = secrets.token_hex(10)
+        username = random.randint(100_000_000_000, 999_999_999_999)
+        password = random.randint(100_000_000_000, 999_999_999_999)
+
         res_reg = self.user_register(username, password)
         res_lin = self.user_login(username, password)
         #self.assertEqual(res_reg.content["code"], 0)
@@ -100,8 +106,10 @@ class UserManageTest(TestCase):
         self.assertEqual(im_user.is_login, False)
 
     def test_cancel(self):
-        username = secrets.token_hex(10)
-        password = secrets.token_hex(10)
+        #username = secrets.token_hex(10)
+        #password = secrets.token_hex(10)
+        username = random.randint(100_000_000_000, 999_999_999_999)
+        password = random.randint(100_000_000_000, 999_999_999_999)
         input_password = password
 
         res_reg = self.user_register(username, password)
@@ -120,8 +128,11 @@ class UserManageTest(TestCase):
 
 
     def test_revise(self):
-        username = secrets.token_hex(10)
-        password = secrets.token_hex(10)
+        #username = secrets.token_hex(10)
+        #password = secrets.token_hex(10)
+        username = random.randint(100_000_000_000, 999_999_999_999)
+        password = random.randint(100_000_000_000, 999_999_999_999)
+
         input_password = password
         res_reg = self.user_register(username, password)
         res_lin = self.user_login(username, password)
@@ -137,7 +148,7 @@ class UserManageTest(TestCase):
 
         # no email yet
         revise_field_list = ["username", "password"]
-        revise_content_list = [secrets.token_hex(10), secrets.token_hex(10)]
+        revise_content_list = [random.randint(100_000_000_000, 999_999_999_999), random.randint(100_000_000_000, 999_999_999_999)]
         #for field, content in zip(revise_field_list, revise_content_list):
         res_rev = self.user_revise(revise_field_list[1], revise_content_list[1], username, input_password, token)
             #self.assertEqual(res_rev.json()["code"], 0)

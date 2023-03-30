@@ -1,6 +1,6 @@
 import json
 import re
-import secrets
+import random
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from UserManage.models import IM_User, Token_Poll, create_im_user
@@ -217,7 +217,7 @@ def user_login_pre_treat(request: HttpRequest):
 
 
 def get_new_token():
-    tem_token = secrets.token_hex(50)
+    tem_token = random.randint(100_000_000_000,999_999_999_999)
     while True:
         token_poll = Token_Poll.objects.filter(token=tem_token).first()
         if token_poll is None:
