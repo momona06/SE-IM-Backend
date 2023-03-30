@@ -1,16 +1,16 @@
 from django.db import models
+from django.contrib.auth.models import User
 
-class User(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    username = models.CharField(max_length=50)
-    password = models.CharField(max_length=50)
 
-    def serialize(self):
-        return {
-            "id": self.id,
-            "username": self.username,
-            "password": self.password
-        }
+def create_im_user(user, token, is_login=False, **extra_fields):
+    im_user = IM_User(user=user, token=token, is_login=is_login, **extra_fields)
+    im_user.save()
+    return im_user
 
-    def __str__(self):
-        return "id = " + self.id + " username = " + self.username + " password = " + self.password
+class IM_User(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    token = models.CharField(max_length=100)
+    is_login = models.BooleanField(default=False)
+
+class Token_Poll(models.Model):
+    token = models.CharField(max_length=100)
