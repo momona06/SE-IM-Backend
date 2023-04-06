@@ -20,6 +20,23 @@ def createFriendGroup(req: HttpRequest):
         user_model = get_user_model()
         user = user_model.objects.filter(username=username).first()
         im_user = IMUser.objects.filter(user=user).first()
+        if im_user.token != token:
+            return JsonResponse({
+                "code": -2,
+                "info": "Token Error"
+            })
+        fgroup = FriendGroup.objects.filter(fgroup_name=fgroup_name).first()
+        if fgroup:
+            return JsonResponse({
+                "code": -1,
+                "info": "Group Already Exists"
+            })
+        new_fgroup = FriendGroup(fgroup_name=fgroup_name)
+        new_fgroup.save()
+        return JsonResponse({
+            "code": 0,
+            "info": "CreateGroup Succeed"
+        })
 
     else:
         return BAD_METHOD
