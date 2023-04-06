@@ -131,7 +131,7 @@ def check_user_data_valid(username=None, password=None):
 
 
 def check_email_valid(email):
-    pattern = r'^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    pattern = r'^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,5}$'
     if re.match(pattern, email):
         return True
     else:

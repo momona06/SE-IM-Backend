@@ -51,8 +51,8 @@ def searchUser(request):
     if request.method == "POST":
         try:
             body = json.loads(request.body.decode("utf-8"))
-            my_username = request.GET.get('my_username')
-            search_username = request.GET.get('search_username')
+            my_username = str(body['my_username'])
+            search_username = str(body['search_username'])
             users = User.objects.filter(username__icontains=search_username).exclude(username=my_username)
             usernames = [user.username for user in users]
 
@@ -73,6 +73,46 @@ def searchUser(request):
         return BAD_METHOD
 
 
+def checkFriendRelation(my_user,check_user):
+    pass
+
 
 def checkUser(request):
-    pass
+    if request.method == "POST":
+        try:
+            body = json.loads(request.body.decode("utf-8"))
+            my_username = str(body['my_username'])
+            check_name = str(body['check_name'])
+
+            try:
+                my_user = User.objects.get(username=my_username)
+            except User.DoesNotExist:
+                return JsonResponse({
+                    "code": -3,
+                    "info": "User not found"
+                })
+
+            try:
+                check_user = User.objects.get(username=check_name)
+            except User.DoesNotExist:
+                return JsonResponse({
+                    "code": -2,
+                    "info": "User not found"
+                })
+
+            is_friend = checkFriendRelation(my_user,check_user)
+
+            return JsonResponse({
+                "code": 0,
+                "username": check_user.username,
+                "is_friend": is_friend,
+                "info": "User found",
+            })
+        except Exception as e:
+            print(e)
+            return JsonResponse({
+                "code": -1,
+                "info": "Unexpected error"
+            })
+    else:
+        return BAD_METHOD
