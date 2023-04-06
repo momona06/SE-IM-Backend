@@ -151,7 +151,7 @@ def user_register(request: HttpRequest):
 
                 # unique
                 if user is not None:
-                    return JsonResponse({"code": -3, "info": "User already exists", })
+                    return JsonResponse({"code": -3, "info": "User already exists"})
 
                 tem_user = User.objects.create_user(username=username, password=password)
 
