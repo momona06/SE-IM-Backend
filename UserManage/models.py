@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User
-from FriendRelation.models import FriendGroup
 
 def CreateIMUser(user, token, is_login=False, **extra_fields):
     im_user = IMUser(user=user, token=token, is_login=is_login, **extra_fields)
