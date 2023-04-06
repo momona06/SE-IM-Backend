@@ -5,4 +5,6 @@ urlpatterns = [
     path('createfgroup', views.createFriendGroup),
     path('getfriendlist', views.getFriendList),
     path('addfgroup', views.addFriendGroup),
+    path('searchuser', views.searchUser),
+    path('checkuser', views.checkUser),
 ]
