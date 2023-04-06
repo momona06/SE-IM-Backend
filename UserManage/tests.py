@@ -13,7 +13,7 @@ class UserManageTest(TestCase):
             "username": username,
             "password": password
         }
-        return self.client.post("/register", data=payload, content_type="application/json")
+        return self.client.post("/user/register", data=payload, content_type="application/json")
 
     def user_login(self, username, password, email=""):
         payload = {
@@ -21,21 +21,21 @@ class UserManageTest(TestCase):
             "password": password,
             "email": email
         }
-        return self.client.post("/login", data=payload, content_type="application/json")
+        return self.client.post("/user/login", data=payload, content_type="application/json")
 
     def user_logout(self, username, token):
         payload = {
             "username": username,
             "token": token
         }
-        return self.client.delete("/logout", data=payload, content_type="application/json")
+        return self.client.delete("/user/logout", data=payload, content_type="application/json")
 
     def user_cancel(self, username, input_password):
         payload = {
             "username": username,
             "input_password": input_password
         }
-        return self.client.delete("/cancel", data=payload, content_type="application/json")
+        return self.client.delete("/user/cancel", data=payload, content_type="application/json")
 
     def user_revise(self, revise_field, revise_content, username, input_password, token):
         payload = {
@@ -45,7 +45,7 @@ class UserManageTest(TestCase):
             "input_password": input_password,
             "token": token
         }
-        return self.client.put("/revise", data=payload, content_type="application/json")
+        return self.client.put("/user/revise", data=payload, content_type="application/json")
 
 
     def test_register(self):
