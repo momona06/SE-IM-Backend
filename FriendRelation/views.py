@@ -75,4 +75,4 @@ def searchUser(request):
 
 
 def checkUser(request):
-    return None
+    pass
