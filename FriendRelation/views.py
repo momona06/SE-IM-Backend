@@ -73,5 +73,6 @@ def searchUser(request):
         return BAD_METHOD
 
 
+
 def checkUser(request):
     return None
