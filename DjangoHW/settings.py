@@ -28,6 +28,7 @@ ALLOWED_HOSTS = [
 # Application definition
 
 INSTALLED_APPS = [
+    'FriendRelation',
     'UserManage',
     'django.contrib.admin',
     'django.contrib.auth',

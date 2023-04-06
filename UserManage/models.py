@@ -9,15 +9,11 @@ def CreateIMUser(user, token, is_login=False, **extra_fields):
 
 
 
-
 class IMUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     token = models.CharField(max_length=100)
     is_login = models.BooleanField(default=False)
     fgroup_name = models.ForeignKey(FriendGroup, on_delete=models.CASCADE)
-
-
-
 
 
 
