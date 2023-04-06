@@ -3,13 +3,11 @@ import re
 import random
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
-from UserManage.models import IM_User, Token_Poll, create_im_user
-from django.contrib.auth.models import User
-from utils.utils_request import BAD_METHOD, request_failed, return_field, request_success_M, request_failed_M
-from utils.utils_require import MAX_CHAR_LENGTH, CheckRequire, require
-from utils.utils_time import get_timestamp
-
+from utils.utils_request import BAD_METHOD
 from django.contrib.auth import authenticate, get_user_model
+
+from django.contrib.auth.models import User
+from UserManage.models import IMUser, TokenPoll, CreateIMUser
 
 def revise(req: HttpRequest):
     if req.method == "PUT":
@@ -28,7 +26,7 @@ def revise(req: HttpRequest):
         else:
             user_model = get_user_model()
             user_rev = user_model.objects.get(username=username)
-            im_user = IM_User.objects.filter(user=user_rev).first()
+            im_user = IMUser.objects.filter(user=user_rev).first()
             if token != im_user.token:
                 return JsonResponse({
                     "code": -2,
@@ -62,7 +60,7 @@ def logout(req: HttpRequest):
         token = str(body["token"])
         user_model = get_user_model()
         user = user_model.objects.get(username=username)
-        im_user = IM_User.objects.filter(user=user).first()
+        im_user = IMUser.objects.filter(user=user).first()
         if im_user.is_login == False:
             return JsonResponse({
                 "code": -2,
@@ -71,9 +69,8 @@ def logout(req: HttpRequest):
         else:
             if im_user.token == token:
                 im_user.is_login = False
-                poll_token = Token_Poll.objects.filter(token=token).first()
+                poll_token = TokenPoll.objects.filter(token=token).first()
                 poll_token.delete()
-                #revise
                 im_user.save()
                 return JsonResponse({
                     "code": 0,
@@ -96,7 +93,7 @@ def cancel(req: HttpRequest):
         input_password = str(body["input_password"])
         user = authenticate(username=username, password=input_password)
         if user is not None:
-            user_del = IM_User.objects.get(user=user)
+            user_del = IMUser.objects.get(user=user)
             user_del.delete()
             user_model = get_user_model()
             user = user_model.objects.get(username=username)
@@ -158,7 +155,7 @@ def user_register(request: HttpRequest):
 
                 tem_user = User.objects.create_user(username=username, password=password)
 
-                tem_im_user = create_im_user(tem_user, get_new_token(), False)
+                tem_im_user = CreateIMUser(tem_user, get_new_token(), False)
                 tem_im_user.save()
 
                 return JsonResponse({
@@ -219,9 +216,9 @@ def user_login_pre_treat(request: HttpRequest):
 def get_new_token():
     tem_token = random.randint(100_000_000_000,999_999_999_999)
     while True:
-        token_poll = Token_Poll.objects.filter(token=tem_token).first()
+        token_poll = TokenPoll.objects.filter(token=tem_token).first()
         if token_poll is None:
-            Token_Poll.objects.create(token=tem_token)
+            TokenPoll.objects.create(token=tem_token)
             break
     return tem_token
 
@@ -245,7 +242,7 @@ def user_login(request, identity, password, login_filter):
                 tem_user = authenticate(email=identity, password=password)
 
             if tem_user:
-                tem_im_user = IM_User.objects.filter(user=tem_user).first()
+                tem_im_user = IMUser.objects.filter(user=tem_user).first()
                 if tem_im_user is not None:
                     print(tem_im_user.user.username)
                     print(tem_im_user.token)
