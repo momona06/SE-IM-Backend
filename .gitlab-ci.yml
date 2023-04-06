@@ -28,7 +28,7 @@ test:
   before_script:
     - pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
   script:
-    - python3 manage.py makemigrations UserManage
+    - python3 manage.py makemigrations UserManage FriendRelation
     - python3 manage.py migrate
     - sh unit-test.sh
   after_script:
