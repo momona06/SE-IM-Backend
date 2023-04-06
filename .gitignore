@@ -1,5 +1,6 @@
 __pycache__/
-**/migrations/
+
+**/migrations/[0-9]*.py
 db.sqlite3
 
 .coverage
