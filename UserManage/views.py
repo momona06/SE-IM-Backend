@@ -9,6 +9,7 @@ from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.models import User
 from UserManage.models import IMUser, TokenPoll, CreateIMUser
 
+
 def revise(req: HttpRequest):
     if req.method == "PUT":
         body = json.loads(req.body.decode("utf-8"))
@@ -53,6 +54,7 @@ def revise(req: HttpRequest):
     else:
         return BAD_METHOD
 
+
 def logout(req: HttpRequest):
     if req.method == "DELETE":
         body = json.loads(req.body.decode("utf-8"))
@@ -86,6 +88,7 @@ def logout(req: HttpRequest):
     else:
         return BAD_METHOD
 
+
 def cancel(req: HttpRequest):
     if req.method == "DELETE":
         body = json.loads(req.body.decode("utf-8"))
@@ -113,11 +116,10 @@ def cancel(req: HttpRequest):
         return BAD_METHOD
 
 
-
-
 '''
 nzh code
 '''
+
 
 def check_user_data_valid(username=None, password=None):
     pattern = r'^[a-zA-Z0-9]{6,20}$'
@@ -195,14 +197,14 @@ def user_login_pre_treat(request: HttpRequest):
                     "code": -2,
                     "info": "Invalid Userdata"
                 })
-            return user_login(request,username, password, "username")
+            return user_login(request, username, password, "username")
         elif not email == "":
             if not check_user_data_valid(password=password) or check_email_valid(email):
                 return JsonResponse({
                     "code": -2,
                     "info": "Invalid Userdata"
                 })
-            return user_login(request,email, password, "email")
+            return user_login(request, email, password, "email")
         else:
             return JsonResponse({
                 "code": -1,
@@ -214,7 +216,7 @@ def user_login_pre_treat(request: HttpRequest):
 
 
 def get_new_token():
-    tem_token = random.randint(100_000_000_000,999_999_999_999)
+    tem_token = random.randint(100_000_000_000, 999_999_999_999)
     while True:
         token_poll = TokenPoll.objects.filter(token=tem_token).first()
         if token_poll is None:
@@ -249,8 +251,8 @@ def user_login(request, identity, password, login_filter):
                     print(tem_im_user.is_login)
                     if tem_im_user.is_login:
                         return JsonResponse({
-                        "code": -3,
-                        "info": "User Already Login",
+                            "code": -3,
+                            "info": "User Already Login",
                         })
                     else:
                         tem_im_user.is_login = True
