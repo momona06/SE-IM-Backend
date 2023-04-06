@@ -1,5 +1,5 @@
 from django.test import TestCase
-from UserManage.models import IM_User
+from UserManage.models import IMUser
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
 import json
@@ -96,12 +96,12 @@ class UserManageTest(TestCase):
         user_model = get_user_model()
         self.assertTrue(user_model.objects.filter(username=username).exists())
         user = user_model.objects.filter(username=username).first()
-        im_user = IM_User.objects.filter(user=user).first()
+        im_user = IMUser.objects.filter(user=user).first()
         self.assertEqual(im_user.is_login, True)
 
         token = res_lin.json()["token"]
         res_lout = self.user_logout(username, token)
-        im_user = IM_User.objects.filter(user=user).first()
+        im_user = IMUser.objects.filter(user=user).first()
         self.assertEqual(res_lout.json()["code"], 0)
         self.assertEqual(im_user.is_login, False)
 
@@ -119,7 +119,7 @@ class UserManageTest(TestCase):
         user_model = get_user_model()
         self.assertTrue(user_model.objects.filter(username=username).exists())
         user = user_model.objects.filter(username=username).first()
-        im_user = IM_User.objects.filter(user=user).first()
+        im_user = IMUser.objects.filter(user=user).first()
 
         self.assertEqual(im_user.is_login, True)
 
@@ -142,7 +142,7 @@ class UserManageTest(TestCase):
         user_model = get_user_model()
         self.assertTrue(user_model.objects.filter(username=username).exists())
         user = user_model.objects.filter(username=username).first()
-        im_user = IM_User.objects.filter(user=user).first()
+        im_user = IMUser.objects.filter(user=user).first()
 
         token = res_lin.json()['token']
 
