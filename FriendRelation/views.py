@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate, get_user_model
 
 from django.contrib.auth.models import User
 from UserManage.models import IMUser, TokenPoll, CreateIMUser
-from FriendRelation.models import FriendGroup
+#from FriendRelation.models import FriendGroup
 
 
 def createFriendGroup(req: HttpRequest):
