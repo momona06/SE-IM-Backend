@@ -28,10 +28,11 @@ ALLOWED_HOSTS = [
 # Application definition
 
 INSTALLED_APPS = [
-    #'UserManage.apps.UsermanageConfig',
-    #'FriendRelation.apps.FriendrelationConfig',
+    'channels',
+    'daphne',
     'FriendRelation',
     'UserManage',
+    'Chat',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -50,7 +51,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'DjangoHW.urls'
+ROOT_URLCONF = 'IM_Backend.urls'
 
 TEMPLATES = [
     {
@@ -68,8 +69,18 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'DjangoHW.wsgi.application'
+#WSGI_APPLICATION = 'IM_Backend.wsgi.application'
 
+ASGI_APPLICATION = "IM_Backend.asgi.application"
+
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
+#         'CONFIG': {
+#             'hosts': [('127.0.0.1', 8000)],
+#         },
+#     },
+# }
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
