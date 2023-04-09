@@ -6,3 +6,4 @@ urlpatterns = [
     path('getfriendlist', views.getFriendList),
     path('addfgroup', views.addFriendGroup),
 ]
+

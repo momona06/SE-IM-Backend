@@ -25,14 +25,14 @@ def createFriendGroup(req: HttpRequest):
                 "code": -2,
                 "info": "Token Error"
             })
-        fgroup = FriendGroup.objects.filter(fgroup_name=fgroup_name).first()
-        if fgroup:
-            return JsonResponse({
-                "code": -1,
-                "info": "Group Already Exists"
-            })
-        new_fgroup = FriendGroup(fgroup_name=fgroup_name)
-        new_fgroup.save()
+        #fgroup = FriendGroup.objects.filter(fgroup_name=fgroup_name).first()
+        #if fgroup:
+        #    return JsonResponse({
+        #        "code": -1,
+        #        "info": "Group Already Exists"
+        #    })
+        #new_fgroup = FriendGroup(fgroup_name=fgroup_name)
+        #new_fgroup.save()
         return JsonResponse({
             "code": 0,
             "info": "CreateGroup Succeed"
@@ -48,3 +48,5 @@ def addFriendGroup(req: HttpRequest):
     pass
 
 
+def chat():
+    pass
