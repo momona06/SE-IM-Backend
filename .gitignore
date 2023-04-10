@@ -8,7 +8,6 @@ coverage-reports/
 xunit-reports/
 .pytest_cache/
 
-
 pycodestyle-report.txt
 pylint-report.txt
 
