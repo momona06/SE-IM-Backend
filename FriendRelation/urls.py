@@ -2,8 +2,8 @@ from django.urls import path
 import FriendRelation.views as views
 
 urlpatterns = [
-    path('createfgroup', views.createFriendGroup),
-    path('getfriendlist', views.getFriendList),
-    path('addfgroup', views.addFriendGroup),
+    path('createfgroup', views.create_friend_group),
+    path('getfriendlist', views.get_friend_list),
+    path('addfgroup', views.add_friend_group),
 ]
 
