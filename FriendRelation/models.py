@@ -21,7 +21,7 @@ class FriendList(models.Model):
     friend_list = ArrayField(
         ArrayField(
             #models.OneToOneField(Friend, on_delete=models.CASCADE)
-            models.CharField(max_length=100)
+            models.CharField(max_length=100) # friend_name
         )
     )
 
