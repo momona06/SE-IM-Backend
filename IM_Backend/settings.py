@@ -86,13 +86,29 @@ ASGI_APPLICATION = "IM_Backend.asgi.application"
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }  # TODO: Change to MySQL or other databases in your project
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }  # TODO: Change to MySQL or other databases in your project
+        # 数据库
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        # 数据库名称
+        'NAME': 'im',
+        # 登录数据库用户名
+        'USER': 'postgres',
+        # 登录数据库密码
+        'PASSWORD': '123456',
+        # 数据库服务器的主机地址
+        'HOST': 'database-postgresql-OverFlowLab.app.secoder.net',
+        # 数据库服务的端口号
+        'PORT': '5432'
+    }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
