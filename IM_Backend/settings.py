@@ -93,22 +93,35 @@ ASGI_APPLICATION = "IM_Backend.asgi.application"
 #     }  # TODO: Change to MySQL or other databases in your project
 # }
 
+# DATABASES = {
+#     'default': {
+#         # 数据库
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         # 数据库名称
+#         'NAME': 'im',
+#         # 登录数据库用户名
+#         'USER': 'postgres',
+#         # 登录数据库密码
+#         'PASSWORD': '123456',
+#         # 数据库服务器的主机地址
+#         'HOST': 'database-postgresql-OverFlowLab.app.secoder.net',
+#         # 数据库服务的端口号
+#         'PORT': '5432'
+#     }
+# }
+
 DATABASES = {
     'default': {
-        # 数据库
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        # 数据库名称
-        'NAME': 'im',
-        # 登录数据库用户名
-        'USER': 'postgres',
-        # 登录数据库密码
-        'PASSWORD': '123456',
-        # 数据库服务器的主机地址
-        'HOST': 'database-postgresql-OverFlowLab.app.secoder.net',
-        # 数据库服务的端口号
-        'PORT': '5432'
-    }
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',  # 默认
+        'NAME': 'im',  # 连接的数据库
+        'HOST': 'database-postgresql.OverFlowLab.secoder.local',  # ip地址
+        'PORT': 5432,  # 端口
+        'USER': 'postgres',  # 用户名
+        'PASSWORD': '123456'  # 密码
+    }  # 连接psql
 }
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
