@@ -62,8 +62,8 @@ def get_friend_list(req: HttpRequest):
 
         for i in range(flist_len):
             midlist = []
-            for friend in flist.friend_list[i]:
-                midlist.append(friend.friend_name)
+            for friend_name in flist.friend_list[i]:
+                midlist.append(friend_name)
             return_list[flist.group_list[i]] = midlist
         return JsonResponse({
             "code": 0,
@@ -95,7 +95,7 @@ def add_friend_group(req: HttpRequest):
             if group == fgroup_name:
                 lis = li
 
-        # flist.friend_list[lis].
+        flist.friend_list[lis].append(friend_name)
 
     else:
         return BAD_METHOD
