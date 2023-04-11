@@ -2,7 +2,8 @@
 python3 manage.py makemigrations UserManage
 python3 manage.py migrate
 
-python3 manage.py runserver 80
+daphne IM_Backend.asgi:application -b 0.0.0.0 -p 80
+#python3 manage.py runserver 80
 
 #uwsgi --module=IM_Backend.wsgi:application \
 #      --env DJANGO_SETTINGS_MODULE=IM_Backend.settings \

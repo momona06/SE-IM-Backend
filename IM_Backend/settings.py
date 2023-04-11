@@ -69,7 +69,7 @@ TEMPLATES = [
     },
 ]
 
-#WSGI_APPLICATION = 'IM_Backend.wsgi.application'
+# WSGI_APPLICATION = 'IM_Backend.wsgi.application'
 
 ASGI_APPLICATION = "IM_Backend.asgi.application"
 
@@ -82,17 +82,40 @@ ASGI_APPLICATION = "IM_Backend.asgi.application"
 #     },
 # }
 
-# Database
-# https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-
-#
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.sqlite3',
 #         'NAME': BASE_DIR / 'db.sqlite3',
-#     }  # TODO: Change to MySQL or other databases in your project
+#     }
 # }
 
+# 部署PostGreSQL
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',  # 默认
+        'NAME': 'postgres',  # 连接的数据库
+        'HOST': 'database-postgresql.OverFlowLab.secoder.local',  # ip地址
+        'PORT': 5432,  # 端口
+        'USER': 'postgres',  # 用户名
+        'PASSWORD': '123456'  # 密码
+    }
+}
+
+
+# 本地PostGreSQL
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'postgres',   # 连接的数据库
+#         'HOST': '172.18.0.1',  # 网址
+#         'PORT': 5432,         # 端口
+#         'USER': 'postgres',   # 用户名
+#         'PASSWORD': '1234'    # 密码
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
