@@ -8,6 +8,13 @@ from UserManage.models import IMUser
 
 
 class FriendRelationTest(TestCase):
+    def userRegister(self, username, password):
+        payload = {
+            "username": username,
+            "password": password
+        }
+        self.client.post("/user/register", data=payload, content_type="application/json")
+
     def userCheck(self, my_username,check_name, token):
         payload = {
             "username": my_username,
@@ -25,7 +32,33 @@ class FriendRelationTest(TestCase):
         return self.client.post("/friend/searchuser", data=payload, content_type="application/json")
 
     def testCheckUser(self):
+        username = random.randint(100_000_000_000, 999_999_999_999)
+        password = random.randint(100_000_000_000, 999_999_999_999)
         pass
 
     def testSearchUser(self):
+        username = random.randint(100_000_000_000, 999_999_999_999)
+        password = random.randint(100_000_000_000, 999_999_999_999)
+
+        username_1 = str(username) + "1"
+        username_2 = str(username) + "12"
+        username_3 = str(username) + "123"
+
+        self.userRegister(username,password)
+        self.userRegister(username_1,password)
+        self.userRegister(username_2,password)
+        self.userRegister(username_3,password)
+
+        user_model = get_user_model()
+
+        user = user_model.objects.filter(username=username).first()
+        user_1 = user_model.objects.filter(username=username_1).first()
+        user_2 = user_model.objects.filter(username=username_2).first()
+        user_3 = user_model.objects.filter(username=username_3).first()
+
+        res = self.userSearch(username,username)
+        self.assertJSONEqual(res.content, {"code": 0, "info": "Search Succeed"})
+        self.assertEqual(res.json()["code"], 0)
+
+        self.assertEqual(res.json()["search_user_list"], [username_1,username_2,username_3])
         pass
