@@ -6,7 +6,7 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.contrib.auth import authenticate, get_user_model
 
 from utils.utils_request import template_request, BAD_METHOD
-from utils.utils_token import token_check
+from utils.utils_token import token_check_http
 
 from django.contrib.auth.models import User
 from UserManage.models import IMUser, TokenPoll, CreateIMUser
@@ -22,7 +22,7 @@ def create_friend_group(req: HttpRequest):
         user = user_model.objects.filter(username=username).first()
         im_user = IMUser.objects.filter(user=user).first()
 
-        token_check(im_user.token, token)
+        token_check_http(im_user.token, token)
 
         flist = FriendList.objects.get(user_name=username)
         for gname in flist.group_list:
@@ -52,7 +52,7 @@ def get_friend_list(req: HttpRequest):
         user = user_model.objects.filter(username=username).first()
         im_user = IMUser.objects.filter(user=user).first()
 
-        token_check(im_user.token, token)
+        token_check_http(im_user.token, token)
 
         flist = FriendList.objects.get(user_name=username)
 
@@ -71,7 +71,6 @@ def get_friend_list(req: HttpRequest):
             "friendlist": return_list
         })
 
-
     else:
         return BAD_METHOD
 
@@ -87,6 +86,9 @@ def add_friend_group(req: HttpRequest):
         user_model = get_user_model()
         user = user_model.objects.filter(username=username).first()
         im_user = IMUser.objects.filter(user=user).first()
+
+        token_check_http(im_user.token, token)
+
         friend = Friend.objects.filter(user_name=username, friend_name=friend_name).first()
         flist = FriendList.objects.filter(user_name=username).first()
 
@@ -96,6 +98,7 @@ def add_friend_group(req: HttpRequest):
                 lis = li
 
         flist.friend_list[lis].append(friend_name)
+        flist.save()
 
     else:
         return BAD_METHOD
