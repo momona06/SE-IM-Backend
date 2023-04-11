@@ -269,6 +269,8 @@ def user_login(request, identity, password, login_filter):
                     # tem_im_user = create_im_user(tem_user,get_new_token(),True)
                     # tem_im_user.save()
 
+
+
                 return JsonResponse({
                     "username": tem_im_user.user.username,
                     "token": tem_im_user.token,

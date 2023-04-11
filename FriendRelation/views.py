@@ -171,7 +171,7 @@ def checkUser(request):
 
             im_user = IMUser.objects.filter(user=my_user).first()
 
-            token_check(im_user.token, token)
+            token_check_http(im_user.token, token)
 
             is_friend = checkFriendRelation(my_username,check_name)
 
