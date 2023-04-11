@@ -22,7 +22,6 @@ websocket_urlpatterns = [
     path('friend/getfriendaddlist', FriendConsumer.as_asgi())
 ]
 
-
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'IM_Backend.settings')
 
 application = ProtocolTypeRouter(
