@@ -94,7 +94,7 @@ ASGI_APPLICATION = "IM_Backend.asgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',  # 默认
-        'NAME': 'im',  # 连接的数据库
+        'NAME': 'postgres',  # 连接的数据库
         'HOST': 'database-postgresql.OverFlowLab.secoder.local',  # ip地址
         'PORT': 5432,  # 端口
         'USER': 'postgres',  # 用户名
