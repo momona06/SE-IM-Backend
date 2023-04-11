@@ -9,7 +9,7 @@ class Friend(models.Model):
 
 # friendlist of a imuser
 class FriendList(models.Model):
-    user_name = models.CharField(max_length=100)
+    user_name = models.CharField(max_length=100,default='username')
 
     group_list = ArrayField(
         models.CharField(max_length=100)
@@ -22,7 +22,7 @@ class FriendList(models.Model):
     )
 
 class AddList(models.Model):
-    user_name = models.CharField(max_length=100)
+    user_name = models.CharField(max_length=100,default='username')
 
     # reply for adding request
     reply_list = ArrayField(

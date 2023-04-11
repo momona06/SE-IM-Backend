@@ -85,7 +85,7 @@ class FriendConsumer(WebsocketConsumer):
 
         # username = message["username"]
         # password = message["password"]
-
+        print(message)
         # 服务端接收连接，向客户端浏览器发送一个加密字符串
         self.accept()
         CONSUMER2_OBJECT_LIST.append(self)
