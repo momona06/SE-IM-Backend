@@ -2,7 +2,7 @@
 python3 manage.py makemigrations UserManage
 python3 manage.py migrate
 
-daphne IM_Backend.asgi:application  -b 0.0.0.0 -p 80
+daphne IM_Backend.asgi:application -b 0.0.0.0 -p 80
 #python3 manage.py runserver 80
 
 #uwsgi --module=IM_Backend.wsgi:application \
