@@ -226,6 +226,7 @@ def get_new_token():
 
 
 def user_login(request, identity, password, login_filter):
+    # TODO: websocket
     try:
         if login_filter == "username":
             user = User.objects.filter(username=identity).first()
