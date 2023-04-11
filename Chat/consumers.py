@@ -7,7 +7,6 @@ from UserManage.models import IMUser, TokenPoll
 from FriendRelation.models import FriendList, Friend, AddList
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
-from utils.utils_token import token_check_websocket
 
 # 定义一个列表，用于存放当前在线的用户
 CONSUMER_OBJECT_LIST = []
