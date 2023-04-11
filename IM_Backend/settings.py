@@ -69,7 +69,7 @@ TEMPLATES = [
     },
 ]
 
-#WSGI_APPLICATION = 'IM_Backend.wsgi.application'
+# WSGI_APPLICATION = 'IM_Backend.wsgi.application'
 
 ASGI_APPLICATION = "IM_Backend.asgi.application"
 
@@ -90,7 +90,7 @@ ASGI_APPLICATION = "IM_Backend.asgi.application"
 #     'default': {
 #         'ENGINE': 'django.db.backends.sqlite3',
 #         'NAME': BASE_DIR / 'db.sqlite3',
-#     }  # TODO: Change to MySQL or other databases in your project
+#     }
 # }
 
 
@@ -108,7 +108,7 @@ if DEBUG == False:
 
 
 # 本地PostGreSQL
-elif DEBUG == False:
+else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
