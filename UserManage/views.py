@@ -63,27 +63,28 @@ def logout(req: HttpRequest):
         user_model = get_user_model()
         user = user_model.objects.get(username=username)
         im_user = IMUser.objects.filter(user=user).first()
-        if im_user.is_login == False:
-            return JsonResponse({
-                "code": -2,
-                "info": "User Not Login"
-            })
-        else:
-            if im_user.token == token:
-                im_user.is_login = False
-                poll_token = TokenPoll.objects.filter(token=token).first()
-                poll_token.delete()
-                im_user.save()
-                return JsonResponse({
-                    "code": 0,
-                    "info": "Logout Succeed"
-                })
 
-            else:
-                return JsonResponse({
-                    "code": -1,
-                    "info": "Token Error"
-                })
+        # if im_user.is_login == False:
+        #     return JsonResponse({
+        #         "code": -2,
+        #         "info": "User Not Login"
+        #     })
+
+        if im_user.token == token:
+            im_user.is_login = False
+            poll_token = TokenPoll.objects.filter(token=token).first()
+            poll_token.delete()
+            im_user.save()
+            return JsonResponse({
+                "code": 0,
+                "info": "Logout Succeed"
+            })
+
+        else:
+            return JsonResponse({
+                "code": -1,
+                "info": "Token Error"
+            })
 
     else:
         return BAD_METHOD
@@ -107,6 +108,7 @@ def cancel(req: HttpRequest):
                 "info": "User Canceled"
             })
         else:
+
             return JsonResponse({
                 "code": -1,
                 "info": "User not Exists"
@@ -123,10 +125,10 @@ nzh code
 
 def check_user_data_valid(username=None, password=None):
     pattern = r'^[a-zA-Z0-9]{6,20}$'
-    if not username is None:
+    if username is not None:
         if not re.match(pattern, username):
             return False
-    if not password is None:
+    if password is not None:
         if not re.match(pattern, password):
             return False
     return True

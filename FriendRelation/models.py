@@ -9,7 +9,7 @@ class Friend(models.Model):
 
 # friendlist of a imuser
 class FriendList(models.Model):
-    user_name = models.CharField(max_length=100)
+    user_name = models.CharField(max_length=100,default='username')
 
     group_list = ArrayField(
         models.CharField(max_length=100)
@@ -22,18 +22,28 @@ class FriendList(models.Model):
     )
 
 class AddList(models.Model):
+    user_name = models.CharField(max_length=100,default='username')
+
     # reply for adding request
-    reply_list = ArrayField(models.CharField(max_length=100))
+    reply_list = ArrayField(
+        models.CharField(max_length=100)
+    )
     # answer for reply
-    reply_answer = ArrayField(models.BooleanField(default=False))
+    reply_answer = ArrayField(
+        models.BooleanField(default=False)
+    )
     # ensure the reply or not
-    reply_ensure = ArrayField(models.BooleanField(default=False))
+    reply_ensure = ArrayField(
+        models.BooleanField(default=False)
+    )
 
     # apply for adding new friend
-    apply_list = ArrayField(models.CharField(max_length=100))
+    apply_list = ArrayField(
+        models.CharField(max_length=100)
+    )
     # answer for apply
-    apply_answer = ArrayField(models.BooleanField(default=False))
-    # ensure the apply or not
-    apply_ensure = ArrayField(models.BooleanField(default=False))
+    apply_answer = ArrayField(
+        models.BooleanField(default=False)
+    )
 
 

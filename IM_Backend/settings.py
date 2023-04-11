@@ -93,29 +93,32 @@ ASGI_APPLICATION = "IM_Backend.asgi.application"
 #     }  # TODO: Change to MySQL or other databases in your project
 # }
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',  # 默认
-#         'NAME': 'im',  # 连接的数据库
-#         'HOST': 'https://database-postgresql.OverFlowLab.secoder.net',  # ip地址
-#         'PORT': 80,  # 端口
-#         'USER': 'postgres',  # 用户名
-#         'PASSWORD': '123456'  # 密码
-#     }  # 连接psql
-# }
+
+if DEBUG == False:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',  # 默认
+            'NAME': 'im',  # 连接的数据库
+            'HOST': 'https://database-postgresql.OverFlowLab.secoder.local',  # ip地址
+            'PORT': 5432,  # 端口
+            'USER': 'postgres',  # 用户名
+            'PASSWORD': '123456'  # 密码
+        }  # 连接psql
+    }
 
 
 # 本地PostGreSQL
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres',   # 连接的数据库
-        'HOST': 'localhost',  # 网址
-        'PORT': 5432,         # 端口
-        'USER': 'postgres',   # 用户名
-        'PASSWORD': '1234'    # 密码
+elif DEBUG == False:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'postgres',   # 连接的数据库
+            'HOST': 'localhost',  # 网址
+            'PORT': 5432,         # 端口
+            'USER': 'postgres',   # 用户名
+            'PASSWORD': '1234'    # 密码
+        }
     }
-}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
