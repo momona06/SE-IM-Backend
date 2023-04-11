@@ -28,8 +28,11 @@ ALLOWED_HOSTS = [
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
+    'daphne',
     'FriendRelation',
     'UserManage',
+    'Chat',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -42,14 +45,13 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # Remove CSRF middleware to make it happy, although insecure :(
-    # 'django.middleware.csrf.CsrfViewMiddleware',
+    #'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'DjangoHW.urls'
+ROOT_URLCONF = 'IM_Backend.urls'
 
 TEMPLATES = [
     {
@@ -67,20 +69,53 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'DjangoHW.wsgi.application'
+#WSGI_APPLICATION = 'IM_Backend.wsgi.application'
 
+ASGI_APPLICATION = "IM_Backend.asgi.application"
+
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
+#         'CONFIG': {
+#             'hosts': [('127.0.0.1', 8000)],
+#         },
+#     },
+# }
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+#
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }  # TODO: Change to MySQL or other databases in your project
+# }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',  # 默认
+#         'NAME': 'im',  # 连接的数据库
+#         'HOST': 'https://database-postgresql.OverFlowLab.secoder.net',  # ip地址
+#         'PORT': 80,  # 端口
+#         'USER': 'postgres',  # 用户名
+#         'PASSWORD': '123456'  # 密码
+#     }  # 连接psql
+# }
+
+
+# 本地PostGreSQL
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }  # TODO: Change to MySQL or other databases in your project
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'postgres',   # 连接的数据库
+        'HOST': 'localhost',  # 网址
+        'PORT': 5432,         # 端口
+        'USER': 'postgres',   # 用户名
+        'PASSWORD': '1234'    # 密码
+    }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators

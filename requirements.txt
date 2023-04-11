@@ -14,4 +14,9 @@ coverage
 pycodestyle
 pylint
 
+channels
+channels_redis
+daphne
+psycopg2
+
 uWSGI

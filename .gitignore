@@ -1,12 +1,12 @@
 __pycache__/
-**/migrations/
+
+**/migrations/[0-9]*.py
 db.sqlite3
 
 .coverage
 coverage-reports/
 xunit-reports/
 .pytest_cache/
-
 
 pycodestyle-report.txt
 pylint-report.txt
