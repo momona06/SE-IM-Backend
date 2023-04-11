@@ -21,7 +21,6 @@ from Chat.consumers import ChatConsumer, FriendConsumer
 from django.urls import path
 
 
-
 websocket_urlpatterns = [
     path('chat', ChatConsumer.as_asgi()),
     path('friend/addfriend', FriendConsumer.as_asgi()),
