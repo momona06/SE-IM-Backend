@@ -90,7 +90,8 @@ ASGI_APPLICATION = "IM_Backend.asgi.application"
 # }
 
 # 部署PostGreSQL
-#
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',  # 默认
