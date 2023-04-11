@@ -15,8 +15,8 @@ pycodestyle
 pylint
 
 channels
-channels_redis
+# channels_redis
 daphne
 psycopg2
 
-uWSGI
+# uWSGI
