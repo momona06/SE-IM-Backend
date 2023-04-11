@@ -129,7 +129,10 @@ def searchUser(request):
 
 def checkFriendRelation(my_username,check_name):
     flist = FriendList.objects.get(user_name=my_username)
-    return check_name in flist.friend_list
+    for i in flist.friend_list:
+        if check_name in i:
+            return True
+    return False
 
 
 def checkUser(request):
