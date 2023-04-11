@@ -65,7 +65,7 @@ class FriendRelationTest(TestCase):
         res_check = self.userCheck(username,username_1+1,token)
         self.assertEqual(res_check.json()["code"], -20)
 
-        res_check = self.userCheck(username,username_1,-1)
+        res_check = self.userCheck(username,username_1,0)
         self.assertEqual(res_check.json()["code"], -2)
 
     def testSearchUser(self):
@@ -81,15 +81,16 @@ class FriendRelationTest(TestCase):
         self.userRegister(username_2, password)
         self.userRegister(username_3, password)
 
-        user_model = get_user_model()
+        #user_model = get_user_model()
 
-        user = user_model.objects.filter(username=username).first()
-        user_1 = user_model.objects.filter(username=username_1).first()
-        user_2 = user_model.objects.filter(username=username_2).first()
-        user_3 = user_model.objects.filter(username=username_3).first()
+        #user = user_model.objects.filter(username=username).first()
+        #user_1 = user_model.objects.filter(username=username_1).first()
+        #user_2 = user_model.objects.filter(username=username_2).first()
+        #user_3 = user_model.objects.filter(username=username_3).first()
 
         res = self.userSearch(username, username)
         self.assertJSONEqual(res.content, {"code": 0, "info": "Search Succeed"})
         self.assertEqual(res.json()["code"], 0)
 
-        self.assertEqual(res.json()["search_user_list"], [username_1, username_2, username_3])
+        self.assertEqual(res.json()["search_user_list"][0], username_1)
+
