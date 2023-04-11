@@ -16,10 +16,6 @@ build:
   # only:
   #  - master
 
-.test:
-  image: python:3.10
-  stage: test
-
 
 test:
   image: python:3.10
