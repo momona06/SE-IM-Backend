@@ -93,6 +93,7 @@ ASGI_APPLICATION = "IM_Backend.asgi.application"
 #     }
 # }
 
+# 部署PostGreSQL
 
 DATABASES = {
     'default': {
@@ -102,12 +103,13 @@ DATABASES = {
         'PORT': 5432,  # 端口
         'USER': 'postgres',  # 用户名
         'PASSWORD': '123456'  # 密码
-    }  # 连接psql
+    }
 }
 
 
+
 # 本地PostGreSQL
-#
+
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql_psycopg2',
