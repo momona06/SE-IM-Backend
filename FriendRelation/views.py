@@ -127,8 +127,9 @@ def searchUser(request):
         return BAD_METHOD
 
 
-def checkFriendRelation(my_user,check_user):
-    pass
+def checkFriendRelation(my_username,check_name):
+    flist = FriendList.objects.get(user_name=my_username)
+    return check_name in flist.friend_list
 
 
 def checkUser(request):
@@ -137,6 +138,14 @@ def checkUser(request):
             body = json.loads(request.body.decode("utf-8"))
             my_username = str(body['my_username'])
             check_name = str(body['check_name'])
+            token = str(body['token'])
+
+
+            if my_username == check_name:
+                return JsonResponse({
+                    "code": -4,
+                    "info": "The Query User Is The Same As User"
+                })
 
             try:
                 my_user = User.objects.get(username=my_username)
@@ -150,11 +159,15 @@ def checkUser(request):
                 check_user = User.objects.get(username=check_name)
             except User.DoesNotExist:
                 return JsonResponse({
-                    "code": -2,
+                    "code": -20,
                     "info": "User not found"
                 })
 
-            is_friend = checkFriendRelation(my_user,check_user)
+            im_user = IMUser.objects.filter(user=my_user).first()
+
+            token_check(im_user.token, token)
+
+            is_friend = checkFriendRelation(my_username,check_name)
 
             return JsonResponse({
                 "code": 0,
