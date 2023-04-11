@@ -49,7 +49,6 @@ class ChatConsumer(WebsocketConsumer):
         raise StopConsumer()
 
 
-
 # def send(self, text_data=None, bytes_data=None, close=False):
 #     if text_data is not None:
 #         super().send({"type": "websocket.send", "text": text_data})
@@ -113,16 +112,19 @@ class FriendConsumer(WebsocketConsumer):
             user_add_list = AddList.objects.get(user_name=username)
             friend_add_list = AddList.objects.get(user_name=friend_name)
 
-            user_add_list.apply_list.append(friend_name)
-            user_add_list.apply_answer.append(False)
-            user_add_list.save()
+            sent_boolean = self.checkSentList(username, friend_add_list)[0]
 
-            friend_add_list.reply_list.append(username)
-            friend_add_list.reply_answer.append(False)
-            friend_add_list.reply_ensure.append(False)
-            friend_add_list.save()
+            if sent_boolean:
+                self.send(text_data=message["Has Been Sent"])
+            else:
+                user_add_list.apply_list.append(friend_name)
+                user_add_list.apply_answer.append(False)
+                user_add_list.save()
 
-
+                friend_add_list.reply_list.append(username)
+                friend_add_list.reply_answer.append(False)
+                friend_add_list.reply_ensure.append(False)
+                friend_add_list.save()
 
 
         elif ws_url == '/friend/receivefriend':
@@ -140,13 +142,20 @@ class FriendConsumer(WebsocketConsumer):
             user_add_list = AddList.objects.get(user_name=username)
             requester_add_list = AddList.objects.get(user_name=requester_name)
 
-            if agreement == True:
-                pass
+            """
+            我们需要对user_add_list做一次修改，然后再对requester_add_list做一次修改
+            """
+            # if agreement:
+            # else:
+
+            sent_boolean, index_1 = self.checkSentList(requester_name, user_add_list)
+            sent_boolean, index_2 = self.checkSentList(username, requester_add_list)
+            if sent_boolean:
+                user_add_list.reply_answer[index_1] = agreement
+                user_add_list.reply_ensure[index_1] = True
 
 
 
-            else:
-                pass
 
 
 
@@ -171,7 +180,6 @@ class FriendConsumer(WebsocketConsumer):
         obj.send 对应ws.onmessage()
         '''
 
-
         # self.send(
         #   text_data=message["text"]
         # )
@@ -179,7 +187,25 @@ class FriendConsumer(WebsocketConsumer):
         #   'message': message
         # }))
 
+    def checkSentList(self, other_name, user_add_list):
+        """
+        只能通过reply_ensure判断是否处理过
+        param:  另一个人的username, message, 查询者的add_list,
+                # mode=0->apply_list 实现有问题 默认mode=1
+                mode=1->reply_list
+        untreated: 真为有未处理的好友请求
+        index: 未处理好友请求所在列表中的index
+        """
+        time = user_add_list.apply_list.count(other_name)
+        index = -1
+        untreated = False
+        for i in range(0, time):
+            # 0, last_index, index, next_index.....
+            index = user_add_list.reply_list.index(other_name, index + 1)
+            if not user_add_list.reply_ensure[index]:
+                untreated = True
 
+        return untreated, index
 
     def websocket_disconnect(self, message):
         """
@@ -197,6 +223,6 @@ class FriendConsumer(WebsocketConsumer):
         self.websocket_token_check(im_user.token, token)
 
         # 服务端断开连接
-        USER_NAME_LIST.remove(user_name)
+        USER_NAME_LIST.remove(username)
         CONSUMER2_OBJECT_LIST.remove(self)
         raise StopConsumer()
