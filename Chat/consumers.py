@@ -149,14 +149,16 @@ class FriendConsumer(WebsocketConsumer):
             # else:
 
             sent_boolean, index_1 = self.checkSentList(requester_name, user_add_list)
-            sent_boolean, index_2 = self.checkSentList(username, requester_add_list)
-            if sent_boolean:
+            if sent_boolean and not requester_add_list.apply_list.count(username) == 0:
                 user_add_list.reply_answer[index_1] = agreement
                 user_add_list.reply_ensure[index_1] = True
+                user_add_list.save()
 
-
-
-
+                # TODO: index_2 大概率bug 思路是倒序获取这个apply_list中username的最新出现index
+                index_2 = len(requester_add_list.apply_list) - \
+                          list(reversed(requester_add_list.apply_list)).index(username)
+                requester_add_list.apply_ensure[index_2] = agreement
+                requester_add_list.save()
 
 
         elif ws_url == '/friend/getfriendaddlist':
