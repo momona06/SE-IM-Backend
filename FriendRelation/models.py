@@ -1,5 +1,4 @@
 from django.db import models
-
 from django.contrib.postgres.fields import ArrayField
 
 # friend of a imuser
@@ -18,10 +17,23 @@ class FriendList(models.Model):
 
     friend_list = ArrayField(
         ArrayField(
-            #models.OneToOneField(Friend, on_delete=models.CASCADE)
             models.CharField(max_length=100) # friend_name
         )
     )
 
+class AddList(models.Model):
+    # reply for adding request
+    reply_list = ArrayField(models.CharField(max_length=100))
+    # answer for reply
+    reply_answer = ArrayField(models.BooleanField(default=False))
+    # ensure the reply or not
+    reply_ensure = ArrayField(models.BooleanField(default=False))
+
+    # apply for adding new friend
+    apply_list = ArrayField(models.CharField(max_length=100))
+    # answer for apply
+    apply_answer = ArrayField(models.BooleanField(default=False))
+    # ensure the apply or not
+    apply_ensure = ArrayField(models.BooleanField(default=False))
 
 

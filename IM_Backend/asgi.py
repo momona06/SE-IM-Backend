@@ -12,8 +12,14 @@ from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 
+from Chat.consumers import ChatConsumer, FriendConsumer
+from django.urls import path
 
-from Chat.urls import websocket_urlpatterns
+websocket_urlpatterns = [
+    path('chat', ChatConsumer.as_asgi()),
+    path('friend/addfriend', FriendConsumer.as_asgi()),
+    path('friend/receivefriend', FriendConsumer.as_asgi()),
+]
 
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'IM_Backend.settings')
