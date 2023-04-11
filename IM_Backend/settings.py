@@ -98,7 +98,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',  # 默认
         'NAME': 'im',  # 连接的数据库
-        'HOST': 'https://database-postgresql.OverFlowLab.secoder.local',  # ip地址
+        'HOST': 'database-postgresql.OverFlowLab.secoder.local',  # ip地址
         'PORT': 5432,  # 端口
         'USER': 'postgres',  # 用户名
         'PASSWORD': '123456'  # 密码
