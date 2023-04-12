@@ -171,8 +171,6 @@ class FriendConsumer(WebsocketConsumer):
             else:
                 self.send(text_data=message["Token Error"])
 
-
-
         else:
             pprint(message)
 

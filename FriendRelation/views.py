@@ -32,7 +32,7 @@ def delete_friend(req: HttpRequest):
 
         if friend is None:
             return JsonResponse({
-                'code': -4,
+                'code': -1,
                 'info': 'Friend Not Exists'
             })
 
@@ -80,8 +80,8 @@ def delete_friend_group(req: HttpRequest):
 
         if not group_exist:
             return JsonResponse({
-                'code': -4,
-                'info': 'Friend Not Exists'
+                'code': -1,
+                'info': 'Group Not Exists'
             })
 
         if len(flist.friend_list[lis]) != 0:
@@ -152,6 +152,7 @@ def get_friend_list(req: HttpRequest):
             return JsonResponse({
                 'code': -2,
                 'info': "Token Error",
+                'friendlist': []
             })
 
         flist = FriendList.objects.get(user_name=username)
@@ -167,7 +168,7 @@ def get_friend_list(req: HttpRequest):
                 return_list.append({"username": friend_name, "groupname": group_name})
         return JsonResponse({
             "code": 0,
-            "info": "Friendlist get",
+            "info": "Friendlist Get",
             "friendlist": return_list
         })
 
@@ -203,6 +204,11 @@ def add_friend_group(req: HttpRequest):
 
         flist.friend_list[lis].append(friend_name)
         flist.save()
+
+        return JsonResponse({
+            'code': 0,
+            'info': "AddGroup Succeed",
+        })
 
     else:
         return BAD_METHOD

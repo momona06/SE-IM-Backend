@@ -66,14 +66,8 @@ def logout(req: HttpRequest):
         user = user_model.objects.get(username=username)
         im_user = IMUser.objects.filter(user=user).first()
 
-        # if im_user.is_login == False:
-        #     return JsonResponse({
-        #         "code": -2,
-        #         "info": "User Not Login"
-        #     })
 
         if im_user.token == token:
-            im_user.is_login = False
             poll_token = TokenPoll.objects.filter(token=token).first()
             poll_token.delete()
             im_user.save()
@@ -259,16 +253,8 @@ def user_login(request, identity, password, login_filter):
                 if tem_im_user is not None:
                     print(tem_im_user.user.username)
                     print(tem_im_user.token)
-                    print(tem_im_user.is_login)
-                    if tem_im_user.is_login:
-                        return JsonResponse({
-                            "code": -3,
-                            "info": "User Already Login",
-                        })
-                    else:
-                        tem_im_user.is_login = True
-                        tem_im_user.token = get_new_token()
-                        tem_im_user.save()
+                    tem_im_user.token = get_new_token()
+                    tem_im_user.save()
                 else:
                     return JsonResponse({
                         "code": -1,
