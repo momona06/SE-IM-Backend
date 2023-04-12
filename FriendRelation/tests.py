@@ -10,21 +10,46 @@ from UserManage.models import IMUser
 
 class FriendRelationTest(TestCase):
 
-    def friend_group_add(self):
-        pass
+    def friend_group_create(self, username, token, fgroup_name):
+        payload = {
+            "username": username,
+            "token": token,
+            "fgroup_name": fgroup_name
+        }
+        return self.client.post("/friend/createfgroup", data=payload, content_type="application/json")
 
-    def friend_list_get(self):
-        pass
+    def friend_list_get(self, username, token):
+        payload = {
+            "username": username,
+            "token": token,
+        }
+        return self.client.post("/friend/getfriendlist", data=payload, content_type="application/json")
 
-    def add_friend_to_group(self):
-        pass
+    def friend_to_group_add(self, username, token, friend_name, fgroup_name):
+        payload = {
+            "username": username,
+            "token": token,
+            "friend_name": friend_name,
+            "fgroup_name": fgroup_name
+        }
+        return self.client.put("/friend/addfgroup", data=payload, content_type="application/json")
 
 
-    def friend_delete(self):
-        pass
+    def friend_delete(self, username, token, friend_name):
+        payload = {
+            "username": username,
+            "token": token,
+            "friend_name": friend_name
+        }
+        return self.client.delete("/friend/deletefriend", data=payload, content_type="application/json")
 
-    def friend_group_delete(self):
-        pass
+    def friend_group_delete(self, username, token, fgroup_name):
+        payload = {
+            "username": username,
+            "token": token,
+            "fgroup_name": fgroup_name
+        }
+        return self.client.delete("/friend/deletefgroup", data=payload, content_type="application/json")
 
 
     def test_fgroup_add(self):
