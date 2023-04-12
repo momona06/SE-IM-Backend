@@ -125,6 +125,10 @@ def searchUser(request):
             my_username = str(body['my_username'])
             search_username = str(body['search_username'])
             users = User.objects.filter(username__icontains=search_username).exclude(username=my_username)
+            return JsonResponse({
+                "code": len(users),
+                "info": "1"
+            })
             usernames = list()
             for user in users:
                 usernames.append(user.username)
