@@ -1,11 +1,11 @@
 from django.http import JsonResponse
 
 
-def request_failed(code, info, status_code=400):
-     return JsonResponse({
-         "code": code,
-         "info": info
-     }, status=status_code)
+# def request_failed(code, info, status_code=400):
+#     return JsonResponse({
+#         "code": code,
+#         "info": info
+#     }, status=status_code)
 
 
 def return_field(obj_dict, field_list):

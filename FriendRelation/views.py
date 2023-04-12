@@ -13,6 +13,31 @@ from UserManage.models import IMUser, TokenPoll, CreateIMUser
 from FriendRelation.models import FriendList, Friend
 
 
+def delete_friend(req: HttpRequest):
+    if req.method == "DELETE":
+        body = json.loads(req.body.decode("utf-8"))
+        username = str(body["username"])
+        token = str(body["token"])
+        friend_name = str(body["friend_name"])
+        user_model = get_user_model()
+        user = user_model.objects.filter(username=username).first()
+        im_user = IMUser.objects.filter(user=user).first()
+        if im_user.token != token:
+            return JsonResponse({
+                'code': -2,
+                'info': "Token Error",
+            })
+
+        friend = Friend.objects.filter(friend_name=friend_name, user_name=username).first()
+
+        if friend is None:
+            return JsonResponse({
+                'code': -4,
+                'info': 'Friend Not Exists'
+            })
+
+    else:
+        return BAD_METHOD
 def create_friend_group(req: HttpRequest):
     if req.method == "POST":
         body = json.loads(req.body.decode("utf-8"))
@@ -23,10 +48,10 @@ def create_friend_group(req: HttpRequest):
         user = user_model.objects.filter(username=username).first()
         im_user = IMUser.objects.filter(user=user).first()
 
-        if token_check_http(im_user.token, token):
+        if im_user.token != token:
             return JsonResponse({
-                "code": -2,
-                "info": "Token Error"
+                'code': -2,
+                'info': "Token Error",
             })
 
         flist = FriendList.objects.get(user_name=username)
@@ -47,7 +72,6 @@ def create_friend_group(req: HttpRequest):
     else:
         return BAD_METHOD
 
-
 def get_friend_list(req: HttpRequest):
     if req.method == "POST":
         body = json.loads(req.body.decode("utf-8"))
@@ -58,23 +82,23 @@ def get_friend_list(req: HttpRequest):
         user = user_model.objects.filter(username=username).first()
         im_user = IMUser.objects.filter(user=user).first()
 
-        if token_check_http(im_user.token, token):
+        if im_user.token != token:
             return JsonResponse({
-                "code": -2,
-                "info": "Token Error"
+                'code': -2,
+                'info': "Token Error",
             })
 
         flist = FriendList.objects.get(user_name=username)
 
-        return_list = {}
+        return_list = []
 
         flist_len = len(flist.group_list)
 
         for i in range(flist_len):
-            midlist = []
             for friend_name in flist.friend_list[i]:
-                midlist.append(friend_name)
-            return_list[flist.group_list[i]] = midlist
+                friend = Friend.objects.filter(friend_name=friend_name, user_name=username).first()
+                group_name = friend.group_name
+                return_list.append({"username": friend_name, "groupname": group_name})
         return JsonResponse({
             "code": 0,
             "info": "Friendlist get",
@@ -97,10 +121,10 @@ def add_friend_group(req: HttpRequest):
         user = user_model.objects.filter(username=username).first()
         im_user = IMUser.objects.filter(user=user).first()
 
-        if token_check_http(im_user.token, token):
+        if im_user.token != token:
             return JsonResponse({
-                "code": -2,
-                "info": "Token Error"
+                'code': -2,
+                'info': "Token Error",
             })
 
         friend = Friend.objects.filter(user_name=username, friend_name=friend_name).first()
@@ -116,6 +140,10 @@ def add_friend_group(req: HttpRequest):
 
     else:
         return BAD_METHOD
+
+
+
+
 
 
 def searchUser(request):

@@ -110,7 +110,7 @@ DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql_psycopg2',
 #         'NAME': 'postgres',   # 连接的数据库
-#         'HOST': '172.18.0.1',  # 网址
+#         'HOST': '127.0.0.1',  # 网址
 #         'PORT': 5432,         # 端口
 #         'USER': 'postgres',   # 用户名
 #         'PASSWORD': '1234'    # 密码
