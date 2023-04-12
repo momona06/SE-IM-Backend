@@ -102,7 +102,7 @@ class FriendConsumer(WebsocketConsumer):
                 friend_add_list = AddList.objects.get(user_name=friend_name)
 
                 # 确保之前发送的申请被回复前不能再发送申请
-                sent_boolean = self.checkSentList(username, friend_add_list)[0]
+                sent_boolean = self.check_sent_list(username, friend_add_list)[0]
 
                 if sent_boolean:
                     self.send(text_data=message["Has Been Sent"])
@@ -142,7 +142,7 @@ class FriendConsumer(WebsocketConsumer):
                 # if agreement:
                 # else:
 
-                sent_boolean, index_1 = self.checkSentList(requester_name, user_add_list)
+                sent_boolean, index_1 = self.check_sent_list(requester_name, user_add_list)
                 if sent_boolean and not requester_add_list.apply_list.count(username) == 0:
                     user_add_list.reply_answer[index_1] = agreement
                     user_add_list.reply_ensure[index_1] = True
@@ -179,10 +179,9 @@ class FriendConsumer(WebsocketConsumer):
             else:
                 self.send(text_data=message["Token Error"])
 
-
-
         else:
-            self.close()
+            pprint(message)
+
 
         # for obj in CONSUMER2_OBJECT_LIST:
         #    obj.send(text_data=message["text"])
@@ -198,12 +197,12 @@ class FriendConsumer(WebsocketConsumer):
         #   'message': message
         # }))
 
-    def checkSentList(self, other_name, user_add_list):
+    def check_sent_list(self, other_name, user_add_list):
         """
         只能通过reply_ensure判断是否处理过
         param: 另一个人的username, message, 查询者的add_list,
-                # mode=0->apply_list 实现有问题 默认mode=1
-                mode=1->reply_list
+                # mode=0 -> apply_list 实现有问题 默认mode=1
+                mode=1 -> reply_list
         untreated: 真为有未处理的好友请求
         index: 未处理好友请求所在列表中的index
         """
