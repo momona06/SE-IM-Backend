@@ -38,12 +38,8 @@ def delete_friend(req: HttpRequest):
                 })
 
             flist = FriendList.objects.get(user_name=username)
-            lis = 0
-            for li, gname in enumerate(flist.group_list):
-                if gname == friend.group_name:
-                    lis = li
-                    break
-            flist.friend_list[lis].remove()
+            for fl_name in flist.friend_list:
+                pass
             flist.save()
             return JsonResponse({
                 'code': 0,
