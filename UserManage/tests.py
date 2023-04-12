@@ -62,10 +62,6 @@ class UserManageTest(TestCase):
         self.assertTrue(user_model.objects.filter(username=username).exists())
         self.assertTrue(IMUser.objects.filter(user=user).exists())
 
-        friend_list = FriendList.objects.get(user_name=username)
-        print(friend_list.friend_list)
-        print(friend_list.friend_list == [[]])
-
     def testLoginLogout(self):
 
         #username = secrets.token_hex(10)

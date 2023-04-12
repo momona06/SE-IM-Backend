@@ -158,6 +158,7 @@ class FriendConsumer(WebsocketConsumer):
                     requester_add_list.apply_ensure[index_2] = agreement
                     requester_add_list.save()
 
+                    '''
                     friend_list = FriendList.objects.get(user_name=username)
                     friend_list.friend_list[0].append(requester_name)
                     friend_list.save()
@@ -166,6 +167,7 @@ class FriendConsumer(WebsocketConsumer):
                                     friend_name=friend_list.group_list[0],
                                     friend_list=friend_list)
                     friend.save()
+                    '''
 
             else:
                 self.send(text_data=message["Token Error"])

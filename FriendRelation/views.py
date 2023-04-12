@@ -47,6 +47,7 @@ def delete_friend(req: HttpRequest):
 
 
             flist.friend_list[lis].remove()
+
             flist.save()
             return JsonResponse({
                 'code': 0,
@@ -163,6 +164,7 @@ def create_friend_group(req: HttpRequest):
                     })
 
             flist.group_list.append(fgroup_name)
+            print("ASDF")
             flist.friend_list.append([])
             flist.save()
             return JsonResponse({
@@ -201,6 +203,8 @@ def get_friend_list(req: HttpRequest):
             return_list = []
 
             flist_len = len(flist.group_list)
+
+
 
             for i in range(flist_len):
                 for friend_name in flist.friend_list[i]:
