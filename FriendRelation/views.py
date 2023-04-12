@@ -15,39 +15,46 @@ from FriendRelation.models import FriendList, Friend, AddList
 
 def delete_friend(req: HttpRequest):
     if req.method == "DELETE":
-        body = json.loads(req.body.decode("utf-8"))
-        username = str(body["username"])
-        token = str(body["token"])
-        friend_name = str(body["friend_name"])
-        user_model = get_user_model()
-        user = user_model.objects.filter(username=username).first()
-        im_user = IMUser.objects.filter(user=user).first()
-        if im_user.token != token:
+        try:
+            body = json.loads(req.body.decode("utf-8"))
+            username = str(body["username"])
+            token = str(body["token"])
+            friend_name = str(body["friend_name"])
+            user_model = get_user_model()
+            user = user_model.objects.filter(username=username).first()
+            im_user = IMUser.objects.filter(user=user).first()
+            if im_user.token != token:
+                return JsonResponse({
+                    'code': -2,
+                    'info': "Token Error",
+                })
+
+            friend = Friend.objects.filter(friend_name=friend_name, user_name=username).first()
+
+            if friend is None:
+                return JsonResponse({
+                    'code': -1,
+                    'info': 'Friend Not Exists'
+                })
+
+            flist = FriendList.objects.get(user_name=username)
+            lis = 0
+            for li, gname in enumerate(flist.group_list):
+                if gname == friend.group_name:
+                    lis = li
+                    break
+            flist.friend_list[lis].remove()
+            flist.save()
             return JsonResponse({
-                'code': -2,
-                'info': "Token Error",
+                'code': 0,
+                'info': "Delete Friend Succeed"
+            })
+        except Exception as e:
+            return JsonResponse({
+                "code": -5,
+                "info": "Unexpected Error"
             })
 
-        friend = Friend.objects.filter(friend_name=friend_name, user_name=username).first()
-
-        if friend is None:
-            return JsonResponse({
-                'code': -1,
-                'info': 'Friend Not Exists'
-            })
-
-        flist = FriendList.objects.get(user_name=username)
-        lis = 0
-        for li, gname in enumerate(flist.group_list):
-            if gname == friend.group_name:
-                lis = li
-                break
-        flist.friend_list[lis].remove()
-        flist.save()
-        return JsonResponse({
-            'code': 0,
-            'info': "Delete Friend Succeed"
-        })
 
     else:
         return BAD_METHOD
@@ -56,47 +63,53 @@ def delete_friend(req: HttpRequest):
 
 def delete_friend_group(req: HttpRequest):
     if req.method == "DELETE":
-        body = json.loads(req.body.decode("utf-8"))
-        username = str(body["username"])
-        token = str(body["token"])
-        fgroup_name = str(body["fgroup_name"])
-        user_model = get_user_model()
-        user = user_model.objects.filter(username=username).first()
-        im_user = IMUser.objects.filter(user=user).first()
-        if im_user.token != token:
+        try:
+            body = json.loads(req.body.decode("utf-8"))
+            username = str(body["username"])
+            token = str(body["token"])
+            fgroup_name = str(body["fgroup_name"])
+            user_model = get_user_model()
+            user = user_model.objects.filter(username=username).first()
+            im_user = IMUser.objects.filter(user=user).first()
+            if im_user.token != token:
+                return JsonResponse({
+                    'code': -2,
+                    'info': "Token Error",
+                })
+
+            flist = FriendList.objects.filter(user_name=username).first()
+            group_exist = False
+            lis = 0
+            for li, gname in enumerate(flist.group_list):
+                if gname == fgroup_name:
+                    group_exist = True
+                    lis = li
+                    break
+
+            if not group_exist:
+                return JsonResponse({
+                    'code': -1,
+                    'info': 'Group Not Exists'
+                })
+
+            if len(flist.friend_list[lis]) != 0:
+                return JsonResponse({
+                    'code': -5,
+                    'info': "Number of Friend Not 0"
+                })
+
+            del flist.group_list[lis]
+            del flist.friend_list[lis]
+            flist.save()
             return JsonResponse({
-                'code': -2,
-                'info': "Token Error",
+                'code': 0,
+                'info': "Delete Friend Group Succeed"
             })
-
-        flist = FriendList.objects.filter(user_name=username).first()
-        group_exist = False
-        lis = 0
-        for li, gname in enumerate(flist.group_list):
-            if gname == fgroup_name:
-                group_exist = True
-                lis = li
-                break
-
-        if not group_exist:
+        except Exception as e:
             return JsonResponse({
-                'code': -1,
-                'info': 'Group Not Exists'
+                "code": -5,
+                "info": "Unexpected Error"
             })
-
-        if len(flist.friend_list[lis]) != 0:
-            return JsonResponse({
-                'code': -5,
-                'info': "Number of Friend Not 0"
-            })
-
-        del flist.group_list[lis]
-        del flist.friend_list[lis]
-        flist.save()
-        return JsonResponse({
-            'code': 0,
-            'info': "Delete Friend Group Succeed"
-        })
 
     else:
         return BAD_METHOD
@@ -106,71 +119,83 @@ def delete_friend_group(req: HttpRequest):
 
 def create_friend_group(req: HttpRequest):
     if req.method == "POST":
-        body = json.loads(req.body.decode("utf-8"))
-        username = str(body["username"])
-        token = str(body["token"])
-        fgroup_name = str(body["fgroup_name"])
-        user_model = get_user_model()
-        user = user_model.objects.filter(username=username).first()
-        im_user = IMUser.objects.filter(user=user).first()
+        try:
+            body = json.loads(req.body.decode("utf-8"))
+            username = str(body["username"])
+            token = str(body["token"])
+            fgroup_name = str(body["fgroup_name"])
+            user_model = get_user_model()
+            user = user_model.objects.filter(username=username).first()
+            im_user = IMUser.objects.filter(user=user).first()
 
-        if im_user.token != token:
-            return JsonResponse({
-                'code': -2,
-                'info': "Token Error",
-            })
-
-        flist = FriendList.objects.get(user_name=username)
-        for gname in flist.group_list:
-            if gname == fgroup_name:
+            if im_user.token != token:
                 return JsonResponse({
-                    "code": -1,
-                    "info": "Group Already Exists",
+                    'code': -2,
+                    'info': "Token Error",
                 })
 
-        flist.group_list.append(fgroup_name)
-        flist.save()
-        return JsonResponse({
-            "code": 0,
-            "info": "CreateGroup Succeed"
-        })
+            flist = FriendList.objects.get(user_name=username)
+            for gname in flist.group_list:
+                if gname == fgroup_name:
+                    return JsonResponse({
+                        "code": -1,
+                        "info": "Group Already Exists",
+                    })
+
+            flist.group_list.append(fgroup_name)
+            flist.save()
+            return JsonResponse({
+                "code": 0,
+                "info": "CreateGroup Succeed"
+            })
+        except Exception as e:
+            return JsonResponse({
+                "code": -5,
+                "info": "Unexpected Error"
+            })
 
     else:
         return BAD_METHOD
 
 def get_friend_list(req: HttpRequest):
     if req.method == "POST":
-        body = json.loads(req.body.decode("utf-8"))
-        username = str(body["username"])
-        token = str(body["token"])
+        try:
+            body = json.loads(req.body.decode("utf-8"))
+            username = str(body["username"])
+            token = str(body["token"])
 
-        user_model = get_user_model()
-        user = user_model.objects.filter(username=username).first()
-        im_user = IMUser.objects.filter(user=user).first()
+            user_model = get_user_model()
+            user = user_model.objects.filter(username=username).first()
+            im_user = IMUser.objects.filter(user=user).first()
 
-        if im_user.token != token:
+            if im_user.token != token:
+                return JsonResponse({
+                    'code': -2,
+                    'info': "Token Error",
+                    'friendlist': []
+                })
+
+            flist = FriendList.objects.get(user_name=username)
+
+            return_list = []
+
+            flist_len = len(flist.group_list)
+
+            for i in range(flist_len):
+                for friend_name in flist.friend_list[i]:
+                    friend = Friend.objects.filter(friend_name=friend_name, user_name=username).first()
+                    group_name = friend.group_name
+                    return_list.append({"username": friend_name, "groupname": group_name})
             return JsonResponse({
-                'code': -2,
-                'info': "Token Error",
-                'friendlist': []
+                "code": 0,
+                "info": "Friendlist Get",
+                "friendlist": return_list
             })
-
-        flist = FriendList.objects.get(user_name=username)
-
-        return_list = []
-
-        flist_len = len(flist.group_list)
-
-        for i in range(flist_len):
-            for friend_name in flist.friend_list[i]:
-                friend = Friend.objects.filter(friend_name=friend_name, user_name=username).first()
-                group_name = friend.group_name
-                return_list.append({"username": friend_name, "groupname": group_name})
-        return JsonResponse({
-            "code": 0,
-            "info": "Friendlist Get",
-            "friendlist": return_list
-        })
+        except Exception as e:
+            return JsonResponse({
+                "code": -5,
+                "info": "Unexpected Error"
+            })
 
     else:
         return BAD_METHOD
@@ -178,47 +203,50 @@ def get_friend_list(req: HttpRequest):
 
 def add_friend_group(req: HttpRequest):
     if req.method == "PUT":
-        body = json.loads(req.body.decode("utf-8"))
-        username = str(body["username"])
-        token = str(body["token"])
-        fgroup_name = str(body["fgroup_name"])
-        friend_name = str(body["friend_name"])
+        try:
+            body = json.loads(req.body.decode("utf-8"))
+            username = str(body["username"])
+            token = str(body["token"])
+            fgroup_name = str(body["fgroup_name"])
+            friend_name = str(body["friend_name"])
 
-        user_model = get_user_model()
-        user = user_model.objects.filter(username=username).first()
-        im_user = IMUser.objects.filter(user=user).first()
+            user_model = get_user_model()
+            user = user_model.objects.filter(username=username).first()
+            im_user = IMUser.objects.filter(user=user).first()
 
-        if im_user.token != token:
+            if im_user.token != token:
+                return JsonResponse({
+                    'code': -2,
+                    'info': "Token Error",
+                })
+
+            friend = Friend.objects.filter(user_name=username, friend_name=friend_name).first()
+            flist = FriendList.objects.filter(user_name=username).first()
+
+            lis = 0
+            for li, group in enumerate(flist.group_list):
+                if group == fgroup_name:
+                    lis = li
+
+            flist.friend_list[lis].append(friend_name)
+            flist.save()
+
             return JsonResponse({
-                'code': -2,
-                'info': "Token Error",
+                'code': 0,
+                'info': "AddGroup Succeed",
             })
-
-        friend = Friend.objects.filter(user_name=username, friend_name=friend_name).first()
-        flist = FriendList.objects.filter(user_name=username).first()
-
-        lis = 0
-        for li, group in enumerate(flist.group_list):
-            if group == fgroup_name:
-                lis = li
-
-        flist.friend_list[lis].append(friend_name)
-        flist.save()
-
-        return JsonResponse({
-            'code': 0,
-            'info': "AddGroup Succeed",
-        })
+        except Exception as e:
+            return JsonResponse({
+                "code": -5,
+                "info": "Unexpected Error"
+            })
 
     else:
         return BAD_METHOD
 
 
 
-
-
-
-def searchUser(request):
+def search_user(request):
     if request.method == "POST":
         try:
             body = json.loads(request.body.decode("utf-8"))
@@ -244,7 +272,7 @@ def searchUser(request):
         return BAD_METHOD
 
 
-def checkFriendRelation(my_username,check_name):
+def check_friend_relation(my_username, check_name):
     flist = FriendList.objects.get(user_name=my_username)
     for i in flist.friend_list:
         if check_name in i:
@@ -252,7 +280,7 @@ def checkFriendRelation(my_username,check_name):
     return False
 
 
-def checkUser(request):
+def check_user(request):
     if request.method == "POST":
         try:
             body = json.loads(request.body.decode("utf-8"))
@@ -287,7 +315,7 @@ def checkUser(request):
 
             token_check_http(im_user.token, token)
 
-            is_friend = checkFriendRelation(my_username,check_name)
+            is_friend = check_friend_relation(my_username, check_name)
 
             return JsonResponse({
                 "code": 0,
