@@ -160,7 +160,9 @@ def user_register(request: HttpRequest):
 
                 group_list = list()
                 group_list.append("default")
-                friend_list = FriendList(user_name=username, group_list=group_list, friend_list=list())
+                friend_list_tem = list()
+                friend_list_tem.append(list())
+                friend_list = FriendList(user_name=username, group_list=group_list, friend_list=friend_list_tem)
                 friend_list.save()
 
                 add_list = AddList(user_name=username, reply_list=list(), reply_answer=list(), reply_ensure=list(),
