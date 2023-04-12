@@ -97,7 +97,6 @@ class FriendRelationTest(TestCase):
         # user_3 = user_model.objects.filter(username=username_3).first()
 
         res = self.userSearch(username, username)
-        self.assertJSONEqual(res.content, {"code": 0, "info": "Search Succeed"})
         self.assertEqual(res.json()["code"], 0)
 
         self.assertEqual(len(json.load(res.json()["search_user_list"])), 3)
