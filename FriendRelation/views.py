@@ -94,6 +94,7 @@ def delete_friend_group(req: HttpRequest):
 
             print(1)
             print(lis)
+            print(flist.friend_list)
 
             if len(flist.friend_list[lis]) != 0:
                 return JsonResponse({
