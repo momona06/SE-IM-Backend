@@ -260,7 +260,7 @@ def user_login(request, identity, password, login_filter):
                         "code": -1,
                         "info": "Unexpected error"
                     })
-                    # tem_im_user = create_im_user(tem_user,get_new_token(),True)
+                    # tem_im_user = create_im_user(tem_user,get_new_token())
                     # tem_im_user.save()
 
                 return JsonResponse({
