@@ -135,7 +135,7 @@ def check_user_data_valid(username=None, password=None):
 
 
 def check_email_valid(email):
-    pattern = r'^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    pattern = r'^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,5}$'
     if re.match(pattern, email):
         return True
     else:
@@ -267,6 +267,8 @@ def user_login(request, identity, password, login_filter):
                     })
                     # tem_im_user = create_im_user(tem_user,get_new_token(),True)
                     # tem_im_user.save()
+
+
 
                 return JsonResponse({
                     "username": tem_im_user.user.username,
