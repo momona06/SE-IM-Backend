@@ -81,10 +81,15 @@ def delete_friend_group(req: HttpRequest):
             group_exist = False
             lis = 0
             for li, gname in enumerate(flist.group_list):
+                print(li)
+                print(gname)
+                print(fgroup_name)
                 if gname == fgroup_name:
                     group_exist = True
                     lis = li
                     break
+
+            print("hah sb")
 
             if not group_exist:
                 return JsonResponse({
