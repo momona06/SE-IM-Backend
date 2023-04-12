@@ -98,3 +98,4 @@ class FriendRelationTest(TestCase):
         self.assertEqual(res.json()["code"], 0)
 
         self.assertEqual(res.json()["search_user_list"][0], username_1)
+
