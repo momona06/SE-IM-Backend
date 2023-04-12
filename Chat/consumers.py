@@ -174,7 +174,8 @@ class FriendConsumer(WebsocketConsumer):
 
 
         else:
-            self.close()
+            pprint(message)
+
 
         # for obj in CONSUMER2_OBJECT_LIST:
         #    obj.send(text_data=message["text"])
