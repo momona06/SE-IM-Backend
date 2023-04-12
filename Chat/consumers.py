@@ -85,9 +85,11 @@ class FriendConsumer(WebsocketConsumer):
         """
         客户端浏览器向服务端发送消息，对应ws.send()
         """
-
-
-        ws_url = message['url']
+        ws_url = ''
+        try:
+            ws_url = message['url']
+        except Exception as e:
+            ws_url = "No Url"
 
         if ws_url == '/friend/addfriend':
             username = message['username']
@@ -183,7 +185,7 @@ class FriendConsumer(WebsocketConsumer):
                 self.send(text_data=message["Token Error"])
 
         else:
-            pprint(message)
+            pass
 
 
         # for obj in CONSUMER2_OBJECT_LIST:
