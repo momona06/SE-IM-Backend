@@ -43,6 +43,9 @@ def delete_friend(req: HttpRequest):
                 if gname == friend.group_name:
                     lis = li
                     break
+
+
+
             flist.friend_list[lis].remove()
             flist.save()
             return JsonResponse({

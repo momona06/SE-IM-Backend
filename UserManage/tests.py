@@ -2,6 +2,7 @@ from django.test import TestCase
 from UserManage.models import IMUser
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
+from FriendRelation.models import FriendList
 import json
 import random
 
@@ -60,6 +61,9 @@ class UserManageTest(TestCase):
         user = user_model.objects.filter(username=username).first()
         self.assertTrue(user_model.objects.filter(username=username).exists())
         self.assertTrue(IMUser.objects.filter(user=user).exists())
+
+        friend_list = FriendList.objects.get(user_name=username)
+        print(friend_list.friend_list)
 
     def testLoginLogout(self):
 
