@@ -86,6 +86,9 @@ class FriendRelationTest(TestCase):
         self.userRegister(username_2, password)
         self.userRegister(username_3, password)
 
+        user_model = get_user_model()
+        self.assertTrue(user_model.objects.filter(username=username_1).exists())
+
         # user_model = get_user_model()
 
         # user = user_model.objects.filter(username=username).first()
@@ -97,5 +100,5 @@ class FriendRelationTest(TestCase):
         self.assertJSONEqual(res.content, {"code": 0, "info": "Search Succeed"})
         self.assertEqual(res.json()["code"], 0)
 
-        self.assertEqual(res.json()["search_user_list"][0], username_1)
+        self.assertEqual(len(json.load(res.json()["search_user_list"])), 3)
 
