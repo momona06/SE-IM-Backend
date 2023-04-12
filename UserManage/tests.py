@@ -68,8 +68,8 @@ class UserManageTest(TestCase):
         username = random.randint(100_000_000_000, 999_999_999_999)
         password = random.randint(100_000_000_000, 999_999_999_999)
 
-        res_reg = self.userRegister(username, password)
-        res_lin = self.userLogin(username, password)
+        res_reg = self.user_register(username, password)
+        res_lin = self.user_login(username, password)
         self.assertEqual(res_reg.json()["code"], 0)
         self.assertEqual(res_lin.json()["code"], 0)
         user_model = get_user_model()
@@ -80,7 +80,7 @@ class UserManageTest(TestCase):
         self.assertEqual(im_user.is_login, True)
 
         token = res_lin.json()["token"]
-        res_lout = self.userLogout(username, token)
+        res_lout = self.user_logout(username, token)
         im_user = IMUser.objects.filter(user=user).first()
         self.assertEqual(res_lout.json()["code"], 0)
         self.assertEqual(im_user.is_login, False)
@@ -92,8 +92,8 @@ class UserManageTest(TestCase):
         password = random.randint(100_000_000_000, 999_999_999_999)
         input_password = password
 
-        res_reg = self.userRegister(username, password)
-        res_lin = self.userLogin(username, password)
+        res_reg = self.user_register(username, password)
+        res_lin = self.user_login(username, password)
         self.assertEqual(res_lin.json()["code"], 0)
 
         user_model = get_user_model()
@@ -103,7 +103,7 @@ class UserManageTest(TestCase):
 
         self.assertEqual(im_user.is_login, True)
 
-        res_cel = self.userCancel(username, input_password)
+        res_cel = self.user_cancel(username, input_password)
         self.assertFalse(user_model.objects.filter(username=username).exists())
 
 
@@ -114,8 +114,8 @@ class UserManageTest(TestCase):
         password = random.randint(100_000_000_000, 999_999_999_999)
 
         input_password = password
-        res_reg = self.userRegister(username, password)
-        res_lin = self.userLogin(username, password)
+        res_reg = self.user_register(username, password)
+        res_lin = self.user_login(username, password)
         self.assertEqual(res_reg.json()["code"], 0)
         self.assertEqual(res_lin.json()["code"], 0)
 
@@ -130,9 +130,9 @@ class UserManageTest(TestCase):
         revise_field_list = ["username", "password"]
         revise_content_list = [random.randint(100_000_000_000, 999_999_999_999), random.randint(100_000_000_000, 999_999_999_999)]
         #for field, content in zip(revise_field_list, revise_content_list):
-        res_rev = self.userRevise(revise_field_list[1], revise_content_list[1], username, input_password, token)
+        res_rev = self.user_revise(revise_field_list[1], revise_content_list[1], username, input_password, token)
             #self.assertEqual(res_rev.json()["code"], 0)
             #self.assertEqual(res_rev.json()["info"],"dd")
 
         token = res_lin.json()["token"]
-        res_lout = self.userLogout(username, token)
+        res_lout = self.user_logout(username, token)
