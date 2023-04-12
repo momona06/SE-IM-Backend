@@ -166,6 +166,7 @@ def create_friend_group(req: HttpRequest):
             flist.group_list.append(fgroup_name)
             print("ASDF")
             flist.friend_list.append([])
+            print(flist.friend_list)
             flist.save()
             return JsonResponse({
                 "code": 0,
