@@ -125,7 +125,9 @@ def searchUser(request):
             my_username = str(body['my_username'])
             search_username = str(body['search_username'])
             users = User.objects.filter(username__icontains=search_username).exclude(username=my_username)
-            usernames = [user.username for user in users]
+            usernames = list()
+            for user in users:
+                usernames.append(user.username)
 
             response_data = {
                 "code": 0,
