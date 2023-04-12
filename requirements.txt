@@ -19,4 +19,6 @@ channels
 daphne
 psycopg2
 
+selenium
+
 # uWSGI
