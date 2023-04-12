@@ -200,5 +200,5 @@ class FriendRelationTest(TestCase):
         res = self.user_search(username, username)
         self.assertEqual(res.json()["code"], 0)
 
-        self.assertEqual(len(json.loads(res.json()["search_user_list"])),3)
+        self.assertEqual(len(res.json()["search_user_list"]),3)
 
