@@ -226,6 +226,6 @@ class FriendConsumer(WebsocketConsumer):
         self.websocket_token_check(im_user.token, token)
 
         # 服务端断开连接
-        USER_NAME_LIST.remove(user_name)
+        USER_NAME_LIST.remove(username)
         CONSUMER2_OBJECT_LIST.remove(self)
         raise StopConsumer()
