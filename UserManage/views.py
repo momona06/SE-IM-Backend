@@ -158,7 +158,7 @@ def user_register(request: HttpRequest):
                 tem_im_user = CreateIMUser(tem_user, get_new_token())
                 tem_im_user.save()
 
-                friend_list = FriendList(user_name=username, group_list=list().append("默认分组"), friend_list=list())
+                friend_list = FriendList(user_name=username, group_list=list().append("default"), friend_list=list())
                 friend_list.save()
 
                 add_list = AddList(user_name=username, reply_list=list(), reply_answer=list(), reply_ensure=list(),
