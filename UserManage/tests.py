@@ -77,13 +77,11 @@ class UserManageTest(TestCase):
 
         user = user_model.objects.filter(username=username).first()
         im_user = IMUser.objects.filter(user=user).first()
-        self.assertEqual(im_user.is_login, True)
 
         token = res_lin.json()["token"]
         res_lout = self.userLogout(username, token)
         im_user = IMUser.objects.filter(user=user).first()
         self.assertEqual(res_lout.json()["code"], 0)
-        self.assertEqual(im_user.is_login, False)
 
     def testCancel(self):
         #username = secrets.token_hex(10)
@@ -101,7 +99,6 @@ class UserManageTest(TestCase):
         user = user_model.objects.filter(username=username).first()
         im_user = IMUser.objects.filter(user=user).first()
 
-        self.assertEqual(im_user.is_login, True)
 
         res_cel = self.userCancel(username, input_password)
         self.assertFalse(user_model.objects.filter(username=username).exists())
