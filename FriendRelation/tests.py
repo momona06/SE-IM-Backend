@@ -134,7 +134,7 @@ class FriendRelationTest(TestCase):
 
     def user_search(self, my_username, search_username):
         payload = {
-            "username": my_username,
+            "my_username": my_username,
             "search_username": search_username,
         }
         return self.client.post("/friend/searchuser", data=payload, content_type="application/json")
