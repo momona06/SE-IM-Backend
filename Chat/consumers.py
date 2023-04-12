@@ -6,7 +6,7 @@ import json
 from UserManage.models import IMUser, TokenPoll
 from FriendRelation.models import FriendList, Friend, AddList
 from django.contrib.auth.models import User
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate
 
 # 定义一个列表，用于存放当前在线的用户
 CONSUMER_OBJECT_LIST = []
@@ -69,23 +69,19 @@ class FriendConsumer(WebsocketConsumer):
 
     def websocket_connect(self, message):
         """
-        客户端浏览器发来连接请求之后触发，对应ws.onopen
+        客户端浏览器发来连接请求之后触发，对应ws.onopen()
         """
 
-        # message: 前端的Json信息，dict格式
+        # message: 前端onopen/onmessage/onclose函数体内调用send发送的Json信息，dict格式
         # self：连接的客户端的数据结构，可以调用self.send()发送信息
-        # self.send()：发送信息到客户端，可以发送json信息
+        # self.send()：发送信息到客户端触发onmessage函数，可以发送json信息
         # self.scope: 本次连接的基本信息，dict格式
 
-        # print("连接成功", message)
-        # print("scope =")
-        # pprint(self.scope)
-        # print("scope.path =")
-        # pprint(self.scope['path'])
-
-        # username = message["username"]
-        # password = message["password"]
-        print(message)
+        username = message['username']
+        password = message['password']
+        user = authenticate(username=username, password=password)
+        if user is None:
+            self.close()
         # 服务端接收连接，向客户端浏览器发送一个加密字符串
         self.accept()
         CONSUMER2_OBJECT_LIST.append(self)
@@ -94,11 +90,8 @@ class FriendConsumer(WebsocketConsumer):
         """
         客户端浏览器向服务端发送消息，对应ws.send()
         """
-
-        # print("接受到消息了", message)
-        # pprint(self.scope)
-
         ws_url = self.scope['path']
+
         if ws_url == '/friend/addfriend':
             username = message['username']
             token = message['token']
@@ -108,25 +101,28 @@ class FriendConsumer(WebsocketConsumer):
             user = user_model.objects.filter(username=username).first()
             im_user = IMUser.objects.filter(user=user).first()
 
-            self.websocket_token_check(im_user.token, token)
+            if im_user.token == token:
 
-            user_add_list = AddList.objects.get(user_name=username)
-            friend_add_list = AddList.objects.get(user_name=friend_name)
+                user_add_list = AddList.objects.get(user_name=username)
+                friend_add_list = AddList.objects.get(user_name=friend_name)
 
-            # 确保之前发送的申请被回复前不能再发送申请
-            sent_boolean = self.checkSentList(username, friend_add_list)[0]
+                # 确保之前发送的申请被回复前不能再发送申请
+                sent_boolean = self.checkSentList(username, friend_add_list)[0]
 
-            if sent_boolean:
-                self.send(text_data=message["Has Been Sent"])
+                if sent_boolean:
+                    self.send(text_data=message["Has Been Sent"])
+                else:
+                    user_add_list.apply_list.append(friend_name)
+                    user_add_list.apply_answer.append(False)
+                    user_add_list.save()
+
+                    friend_add_list.reply_list.append(username)
+                    friend_add_list.reply_answer.append(False)
+                    friend_add_list.reply_ensure.append(False)
+                    friend_add_list.save()
+
             else:
-                user_add_list.apply_list.append(friend_name)
-                user_add_list.apply_answer.append(False)
-                user_add_list.save()
-
-                friend_add_list.reply_list.append(username)
-                friend_add_list.reply_answer.append(False)
-                friend_add_list.reply_ensure.append(False)
-                friend_add_list.save()
+                self.send(text_data=message["Token Error"])
 
 
         elif ws_url == '/friend/receivefriend':
@@ -139,28 +135,32 @@ class FriendConsumer(WebsocketConsumer):
             user = user_model.objects.filter(username=username).first()
             im_user = IMUser.objects.filter(user=user).first()
 
-            self.websocket_token_check(im_user.token, token)
 
-            user_add_list = AddList.objects.get(user_name=username)
-            requester_add_list = AddList.objects.get(user_name=requester_name)
+            if im_user.token == token:
 
-            """
-            我们需要对user_add_list做一次修改，然后再对requester_add_list做一次修改
-            """
-            # if agreement:
-            # else:
+                user_add_list = AddList.objects.get(user_name=username)
+                requester_add_list = AddList.objects.get(user_name=requester_name)
 
-            sent_boolean, index_1 = self.checkSentList(requester_name, user_add_list)
-            if sent_boolean and not requester_add_list.apply_list.count(username) == 0:
-                user_add_list.reply_answer[index_1] = agreement
-                user_add_list.reply_ensure[index_1] = True
-                user_add_list.save()
+                """
+                我们需要对user_add_list做一次修改，然后再对requester_add_list做一次修改
+                """
+                # if agreement:
+                # else:
 
-                # TODO: index_2 大概率bug 思路是倒序获取这个apply_list中username的最新出现index
-                index_2 = len(requester_add_list.apply_list) - \
-                          list(reversed(requester_add_list.apply_list)).index(username)
-                requester_add_list.apply_ensure[index_2] = agreement
-                requester_add_list.save()
+                sent_boolean, index_1 = self.checkSentList(requester_name, user_add_list)
+                if sent_boolean and not requester_add_list.apply_list.count(username) == 0:
+                    user_add_list.reply_answer[index_1] = agreement
+                    user_add_list.reply_ensure[index_1] = True
+                    user_add_list.save()
+
+                    # TODO: index_2 大概率bug 思路是倒序获取这个apply_list中username的最新出现index
+                    index_2 = len(requester_add_list.apply_list) - \
+                              list(reversed(requester_add_list.apply_list)).index(username)
+                    requester_add_list.apply_ensure[index_2] = agreement
+                    requester_add_list.save()
+            else:
+
+                self.send(text_data=message["Token Error"])
 
 
         elif ws_url == '/friend/getfriendaddlist':
@@ -171,13 +171,16 @@ class FriendConsumer(WebsocketConsumer):
             user = user_model.objects.filter(username=username).first()
             im_user = IMUser.objects.filter(user=user).first()
 
-            self.websocket_token_check(im_user.token, token)
+            if im_user.token == token:
+                pass
+            else:
+                self.send(text_data=message["Token Error"])
+
 
 
         else:
             self.close()
 
-        # 服务端给客户端回一条消息
         # for obj in CONSUMER2_OBJECT_LIST:
         #    obj.send(text_data=message["text"])
         '''
@@ -187,7 +190,8 @@ class FriendConsumer(WebsocketConsumer):
         # self.send(
         #   text_data=message["text"]
         # )
-        # self.send(text_data=json.dumps({
+        # self.send(
+        #   text_data=json.dumps({
         #   'message': message
         # }))
 
@@ -215,18 +219,13 @@ class FriendConsumer(WebsocketConsumer):
         """
         客户端浏览器主动断开连接，对应ws.onclose()
         """
-        print("断开连接", message)
-
         username = message['username']
         token = message['token']
-
         user_model = get_user_model()
         user = user_model.objects.filter(username=username).first()
         im_user = IMUser.objects.filter(user=user).first()
 
-        self.websocket_token_check(im_user.token, token)
-
-        # 服务端断开连接
-        USER_NAME_LIST.remove(username)
-        CONSUMER2_OBJECT_LIST.remove(self)
-        raise StopConsumer()
+        if im_user.token == token:
+            USER_NAME_LIST.remove(username)
+            CONSUMER2_OBJECT_LIST.remove(self)
+            raise StopConsumer()

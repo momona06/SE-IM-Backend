@@ -22,7 +22,11 @@ def create_friend_group(req: HttpRequest):
         user = user_model.objects.filter(username=username).first()
         im_user = IMUser.objects.filter(user=user).first()
 
-        token_check_http(im_user.token, token)
+        if im_user.token != token:
+            return JsonResponse({
+                'code': -2,
+                'info': "Token Error",
+            })
 
         flist = FriendList.objects.get(user_name=username)
         for gname in flist.group_list:
@@ -52,7 +56,11 @@ def get_friend_list(req: HttpRequest):
         user = user_model.objects.filter(username=username).first()
         im_user = IMUser.objects.filter(user=user).first()
 
-        token_check_http(im_user.token, token)
+        if im_user.token != token:
+            return JsonResponse({
+                'code': -2,
+                'info': "Token Error",
+            })
 
         flist = FriendList.objects.get(user_name=username)
 
@@ -87,7 +95,11 @@ def add_friend_group(req: HttpRequest):
         user = user_model.objects.filter(username=username).first()
         im_user = IMUser.objects.filter(user=user).first()
 
-        token_check_http(im_user.token, token)
+        if im_user.token != token:
+            return JsonResponse({
+                'code': -2,
+                'info': "Token Error",
+            })
 
         friend = Friend.objects.filter(user_name=username, friend_name=friend_name).first()
         flist = FriendList.objects.filter(user_name=username).first()
@@ -102,6 +114,10 @@ def add_friend_group(req: HttpRequest):
 
     else:
         return BAD_METHOD
+
+
+
+
 
 
 def searchUser(request):
