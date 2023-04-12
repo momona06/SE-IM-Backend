@@ -73,7 +73,7 @@ class FriendRelationTest(TestCase):
 
         token = self.user_login(username, password).json()["token"]
 
-        friend_list = FriendList.objects.filter(user_name=username)
+        friend_list = FriendList.objects.get(user_name=username)
         friend = Friend(user_name=username,friend_name=username_1,group_name=friend_list.group_list[0])
         friend.save()
 
@@ -102,7 +102,7 @@ class FriendRelationTest(TestCase):
         self.assertEqual(res.json()["code"], -2)
 
         res = self.friend_group_delete(username, token, "2")
-        self.assertEqual(res.json()["code"], -4)
+        self.assertEqual(res.json()["code"], -1)
 
         res = self.friend_group_delete(username, token, "1")
         self.assertEqual(res.json()["code"], 0)

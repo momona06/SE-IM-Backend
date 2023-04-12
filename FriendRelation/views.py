@@ -107,7 +107,7 @@ def delete_friend_group(req: HttpRequest):
             })
         except Exception as e:
             return JsonResponse({
-                "code": -5,
+                "code": -6,
                 "info": "Unexpected Error"
             })
 
