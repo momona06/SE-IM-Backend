@@ -90,7 +90,7 @@ class FriendConsumer(WebsocketConsumer):
         """
         客户端浏览器向服务端发送消息，对应ws.send()
         """
-        ws_url = self.scope['path']
+        ws_url = message['url']
 
         if ws_url == '/friend/addfriend':
             username = message['username']
@@ -198,7 +198,7 @@ class FriendConsumer(WebsocketConsumer):
     def checkSentList(self, other_name, user_add_list):
         """
         只能通过reply_ensure判断是否处理过
-        param:  另一个人的username, message, 查询者的add_list,
+        param: 另一个人的username, message, 查询者的add_list,
                 # mode=0->apply_list 实现有问题 默认mode=1
                 mode=1->reply_list
         untreated: 真为有未处理的好友请求

@@ -14,9 +14,6 @@ from django.urls import path
 
 websocket_urlpatterns = [
     path('chat', ChatConsumer.as_asgi()),
-    path('friend/addfriend', FriendConsumer.as_asgi()),
-    path('friend/receivefriend', FriendConsumer.as_asgi()),
-    path('friend/getfriendaddlist', FriendConsumer.as_asgi()),
     path('wsconnect', FriendConsumer.as_asgi())
 ]
 
