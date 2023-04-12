@@ -253,12 +253,14 @@ def search_user(request):
             my_username = str(body['my_username'])
             search_username = str(body['search_username'])
             users = User.objects.filter(username__icontains=search_username).exclude(username=my_username)
-            usernames = [user.username for user in users]
+            usernames = list()
+            for user in users:
+                usernames.append(user.username)
 
             response_data = {
                 "code": 0,
                 "info": "Search Succeed",
-                "search_user_list": usernames,
+                "search_user_list": json.dumps(usernames),
             }
 
             return JsonResponse(response_data, safe=False)
@@ -288,7 +290,6 @@ def check_user(request):
             check_name = str(body['check_name'])
             token = str(body['token'])
 
-
             if my_username == check_name:
                 return JsonResponse({
                     "code": -4,
@@ -313,7 +314,11 @@ def check_user(request):
 
             im_user = IMUser.objects.filter(user=my_user).first()
 
-            token_check_http(im_user.token, token)
+            if token_check_http(im_user.token, token):
+                return JsonResponse({
+                    "code": -2,
+                    "info": "Token Error"
+                })
 
             is_friend = check_friend_relation(my_username, check_name)
 
