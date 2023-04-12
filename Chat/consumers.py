@@ -72,16 +72,11 @@ class FriendConsumer(WebsocketConsumer):
         客户端浏览器发来连接请求之后触发，对应ws.onopen()
         """
 
-        # message: 前端onopen/onmessage/onclose函数体内调用send发送的Json信息，dict格式
+        # message: 前端调用send发送的Json信息触发receive，dict格式
         # self：连接的客户端的数据结构，可以调用self.send()发送信息
         # self.send()：发送信息到客户端触发onmessage函数，可以发送json信息
         # self.scope: 本次连接的基本信息，dict格式
 
-        username = message['username']
-        password = message['password']
-        user = authenticate(username=username, password=password)
-        if user is None:
-            self.close()
         # 服务端接收连接，向客户端浏览器发送一个加密字符串
         self.accept()
         CONSUMER2_OBJECT_LIST.append(self)
