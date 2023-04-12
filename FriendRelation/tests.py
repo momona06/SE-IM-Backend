@@ -98,9 +98,11 @@ class FriendRelationTest(TestCase):
 
         self.friend_group_create(username, token, "1")
 
+        #token fail
         res = self.friend_group_delete(username, 0, "1")
         self.assertEqual(res.json()["code"], -2)
 
+        #
         res = self.friend_group_delete(username, token, "2")
         self.assertEqual(res.json()["code"], -1)
 

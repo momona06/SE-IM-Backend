@@ -80,10 +80,10 @@ def delete_friend_group(req: HttpRequest):
             flist = FriendList.objects.filter(user_name=username).first()
             group_exist = False
             lis = 0
+            print("fgroup_name"+ fgroup_name)
             for li, gname in enumerate(flist.group_list):
-                print(li)
-                print(gname)
-                print(fgroup_name)
+                print("li: " + str(li))
+                print("gname" + str(gname))
                 if gname == fgroup_name:
                     group_exist = True
                     lis = li
@@ -97,7 +97,7 @@ def delete_friend_group(req: HttpRequest):
                     'info': 'Group Not Exists'
                 })
 
-            print(1)
+            print("!")
             print(lis)
             print(flist.friend_list)
 
