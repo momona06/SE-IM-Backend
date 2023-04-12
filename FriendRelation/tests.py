@@ -25,8 +25,8 @@ class FriendRelationTest(TestCase):
 
     def userCheck(self, my_username, check_name, token):
         payload = {
-            "username": my_username,
-            "password": check_name,
+            "my_username": my_username,
+            "check_name": check_name,
             "token": token,
         }
         return self.client.post("/friend/checkuser", data=payload, content_type="application/json")
@@ -34,7 +34,7 @@ class FriendRelationTest(TestCase):
     def userSearch(self, my_username, search_username):
         payload = {
             "username": my_username,
-            "password": search_username,
+            "search_username": search_username,
         }
         return self.client.post("/friend/searchuser", data=payload, content_type="application/json")
 
