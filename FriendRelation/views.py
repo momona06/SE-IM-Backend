@@ -92,20 +92,29 @@ def delete_friend_group(req: HttpRequest):
                     'info': 'Group Not Exists'
                 })
 
+            print(1)
+
             if len(flist.friend_list[lis]) != 0:
                 return JsonResponse({
                     'code': -5,
                     'info': "Number of Friend Not 0"
                 })
 
+            print(2)
+
             del flist.group_list[lis]
             del flist.friend_list[lis]
+
+            print(3)
+
+
             flist.save()
             return JsonResponse({
                 'code': 0,
                 'info': "Delete Friend Group Succeed"
             })
         except Exception as e:
+            print(e)
             return JsonResponse({
                 "code": -6,
                 "info": "Unexpected Error"
