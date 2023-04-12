@@ -8,3 +8,4 @@ urlpatterns = [
     path('searchuser', views.searchUser),
     path('checkuser', views.checkUser),
 ]
+
