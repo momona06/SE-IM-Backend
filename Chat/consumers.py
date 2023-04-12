@@ -112,7 +112,7 @@ class FriendConsumer(WebsocketConsumer):
             user_add_list = AddList.objects.get(user_name=username)
             friend_add_list = AddList.objects.get(user_name=friend_name)
 
-            # 确保之前发送的申请被回复前不能再发送申请.
+            # 确保之前发送的申请被回复前不能再发送申请
             sent_boolean = self.checkSentList(username, friend_add_list)[0]
 
             if sent_boolean:
