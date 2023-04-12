@@ -6,14 +6,14 @@ import json
 import random
 
 class UserManageTest(TestCase):
-    def userRegister(self, username, password):
+    def user_register(self, username, password):
         payload = {
             "username": username,
             "password": password
         }
         return self.client.post("/user/register", data=payload, content_type="application/json")
 
-    def userLogin(self, username, password, email=""):
+    def user_login(self, username, password, email=""):
         payload = {
             "username": username,
             "password": password,
@@ -21,21 +21,21 @@ class UserManageTest(TestCase):
         }
         return self.client.post("/user/login", data=payload, content_type="application/json")
 
-    def userLogout(self, username, token):
+    def user_logout(self, username, token):
         payload = {
             "username": username,
             "token": token
         }
         return self.client.delete("/user/logout", data=payload, content_type="application/json")
 
-    def userCancel(self, username, input_password):
+    def user_cancel(self, username, input_password):
         payload = {
             "username": username,
             "input_password": input_password
         }
         return self.client.delete("/user/cancel", data=payload, content_type="application/json")
 
-    def userRevise(self, revise_field, revise_content, username, input_password, token):
+    def user_revise(self, revise_field, revise_content, username, input_password, token):
         payload = {
             "revise_field": revise_field,
             "revise_content": revise_content,
@@ -46,7 +46,7 @@ class UserManageTest(TestCase):
         return self.client.put("/user/revise", data=payload, content_type="application/json")
 
 
-    def testRegister(self):
+    def test_register(self):
         #username = secrets.token_hex(4)
         #password = secrets.token_hex(4)
         username = random.randint(100_000_000_000, 999_999_999_999)
@@ -61,7 +61,7 @@ class UserManageTest(TestCase):
         self.assertTrue(user_model.objects.filter(username=username).exists())
         self.assertTrue(IMUser.objects.filter(user=user).exists())
 
-    def testLoginLogout(self):
+    def test_login_logout(self):
 
         #username = secrets.token_hex(10)
         #password = secrets.token_hex(10)
@@ -85,7 +85,7 @@ class UserManageTest(TestCase):
         self.assertEqual(res_lout.json()["code"], 0)
         self.assertEqual(im_user.is_login, False)
 
-    def testCancel(self):
+    def test_cancel(self):
         #username = secrets.token_hex(10)
         #password = secrets.token_hex(10)
         username = random.randint(100_000_000_000, 999_999_999_999)
@@ -107,7 +107,7 @@ class UserManageTest(TestCase):
         self.assertFalse(user_model.objects.filter(username=username).exists())
 
 
-    def testRevise(self):
+    def test_revise(self):
         #username = secrets.token_hex(10)
         #password = secrets.token_hex(10)
         username = random.randint(100_000_000_000, 999_999_999_999)
