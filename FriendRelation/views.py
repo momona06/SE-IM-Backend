@@ -10,7 +10,7 @@ from utils.utils_token import token_check_http
 
 from django.contrib.auth.models import User
 from UserManage.models import IMUser, TokenPoll, CreateIMUser
-from FriendRelation.models import FriendList, Friend
+from FriendRelation.models import FriendList, Friend, AddList
 
 
 def delete_friend(req: HttpRequest):
@@ -36,8 +36,74 @@ def delete_friend(req: HttpRequest):
                 'info': 'Friend Not Exists'
             })
 
+        flist = FriendList.objects.get(user_name=username)
+        lis = 0
+        for li, gname in enumerate(flist.group_list):
+            if gname == friend.group_name:
+                lis = li
+                break
+        flist.friend_list[lis].remove()
+        flist.save()
+        return JsonResponse({
+            'code': 0,
+            'info': "Delete Friend Succeed"
+        })
+
     else:
         return BAD_METHOD
+
+
+
+def delete_friend_group(req: HttpRequest):
+    if req.method == "DELETE":
+        body = json.loads(req.body.decode("utf-8"))
+        username = str(body["username"])
+        token = str(body["token"])
+        fgroup_name = str(body["fgroup_name"])
+        user_model = get_user_model()
+        user = user_model.objects.filter(username=username).first()
+        im_user = IMUser.objects.filter(user=user).first()
+        if im_user.token != token:
+            return JsonResponse({
+                'code': -2,
+                'info': "Token Error",
+            })
+
+        flist = FriendList.objects.filter(user_name=username).first()
+        group_exist = False
+        lis = 0
+        for li, gname in enumerate(flist.group_list):
+            if gname == fgroup_name:
+                group_exist = True
+                lis = li
+                break
+
+        if not group_exist:
+            return JsonResponse({
+                'code': -4,
+                'info': 'Friend Not Exists'
+            })
+
+        if len(flist.friend_list[lis]) != 0:
+            return JsonResponse({
+                'code': -5,
+                'info': "Number of Friend Not 0"
+            })
+
+        del flist.group_list[lis]
+        del flist.friend_list[lis]
+        flist.save()
+        return JsonResponse({
+            'code': 0,
+            'info': "Delete Friend Group Succeed"
+        })
+
+    else:
+        return BAD_METHOD
+
+
+
+
 def create_friend_group(req: HttpRequest):
     if req.method == "POST":
         body = json.loads(req.body.decode("utf-8"))

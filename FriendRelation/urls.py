@@ -7,6 +7,7 @@ urlpatterns = [
     path('addfgroup', views.add_friend_group),
     path('searchuser', views.searchUser),
     path('checkuser', views.checkUser),
-    path('deletefriend', views.delete_friend)
+    path('deletefriend', views.delete_friend),
+    path('deletefgroup', views.delete_friend_group)
 ]
 
