@@ -57,6 +57,9 @@ class FriendRelationTest(TestCase):
         username_1 = username + 1
 
         self.userRegister(username_1, password_1)
+        user_model = get_user_model()
+        self.assertTrue(user_model.objects.filter(username=username_1).exists())
+
         res_check = self.userCheck(username, username_1, token)
         self.assertEqual(res_check.json()["code"], 0)
 
