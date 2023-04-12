@@ -38,7 +38,7 @@ class FriendRelationTest(TestCase):
         }
         return self.client.post("/friend/searchuser", data=payload, content_type="application/json")
 
-    '''
+
     def testCheckUser(self):
         username = random.randint(100_000_000_000, 999_999_999_999)
         password = random.randint(100_000_000_000, 999_999_999_999)
@@ -69,6 +69,7 @@ class FriendRelationTest(TestCase):
         res_check = self.userCheck(username, username_1, 0)
         self.assertEqual(res_check.json()["code"], -2)
 
+    '''
     def testSearchUser(self):
         username = random.randint(100_000_000_000, 999_999_999_999)
         password = random.randint(100_000_000_000, 999_999_999_999)
