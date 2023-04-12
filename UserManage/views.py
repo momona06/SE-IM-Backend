@@ -3,6 +3,8 @@ import re
 import random
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
+
+from FriendRelation.models import FriendList, AddList
 from utils.utils_request import BAD_METHOD
 from django.contrib.auth import authenticate, get_user_model
 
@@ -161,6 +163,12 @@ def user_register(request: HttpRequest):
 
                 tem_im_user = CreateIMUser(tem_user, get_new_token(), False)
                 tem_im_user.save()
+
+                friend_list = FriendList(user_name=username)
+                friend_list.save()
+
+                add_list = AddList(user_name=username)
+                add_list.save()
 
                 return JsonResponse({
                     "code": 0,
