@@ -119,10 +119,10 @@ class FriendRelationTest(TestCase):
         username_2 = str(username) + "12"
         username_3 = str(username) + "123"
 
-        self.userRegister(username, password)
-        self.userRegister(username_1, password)
-        self.userRegister(username_2, password)
-        self.userRegister(username_3, password)
+        self.user_register(username, password)
+        self.user_register(username_1, password)
+        self.user_register(username_2, password)
+        self.user_register(username_3, password)
 
         user_model = get_user_model()
         self.assertTrue(user_model.objects.filter(username=username_1).exists())
@@ -134,7 +134,7 @@ class FriendRelationTest(TestCase):
         # user_2 = user_model.objects.filter(username=username_2).first()
         # user_3 = user_model.objects.filter(username=username_3).first()
 
-        res = self.userSearch(username, username)
+        res = self.user_search(username, username)
         self.assertEqual(res.json()["code"], 0)
 
         self.assertEqual(len(json.loads(res.json()["search_user_list"])),3)
