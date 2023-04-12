@@ -155,10 +155,10 @@ def user_register(request: HttpRequest):
 
                 tem_user = User.objects.create_user(username=username, password=password)
 
-                tem_im_user = CreateIMUser(tem_user, get_new_token(), False)
+                tem_im_user = CreateIMUser(tem_user, get_new_token())
                 tem_im_user.save()
 
-                friend_list = FriendList(user_name=username, group_list=list().append("默认分组"), friend_list=list())
+                friend_list = FriendList(user_name=username, group_list=list().append("default"), friend_list=list())
                 friend_list.save()
 
                 add_list = AddList(user_name=username, reply_list=list(), reply_answer=list(), reply_ensure=list(),
@@ -260,7 +260,7 @@ def user_login(request, identity, password, login_filter):
                         "code": -1,
                         "info": "Unexpected error"
                     })
-                    # tem_im_user = create_im_user(tem_user,get_new_token(),True)
+                    # tem_im_user = create_im_user(tem_user,get_new_token())
                     # tem_im_user.save()
 
                 return JsonResponse({
