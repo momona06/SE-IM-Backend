@@ -158,7 +158,9 @@ def user_register(request: HttpRequest):
                 tem_im_user = CreateIMUser(tem_user, get_new_token())
                 tem_im_user.save()
 
-                friend_list = FriendList(user_name=username, group_list=list().append("default"), friend_list=list())
+                group_list = list()
+                group_list.append("default")
+                friend_list = FriendList(user_name=username, group_list=group_list, friend_list=list())
                 friend_list.save()
 
                 add_list = AddList(user_name=username, reply_list=list(), reply_answer=list(), reply_ensure=list(),
@@ -251,8 +253,6 @@ def user_login(request, identity, password, login_filter):
             if tem_user:
                 tem_im_user = IMUser.objects.filter(user=tem_user).first()
                 if tem_im_user is not None:
-                    print(tem_im_user.user.username)
-                    print(tem_im_user.token)
                     tem_im_user.token = get_new_token()
                     tem_im_user.save()
                 else:
