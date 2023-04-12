@@ -63,6 +63,7 @@ class UserManageTest(TestCase):
         self.assertTrue(IMUser.objects.filter(user=user).exists())
 
         friend_list = FriendList.objects.get(user_name=username)
+        friend_list.friend_list.append(["1"])
         print(friend_list.friend_list)
 
     def testLoginLogout(self):
