@@ -164,12 +164,18 @@ def user_register(request: HttpRequest):
                 tem_im_user = CreateIMUser(tem_user, get_new_token(), False)
                 tem_im_user.save()
 
+                print(1)
+
                 friend_list = FriendList(user_name=username)
                 friend_list.save()
+
+
+                print(12)
 
                 add_list = AddList(user_name=username)
                 add_list.save()
 
+                print(123)
                 return JsonResponse({
                     "code": 0,
                     "info": "Register Succeed",
