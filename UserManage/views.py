@@ -161,8 +161,10 @@ def user_register(request: HttpRequest):
                 group_list = list()
                 group_list.append("default")
                 friend_list_tem = [[]]
+                print("before")
                 print(friend_list_tem == [[]])
                 friend_list = FriendList(user_name=username, group_list=group_list, friend_list=friend_list_tem)
+                print("after")
                 print(friend_list.friend_list == [[]])
                 friend_list.save()
 
