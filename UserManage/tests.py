@@ -52,7 +52,7 @@ class UserManageTest(TestCase):
         username = random.randint(100_000_000_000, 999_999_999_999)
         password = random.randint(100_000_000_000, 999_999_999_999)
 
-        res = self.userRegister(username, password)
+        res = self.user_register(username, password)
 
         self.assertJSONEqual(res.content, {"code": 0, "info": "Register Succeed"})
         self.assertEqual(res.json()["code"], 0)
