@@ -209,6 +209,7 @@ def get_friend_list(req: HttpRequest):
                 "friendlist": return_list
             })
         except Exception as e:
+            print(e)
             return JsonResponse({
                 "code": -5,
                 "info": "Unexpected Error"
