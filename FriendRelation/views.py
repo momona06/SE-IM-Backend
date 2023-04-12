@@ -132,7 +132,7 @@ def searchUser(request):
             response_data = {
                 "code": 0,
                 "info": "Search Succeed",
-                "search_user_list": usernames,
+                "search_user_list": json.dumps(usernames),
             }
 
             return JsonResponse(response_data, safe=False)
