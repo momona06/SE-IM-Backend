@@ -85,6 +85,8 @@ class FriendConsumer(WebsocketConsumer):
         """
         客户端浏览器向服务端发送消息，对应ws.send()
         """
+
+
         ws_url = message['url']
 
         if ws_url == '/friend/addfriend':
@@ -154,12 +156,13 @@ class FriendConsumer(WebsocketConsumer):
                     requester_add_list.apply_ensure[index_2] = agreement
                     requester_add_list.save()
 
-                    friend_list = FriendList.objects.filter(user_name=username).first()
+                    friend_list = FriendList.objects.get(user_name=username)
+                    friend_list.friend_list[0].append(requester_name)
                     friend_list.save()
 
                     friend = Friend(user_name=username,
                                     friend_name=friend_list.group_list[0],
-                                    friend_list = friend_list)
+                                    friend_list=friend_list)
                     friend.save()
 
             else:
