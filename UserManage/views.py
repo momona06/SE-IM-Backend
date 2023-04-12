@@ -164,18 +164,13 @@ def user_register(request: HttpRequest):
                 tem_im_user = CreateIMUser(tem_user, get_new_token(), False)
                 tem_im_user.save()
 
-                print(1)
-
-                friend_list = FriendList(user_name=username)
+                friend_list = FriendList(user_name=username, group_list=list(), friend_list=list())
                 friend_list.save()
 
-
-                print(12)
-
-                add_list = AddList(user_name=username)
+                add_list = AddList(user_name=username, reply_list=list(), reply_answer=list(), reply_ensure=list(),
+                                   apply_list=list(), apply_answer=list())
                 add_list.save()
 
-                print(123)
                 return JsonResponse({
                     "code": 0,
                     "info": "Register Succeed",
@@ -281,8 +276,6 @@ def user_login(request, identity, password, login_filter):
                     })
                     # tem_im_user = create_im_user(tem_user,get_new_token(),True)
                     # tem_im_user.save()
-
-
 
                 return JsonResponse({
                     "username": tem_im_user.user.username,
