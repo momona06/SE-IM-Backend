@@ -49,7 +49,6 @@ class ChatConsumer(WebsocketConsumer):
         raise StopConsumer()
 
 
-
 # def send(self, text_data=None, bytes_data=None, close=False):
 #     if text_data is not None:
 #         super().send({"type": "websocket.send", "text": text_data})
@@ -59,6 +58,27 @@ class ChatConsumer(WebsocketConsumer):
 #         raise ValueError("You must pass one of bytes_data or text_data")
 #     if close:
 #         self.close(close)
+
+def check_sent_list(other_name, user_add_list):
+    """
+    只能通过reply_ensure判断是否处理过
+    param: 另一个人的username, message, 查询者的add_list,
+            mode=0 -> apply_list 实现有问题 默认mode=1
+            mode=1 -> reply_list
+    untreated: 真为有未处理的好友请求
+    index: 未处理好友请求所在列表中的index
+    """
+    time = user_add_list.apply_list.count(other_name)
+    index = -1
+    untreated = False
+    for i in range(0, time):
+        # 0, last_index, index, next_index.....
+        index = user_add_list.reply_list.index(other_name, index + 1)
+        if not user_add_list.reply_ensure[index]:
+            untreated = True
+
+    return untreated, index
+
 
 class FriendConsumer(WebsocketConsumer):
     # self看作当前触发事件的客户端
@@ -79,150 +99,140 @@ class FriendConsumer(WebsocketConsumer):
 
         # 服务端接收连接，向客户端浏览器发送一个加密字符串
         self.accept()
+        # USER_NAME_LIST.append(username)
         CONSUMER2_OBJECT_LIST.append(self)
 
     def websocket_receive(self, message):
         """
         客户端浏览器向服务端发送消息，对应ws.send()
         """
-        ws_url = ''
+        direction = ''
         try:
-            ws_url = message['url']
+            direction = message['direction']
         except Exception as e:
-            ws_url = "No Url"
+            direction = "No Direction"
+        try:
+            if direction == '/friend/client2server':
+                username = message['username']
+                function = message['function']
+                apply_from = message['from']
+                apply_to = message['to']
 
-        if ws_url == '/friend/addfriend':
-            username = message['username']
-            token = message['token']
-            friend_name = message['friend_name']
+                user_model = get_user_model()
+                user = user_model.objects.get(username=username)
+                im_user = IMUser.objects.get(user=user)
 
-            user_model = get_user_model()
-            user = user_model.objects.filter(username=username).first()
-            im_user = IMUser.objects.filter(user=user).first()
+                if function == 'apply':
+                    # 修改数据库
+                    applyer_add_list = AddList.objects.get(user_name=apply_from)
+                    receiver_add_list = AddList.objects.get(user_name=apply_to)
+                    '''
+                    确保之前发送的申请被回复前不能再发送申请
+                    '''
+                    # sent_boolean = self.check_sent_list(username, receiver_add_list)[0]
+                    #
+                    # if sent_boolean:
+                    #     self.send(text_data="Has Been Sent")
+                    # else:
+                    applyer_add_list.apply_list.append(apply_to)
+                    applyer_add_list.apply_answer.append(False)
+                    applyer_add_list.apply_ensure.append(False)
+                    applyer_add_list.save()
 
-            if im_user.token == token:
+                    receiver_add_list.reply_list.append(apply_from)
+                    receiver_add_list.reply_answer.append(False)
+                    receiver_add_list.reply_ensure.append(False)
+                    receiver_add_list.save()
 
-                user_add_list = AddList.objects.get(user_name=username)
-                friend_add_list = AddList.objects.get(user_name=friend_name)
+                    # 若receiver在线申请发送到receiver
+                    return_field = {"applyer": apply_from}
+                    self.send(text_data=json.dumps(return_field))
 
-                # 确保之前发送的申请被回复前不能再发送申请
-                sent_boolean = self.check_sent_list(username, friend_add_list)[0]
+                elif function == 'confirm':
+                    # 修改数据库
+                    receiver_add_list = AddList.objects.get(user_name=apply_to)
+                    applyer_add_list = AddList.objects.get(user_name=apply_from)
+                    sent_boolean, index_1 = check_sent_list(apply_from, receiver_add_list)
+                    if sent_boolean and not applyer_add_list.apply_list.count(username) == 0:
+                        receiver_add_list.reply_answer[index_1] = True  #
+                        receiver_add_list.reply_ensure[index_1] = True
+                        receiver_add_list.save()
 
-                if sent_boolean:
-                    self.send(text_data=message["Has Been Sent"])
+                        index_2 = len(applyer_add_list.apply_list) - \
+                                  list(reversed(applyer_add_list.apply_list)).index(username) - 1
+                        applyer_add_list.apply_ensure[index_2] = True  #
+                        applyer_add_list.apply_ensure[index_2] = True
+                        applyer_add_list.save()
+
+                        friend_list = FriendList.objects.get(user_name=username)
+                        friend_list.friend_list[0].append(apply_from)
+                        friend_list.save()
+
+                        friend = Friend(user_name=username,
+                                        friend_name=friend_list.group_list[0],
+                                        friend_list=friend_list)
+                        friend.save()
+                    # 若applyer在线结果发送到applyer
+                    # return_field = {"function": "confirm"}
+                    # self.send(text_data=json.dumps(return_field))
+
+                elif function == 'decline':
+                    # 修改数据库
+                    user_add_list = AddList.objects.get(user_name=apply_to)
+                    applyer_add_list = AddList.objects.get(user_name=apply_from)
+                    sent_boolean, index_1 = check_sent_list(apply_from, user_add_list)
+                    if sent_boolean and not applyer_add_list.apply_list.count(username) == 0:
+                        user_add_list.reply_answer[index_1] = False
+                        user_add_list.reply_ensure[index_1] = True
+                        user_add_list.save()
+
+                        index_2 = len(applyer_add_list.apply_list) - \
+                                  list(reversed(applyer_add_list.apply_list)).index(username) - 1
+                        applyer_add_list.apply_ensure[index_2] = False
+                        applyer_add_list.reply_ensure[index_2] = True
+                        applyer_add_list.save()
+
+                        friend_list = FriendList.objects.get(user_name=username)
+                        friend_list.friend_list[0].append(apply_from)
+                        friend_list.save()
+
+                        friend = Friend(user_name=username,
+                                        friend_name=friend_list.group_list[0],
+                                        friend_list=friend_list)
+                        friend.save()
+                    # 若applyer在线结果发送到applyer
+                    # return_field = {"function": "decline"}
+                    # self.send(text_data=json.dumps(return_field))
+
+                elif function == 'fetchapplylist':
+                    add_list = AddList.objects.get(user_name=username)
+                    return_field = []
+                    flen = len(add_list.apply_list)
+                    for li in range(flen):
+                        return_field.append(
+                            [add_list.apply_list[li], add_list.apply_answer[li], add_list.apply_ensure[li]])
+                    self.send(text_data=json.dumps(return_field))
+                    # 发送list到client
+
+                elif function == 'fetchreceivelist':
+                    add_list = AddList.objects.get(user_name=username)
+                    return_field = []
+                    flen = len(add_list.reply_list)
+                    for li in range(flen):
+                        return_field.append(
+                            [add_list.reply_list[li], add_list.reply_answer[li], add_list.reply_ensure[li]])
+                    self.send(text_data=json.dumps(return_field))
+                    # 发送list到client
+
                 else:
-                    user_add_list.apply_list.append(friend_name)
-                    user_add_list.apply_answer.append(False)
-                    user_add_list.save()
-
-                    friend_add_list.reply_list.append(username)
-                    friend_add_list.reply_answer.append(False)
-                    friend_add_list.reply_ensure.append(False)
-                    friend_add_list.save()
+                    self.send(text_data="Unknown Function")
 
             else:
-                self.send(text_data=message["Token Error"])
+                self.send(text_data="Unknown Direction")
 
-
-        elif ws_url == '/friend/receivefriend':
-            username = message['username']
-            token = message['token']
-            requester_name = message['requester_name']
-            agreement = message['agreement']
-
-            user_model = get_user_model()
-            user = user_model.objects.filter(username=username).first()
-            im_user = IMUser.objects.filter(user=user).first()
-
-
-            if im_user.token == token:
-
-                user_add_list = AddList.objects.get(user_name=username)
-                requester_add_list = AddList.objects.get(user_name=requester_name)
-
-                """
-                我们需要对user_add_list做一次修改，然后再对requester_add_list做一次修改
-                """
-                # if agreement:
-                # else:
-
-                sent_boolean, index_1 = self.check_sent_list(requester_name, user_add_list)
-                if sent_boolean and not requester_add_list.apply_list.count(username) == 0:
-                    user_add_list.reply_answer[index_1] = agreement
-                    user_add_list.reply_ensure[index_1] = True
-                    user_add_list.save()
-
-                    # TODO: index_2 大概率bug 思路是倒序获取这个apply_list中username的最新出现index
-                    index_2 = len(requester_add_list.apply_list) - \
-                              list(reversed(requester_add_list.apply_list)).index(username)
-                    requester_add_list.apply_ensure[index_2] = agreement
-                    requester_add_list.save()
-
-                    '''
-                    friend_list = FriendList.objects.get(user_name=username)
-                    friend_list.friend_list[0].append(requester_name)
-                    friend_list.save()
-
-                    friend = Friend(user_name=username,
-                                    friend_name=friend_list.group_list[0],
-                                    friend_list=friend_list)
-                    friend.save()
-                    '''
-
-            else:
-                self.send(text_data=message["Token Error"])
-
-
-        elif ws_url == '/friend/getfriendaddlist':
-            username = message['username']
-            token = message['token']
-
-            user_model = get_user_model()
-            user = user_model.objects.filter(username=username).first()
-            im_user = IMUser.objects.filter(user=user).first()
-
-            if im_user.token == token:
-                pass
-            else:
-                self.send(text_data=message["Token Error"])
-
-        else:
-            pass
-
-
-        # for obj in CONSUMER2_OBJECT_LIST:
-        #    obj.send(text_data=message["text"])
-        '''
-        obj.send 对应ws.onmessage()
-        '''
-
-        # self.send(
-        #   text_data=message["text"]
-        # )
-        # self.send(
-        #   text_data=json.dumps({
-        #   'message': message
-        # }))
-
-    def check_sent_list(self, other_name, user_add_list):
-        """
-        只能通过reply_ensure判断是否处理过
-        param: 另一个人的username, message, 查询者的add_list,
-                # mode=0 -> apply_list 实现有问题 默认mode=1
-                mode=1 -> reply_list
-        untreated: 真为有未处理的好友请求
-        index: 未处理好友请求所在列表中的index
-        """
-        time = user_add_list.apply_list.count(other_name)
-        index = -1
-        untreated = False
-        for i in range(0, time):
-            # 0, last_index, index, next_index.....
-            index = user_add_list.reply_list.index(other_name, index + 1)
-            if not user_add_list.reply_ensure[index]:
-                untreated = True
-
-        return untreated, index
+        except Exception as e:
+            print(e)
+            self.send(text_data="Unexpected Error")
 
     def websocket_disconnect(self, message):
         """
