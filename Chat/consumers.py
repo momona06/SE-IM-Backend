@@ -214,13 +214,7 @@ class FriendConsumer(WebsocketConsumer):
         """
         客户端浏览器主动断开连接，对应ws.onclose()
         """
-        username = message['username']
-        token = message['token']
-        user_model = get_user_model()
-        user = user_model.objects.filter(username=username).first()
-        im_user = IMUser.objects.filter(user=user).first()
 
-        if im_user.token == token:
-            USER_NAME_LIST.remove(username)
-            CONSUMER2_OBJECT_LIST.remove(self)
-            raise StopConsumer()
+        # USER_NAME_LIST.remove(username)
+        CONSUMER2_OBJECT_LIST.remove(self)
+        raise StopConsumer()
