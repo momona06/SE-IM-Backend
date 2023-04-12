@@ -12,6 +12,7 @@ from django.contrib.auth.models import User
 from UserManage.models import IMUser, TokenPoll, CreateIMUser
 from FriendRelation.models import FriendList, Friend
 
+
 def create_friend_group(req: HttpRequest):
     if req.method == "POST":
         body = json.loads(req.body.decode("utf-8"))
@@ -22,7 +23,11 @@ def create_friend_group(req: HttpRequest):
         user = user_model.objects.filter(username=username).first()
         im_user = IMUser.objects.filter(user=user).first()
 
-        token_check_http(im_user.token, token)
+        if token_check_http(im_user.token, token):
+            return JsonResponse({
+                "code": -2,
+                "info": "Token Error"
+            })
 
         flist = FriendList.objects.get(user_name=username)
         for gname in flist.group_list:
@@ -42,6 +47,7 @@ def create_friend_group(req: HttpRequest):
     else:
         return BAD_METHOD
 
+
 def get_friend_list(req: HttpRequest):
     if req.method == "POST":
         body = json.loads(req.body.decode("utf-8"))
@@ -52,7 +58,11 @@ def get_friend_list(req: HttpRequest):
         user = user_model.objects.filter(username=username).first()
         im_user = IMUser.objects.filter(user=user).first()
 
-        token_check_http(im_user.token, token)
+        if token_check_http(im_user.token, token):
+            return JsonResponse({
+                "code": -2,
+                "info": "Token Error"
+            })
 
         flist = FriendList.objects.get(user_name=username)
 
@@ -87,7 +97,11 @@ def add_friend_group(req: HttpRequest):
         user = user_model.objects.filter(username=username).first()
         im_user = IMUser.objects.filter(user=user).first()
 
-        token_check_http(im_user.token, token)
+        if token_check_http(im_user.token, token):
+            return JsonResponse({
+                "code": -2,
+                "info": "Token Error"
+            })
 
         friend = Friend.objects.filter(user_name=username, friend_name=friend_name).first()
         flist = FriendList.objects.filter(user_name=username).first()
@@ -130,7 +144,7 @@ def searchUser(request):
         return BAD_METHOD
 
 
-def checkFriendRelation(my_username,check_name):
+def checkFriendRelation(my_username, check_name):
     flist = FriendList.objects.get(user_name=my_username)
     for i in flist.friend_list:
         if check_name in i:
@@ -145,7 +159,6 @@ def checkUser(request):
             my_username = str(body['my_username'])
             check_name = str(body['check_name'])
             token = str(body['token'])
-
 
             if my_username == check_name:
                 return JsonResponse({
@@ -171,9 +184,13 @@ def checkUser(request):
 
             im_user = IMUser.objects.filter(user=my_user).first()
 
-            token_check_http(im_user.token, token)
+            if token_check_http(im_user.token, token):
+                return JsonResponse({
+                    "code": -2,
+                    "info": "Token Error"
+                })
 
-            is_friend = checkFriendRelation(my_username,check_name)
+            is_friend = checkFriendRelation(my_username, check_name)
 
             return JsonResponse({
                 "code": 0,
