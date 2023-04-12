@@ -13,7 +13,5 @@ class IMUser(models.Model):
     is_login = models.BooleanField(default=False)
 
 
-
-
 class TokenPoll(models.Model):
     token = models.CharField(max_length=100)

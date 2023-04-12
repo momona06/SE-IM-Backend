@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 
 from django.contrib.auth.models import User
 from UserManage.models import IMUser
+from FriendRelation.models import Friend, FriendList
 
 
 class FriendRelationTest(TestCase):
@@ -62,12 +63,49 @@ class FriendRelationTest(TestCase):
         pass
 
     def test_delete_friend(self):
-        pass
+        username = random.randint(100_000_000_000, 999_999_999_999)
+        password = random.randint(100_000_000_000, 999_999_999_999)
+
+        username_1 = username+1
+
+        self.user_register(username, password)
+        self.user_register(username_1, password)
+
+        token = self.user_login(username, password).json()["token"]
+
+        friend_list = FriendList.objects.filter(user_name=username)
+        friend = Friend(user_name=username,friend_name=username_1,group_name=friend_list.group_list[0])
+        friend.save()
+
+        res = self.friend_delete(username, 0, username_1)
+        self.assertEqual(res.json()["code"], -2)
+
+        res = self.friend_delete(username, token, username-1)
+        self.assertEqual(res.json()["code"], -4)
+
+        res = self.friend_delete(username, token, username_1)
+        self.assertEqual(res.json()["code"], 0)
+
+
 
     def test_delete_fgroup(self):
-        pass
+        username = random.randint(100_000_000_000, 999_999_999_999)
+        password = random.randint(100_000_000_000, 999_999_999_999)
 
+        self.user_register(username, password)
 
+        token = self.user_login(username, password).json()["token"]
+
+        self.friend_group_create(username, token, "1")
+
+        res = self.friend_group_delete(username, 0, "1")
+        self.assertEqual(res.json()["code"], -2)
+
+        res = self.friend_group_delete(username, token, "2")
+        self.assertEqual(res.json()["code"], -4)
+
+        res = self.friend_group_delete(username, token, "1")
+        self.assertEqual(res.json()["code"], 0)
 
 
     # nzh code
