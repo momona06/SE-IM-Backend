@@ -164,7 +164,8 @@ def user_register(request: HttpRequest):
                 print("before" + str(friend_list_tem == [[]]))
                 friend_list = FriendList(user_name=username, group_list=group_list, friend_list=friend_list_tem)
                 friend_list.save()
-                print("after" + str(friend_list.friend_list == [[]]))
+                new_list = FriendList.objects.get(user_name=username).friend_list
+                print("after" + new_list)
                 print("eeee:" + str(friend_list.friend_list))
 
                 add_list = AddList(user_name=username, reply_list=list(), reply_answer=list(), reply_ensure=list(),
