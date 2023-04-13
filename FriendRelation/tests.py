@@ -66,6 +66,12 @@ class FriendRelationTest(TestCase):
 
 
         group_list = FriendList.objects.get(user_name=username).group_list
+
+        print("group print start in test")
+        for i in group_list:
+            print(i)
+        print("end")
+
         self.assertTrue(fgroup_name in group_list)
 
 
