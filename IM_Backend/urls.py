@@ -1,4 +1,4 @@
-"""DjangoHW URL Configuration
+"""IM_Backend URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/4.1/topics/http/urls/
@@ -17,5 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('', include("UserManage.urls")),
+    path('user/', include("UserManage.urls")),
+    path('friend/', include("FriendRelation.urls")),
+    path('chat/', include("Chat.urls"))
 ]

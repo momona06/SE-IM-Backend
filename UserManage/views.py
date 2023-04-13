@@ -3,13 +3,14 @@ import re
 import random
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
-from UserManage.models import IM_User, Token_Poll, create_im_user
-from django.contrib.auth.models import User
-from utils.utils_request import BAD_METHOD, request_failed, return_field, request_success_M, request_failed_M
-from utils.utils_require import MAX_CHAR_LENGTH, CheckRequire, require
-from utils.utils_time import get_timestamp
 
+from FriendRelation.models import FriendList, AddList
+from utils.utils_request import BAD_METHOD
 from django.contrib.auth import authenticate, get_user_model
+
+from django.contrib.auth.models import User
+from UserManage.models import IMUser, TokenPoll, CreateIMUser
+
 
 def revise(req: HttpRequest):
     if req.method == "PUT":
@@ -28,7 +29,7 @@ def revise(req: HttpRequest):
         else:
             user_model = get_user_model()
             user_rev = user_model.objects.get(username=username)
-            im_user = IM_User.objects.filter(user=user_rev).first()
+            im_user = IMUser.objects.filter(user=user_rev).first()
             if token != im_user.token:
                 return JsonResponse({
                     "code": -2,
@@ -55,6 +56,7 @@ def revise(req: HttpRequest):
     else:
         return BAD_METHOD
 
+
 def logout(req: HttpRequest):
     if req.method == "DELETE":
         body = json.loads(req.body.decode("utf-8"))
@@ -62,32 +64,27 @@ def logout(req: HttpRequest):
         token = str(body["token"])
         user_model = get_user_model()
         user = user_model.objects.get(username=username)
-        im_user = IM_User.objects.filter(user=user).first()
-        if im_user.is_login == False:
-            return JsonResponse({
-                "code": -2,
-                "info": "User Not Login"
-            })
-        else:
-            if im_user.token == token:
-                im_user.is_login = False
-                poll_token = Token_Poll.objects.filter(token=token).first()
-                poll_token.delete()
-                #revise
-                im_user.save()
-                return JsonResponse({
-                    "code": 0,
-                    "info": "Logout Succeed"
-                })
+        im_user = IMUser.objects.filter(user=user).first()
 
-            else:
-                return JsonResponse({
-                    "code": -1,
-                    "info": "Token Error"
-                })
+
+        if im_user.token == token:
+            poll_token = TokenPoll.objects.filter(token=token).first()
+            poll_token.delete()
+            im_user.save()
+            return JsonResponse({
+                "code": 0,
+                "info": "Logout Succeed"
+            })
+
+        else:
+            return JsonResponse({
+                "code": -1,
+                "info": "Token Error"
+            })
 
     else:
         return BAD_METHOD
+
 
 def cancel(req: HttpRequest):
     if req.method == "DELETE":
@@ -96,7 +93,7 @@ def cancel(req: HttpRequest):
         input_password = str(body["input_password"])
         user = authenticate(username=username, password=input_password)
         if user is not None:
-            user_del = IM_User.objects.get(user=user)
+            user_del = IMUser.objects.get(user=user)
             user_del.delete()
             user_model = get_user_model()
             user = user_model.objects.get(username=username)
@@ -107,6 +104,7 @@ def cancel(req: HttpRequest):
                 "info": "User Canceled"
             })
         else:
+
             return JsonResponse({
                 "code": -1,
                 "info": "User not Exists"
@@ -116,25 +114,24 @@ def cancel(req: HttpRequest):
         return BAD_METHOD
 
 
-
-
 '''
 nzh code
 '''
 
+
 def check_user_data_valid(username=None, password=None):
     pattern = r'^[a-zA-Z0-9]{6,20}$'
-    if not username is None:
+    if username is not None:
         if not re.match(pattern, username):
             return False
-    if not password is None:
+    if password is not None:
         if not re.match(pattern, password):
             return False
     return True
 
 
 def check_email_valid(email):
-    pattern = r'^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    pattern = r'^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,5}$'
     if re.match(pattern, email):
         return True
     else:
@@ -143,7 +140,7 @@ def check_email_valid(email):
 
 def user_register(request: HttpRequest):
     if request.method == 'POST':
-        try:
+        # try:
             body = json.loads(request.body.decode("utf-8"))
             username = str(body["username"])
             password = str(body["password"])
@@ -154,12 +151,21 @@ def user_register(request: HttpRequest):
 
                 # unique
                 if user is not None:
-                    return JsonResponse({"code": -3, "info": "User already exists", })
+                    return JsonResponse({"code": -3, "info": "User already exists"})
 
                 tem_user = User.objects.create_user(username=username, password=password)
 
-                tem_im_user = create_im_user(tem_user, get_new_token(), False)
+                tem_im_user = CreateIMUser(tem_user, get_new_token())
                 tem_im_user.save()
+
+                group = ['default']
+                friend_list = FriendList(user_name=username, group_list=group, friend_list=list())
+                friend_list.save()
+
+                add_list = AddList(user_name=username,
+                                   reply_list=list(), reply_answer=list(), reply_ensure=list(),
+                                   apply_list=list(), apply_answer=list(), apply_ensure=list())
+                add_list.save()
 
                 return JsonResponse({
                     "code": 0,
@@ -170,12 +176,12 @@ def user_register(request: HttpRequest):
                     "code": -2,
                     "info": "Invalid Userdata",
                 })
-        except Exception as e:
-            print(e)
-            return JsonResponse({
-                "code": -1,
-                "info": "Unexpected error"
-            })
+        # except Exception as e:
+        #     print(e)
+        #     return JsonResponse({
+        #         "code": -1,
+        #         "info": "Unexpected error"
+        #     })
     else:
         return BAD_METHOD
 
@@ -198,14 +204,14 @@ def user_login_pre_treat(request: HttpRequest):
                     "code": -2,
                     "info": "Invalid Userdata"
                 })
-            return user_login(request,username, password, "username")
+            return user_login(request, username, password, "username")
         elif not email == "":
             if not check_user_data_valid(password=password) or check_email_valid(email):
                 return JsonResponse({
                     "code": -2,
                     "info": "Invalid Userdata"
                 })
-            return user_login(request,email, password, "email")
+            return user_login(request, email, password, "email")
         else:
             return JsonResponse({
                 "code": -1,
@@ -217,11 +223,11 @@ def user_login_pre_treat(request: HttpRequest):
 
 
 def get_new_token():
-    tem_token = random.randint(100_000_000_000,999_999_999_999)
+    tem_token = random.randint(100_000_000_000, 999_999_999_999)
     while True:
-        token_poll = Token_Poll.objects.filter(token=tem_token).first()
+        token_poll = TokenPoll.objects.filter(token=tem_token).first()
         if token_poll is None:
-            Token_Poll.objects.create(token=tem_token)
+            TokenPoll.objects.create(token=tem_token)
             break
     return tem_token
 
@@ -245,26 +251,16 @@ def user_login(request, identity, password, login_filter):
                 tem_user = authenticate(email=identity, password=password)
 
             if tem_user:
-                tem_im_user = IM_User.objects.filter(user=tem_user).first()
+                tem_im_user = IMUser.objects.filter(user=tem_user).first()
                 if tem_im_user is not None:
-                    print(tem_im_user.user.username)
-                    print(tem_im_user.token)
-                    print(tem_im_user.is_login)
-                    if tem_im_user.is_login:
-                        return JsonResponse({
-                        "code": -3,
-                        "info": "User Already Login",
-                        })
-                    else:
-                        tem_im_user.is_login = True
-                        tem_im_user.token = get_new_token()
-                        tem_im_user.save()
+                    tem_im_user.token = get_new_token()
+                    tem_im_user.save()
                 else:
                     return JsonResponse({
                         "code": -1,
                         "info": "Unexpected error"
                     })
-                    # tem_im_user = create_im_user(tem_user,get_new_token(),True)
+                    # tem_im_user = create_im_user(tem_user,get_new_token())
                     # tem_im_user.save()
 
                 return JsonResponse({

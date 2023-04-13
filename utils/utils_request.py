@@ -1,36 +1,28 @@
 from django.http import JsonResponse
 
 
-def request_failed(code, info, status_code=400):
-    return JsonResponse({
-        "code": code,
-        "info": info
-    }, status=status_code)
+# def request_failed(code, info, status_code=400):
+#     return JsonResponse({
+#         "code": code,
+#         "info": info
+#     }, status=status_code)
 
-
-def request_success_M(data={}):
-    return JsonResponse({
-        "code": 0,
-        "info": "Succeed",
-        **data
-    })
-
-
-
-def request_failed_M(data={}):
-    return JsonResponse({
-        "code": -1,
-        "info": "Failed",
-        **data
-    })
 
 def return_field(obj_dict, field_list):
-    for field in field_list:
-        assert field in obj_dict, f"Field `{field}` not found in object."
 
     return {
         k: v for k, v in obj_dict.items()
         if k in field_list
     }
 
-BAD_METHOD = request_failed(-3, "Bad method", 405)
+
+def template_request(code, info, **extra_data):
+    return JsonResponse({
+        "code": code,
+        "info": info,
+        **extra_data
+    })
+
+
+
+BAD_METHOD = template_request(-3, "Bad method")

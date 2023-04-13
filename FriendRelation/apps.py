@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class UsermanageConfig(AppConfig):
+class FriendrelationConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'UserManage'
+    name = 'FriendRelation'
