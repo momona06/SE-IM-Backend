@@ -199,9 +199,9 @@ class FriendConsumer(WebsocketConsumer):
                     applyer_add_list.reply_ensure[index_2 - 1] = True
                     applyer_add_list.save()
 
-                    friend_list = FriendList.objects.get(user_name=username)
-                    friend_list.friend_list[0].append(apply_from)
-                    friend_list.save()
+                    # friend_list = FriendList.objects.get(user_name=username)
+                    # friend_list.friend_list[0].append(apply_from)
+                    # friend_list.save()
 
                     # friend = Friend(user_name=username,
                     #                 friend_name=friend_list.group_list[0],
