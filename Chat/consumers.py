@@ -213,7 +213,7 @@ class FriendConsumer(WebsocketConsumer):
 
             elif function == 'fetchapplylist':
                 add_list = AddList.objects.get(user_name=username)
-                return_field = {}
+                return_field = []
                 flen = len(add_list.apply_list)
                 for li in range(flen):
                     return_field.append(
@@ -223,7 +223,12 @@ class FriendConsumer(WebsocketConsumer):
                             "make_sure": add_list.apply_ensure[li]
                         }
                     )
-                self.send(text_data=json.dumps(return_field))
+                self.send(text_data=json.dumps({
+                            'function': 'applylist',
+                            'applylist': return_field
+                        }
+                    )
+                )
                 # 发送list到client
 
             elif function == 'fetchreceivelist':
@@ -238,7 +243,13 @@ class FriendConsumer(WebsocketConsumer):
                             "make_sure": add_list.reply_ensure[li]
                         }
                     )
-                self.send(text_data=json.dumps(return_field))
+                self.send(text_data=json.dumps(
+                        {
+                            'function': 'receivelist',
+                            'receivelist': return_field
+                        }
+                    )
+                )
                 # 发送list到client
 
             else:
