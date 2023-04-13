@@ -63,9 +63,6 @@ class FriendRelationTest(TestCase):
         res = self.friend_group_create(username, token, fgroup_name)
         self.assertJSONEqual(res.content, {"code": 0, "info": "CreateGroup Succeed"})
         self.assertEqual(res.json()["code"], 0)
-        print("start")
-        print(FriendList.objects.filter(username=username, group_name=fgroup_name))
-        print("end")
 
         group_list = FriendList.objects.get(user_name=username).group_list
         self.assertTrue(fgroup_name in group_list)
