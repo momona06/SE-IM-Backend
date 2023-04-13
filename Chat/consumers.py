@@ -116,12 +116,9 @@ class FriendConsumer(WebsocketConsumer):
         message = json.loads(message['text'])
         direction = message['direction']
 
-
-
         if direction == '/friend/client2server':
             username = message['username']
             function = message['function']
-
 
             user_model = get_user_model()
             user = user_model.objects.get(username=username)
@@ -217,10 +214,16 @@ class FriendConsumer(WebsocketConsumer):
 
             elif function == 'fetchapplylist':
                 add_list = AddList.objects.get(user_name=username)
-                return_field = []
+                return_field = {}
                 flen = len(add_list.apply_list)
                 for li in range(flen):
-                    return_field.append([add_list.apply_list[li], add_list.apply_answer[li], add_list.apply_ensure[li]])
+                    return_field.append(
+                        {
+                            "username": add_list.apply_list[li],
+                            "is_confirmed": add_list.apply_answer[li],
+                            "make_sure": add_list.apply_ensure[li]
+                        }
+                    )
                 self.send(text_data=json.dumps(return_field))
                 # 发送list到client
 
@@ -229,7 +232,13 @@ class FriendConsumer(WebsocketConsumer):
                 return_field = []
                 flen = len(add_list.reply_list)
                 for li in range(flen):
-                    return_field.append([add_list.reply_list[li], add_list.reply_answer[li], add_list.reply_ensure[li]])
+                    return_field.append(
+                        {
+                            "username": add_list.reply_list[li],
+                            "is_confirmed": add_list.reply_answer[li],
+                            "make_sure": add_list.reply_ensure[li]
+                        }
+                    )
                 self.send(text_data=json.dumps(return_field))
                 # 发送list到client
 
