@@ -323,11 +323,11 @@ def check_user(request):
                 })
 
             try:
-                check_user = User.objects.get(username=check_name)
+                check_user_v = User.objects.get(username=check_name)
             except User.DoesNotExist:
                 return JsonResponse({
                     "code": -20,
-                    "info": "User not found"
+                    "info": "Check User not found"
                 })
 
             im_user = IMUser.objects.filter(user=my_user).first()
@@ -342,7 +342,7 @@ def check_user(request):
 
             return JsonResponse({
                 "code": 0,
-                "username": check_user.username,
+                "username": check_user_v.username,
                 "is_friend": is_friend,
                 "info": "User found",
             })
