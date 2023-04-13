@@ -78,33 +78,25 @@ class FriendRelationTest(TestCase):
         self.user_register(username, password)
         res_login = self.user_login(username, password)
         token = res_login.json()["token"]
-        print(1)
         cur_list = []
 
-        print(2)
         self.friend_group_create(username, token, fgroup_name)
 
-        print(3)
         cur_list.append({"groupname": "default", "userlist": []})
 
-        print(4)
         cur_list.append({"groupname": fgroup_name, "userlist": []})
         # flist = FriendList.objects.filter(user_name=username, fgroup_name=fgroup_name).first()
         # 10个名字为数字的用户
 
-        print(5)
         for i in range(10):
-            print("i" + str(i))
             cur_f = str(fname_base + 1)
             self.friend_to_group_add(username, token, cur_f, fgroup_name)
             for dics in cur_list:
                 if dics["groupname"] == fgroup_name:
                     dics["userlist"].append(cur_f)
 
-            print("done")
         res = self.friend_list_get(username, token)
 
-        print("assert")
         self.assertEqual(res.json()["code"], 0)
 
     def test_friend_to_group(self):
