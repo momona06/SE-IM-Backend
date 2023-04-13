@@ -16,9 +16,7 @@ class FriendList(models.Model):
     )
 
     friend_list = ArrayField(
-        ArrayField(
-            models.CharField(max_length=100) # friend_name
-        )
+        models.CharField(max_length=100)
     )
 
 class AddList(models.Model):
