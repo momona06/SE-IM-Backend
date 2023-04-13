@@ -72,6 +72,10 @@ class FriendRelationTest(TestCase):
             print(i)
         print("end")
 
+
+        print("あああ")
+        print("fgroup_name : " + fgroup_name)
+        print("group_list : " + group_list[1])
         self.assertTrue(fgroup_name in group_list)
 
 
