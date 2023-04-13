@@ -148,6 +148,10 @@ def create_friend_group(req: HttpRequest):
                     })
 
             flist.group_list.append(fgroup_name)
+            print("group print start")
+            for i in flist.group_list:
+                print(i)
+            print("end")
             # flist.friend_list.append([])
             flist.save()
 
