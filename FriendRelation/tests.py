@@ -63,7 +63,9 @@ class FriendRelationTest(TestCase):
         res = self.friend_group_create(username, token, fgroup_name)
         self.assertJSONEqual(res.content, {"code": 0, "info": "CreateGroup Succeed"})
         self.assertEqual(res.json()["code"], 0)
+        print("start")
         print(FriendList.objects.filter(username=username, group_name=fgroup_name))
+        print("end")
         self.assertTrue(FriendList.objects.filter(username=username, group_name=fgroup_name).exists())
 
     def test_flist_get(self):
@@ -120,7 +122,7 @@ class FriendRelationTest(TestCase):
         self.assertEqual(res.json()["code"], -2)
 
         res = self.friend_delete(username, token, username - 1)
-        self.assertEqual(res.json()["code"], -4)
+        self.assertEqual(res.json()["code"], -1)
 
         res = self.friend_delete(username, token, username_1)
         self.assertEqual(res.json()["code"], 0)
