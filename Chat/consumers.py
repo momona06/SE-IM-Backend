@@ -165,8 +165,8 @@ class FriendConsumer(WebsocketConsumer):
 
                     # TODO: index_2 大概率bug 思路是倒序获取这个apply_list中username的最新出现index
                     index_2 = len(applyer_add_list.apply_list) - list(reversed(applyer_add_list.apply_list)).index(username)
-                    applyer_add_list.apply_ensure[index_2] = True  #
-                    applyer_add_list.apply_ensure[index_2] = True
+                    applyer_add_list.apply_ensure[index_2 + 1] = True  #
+                    applyer_add_list.apply_ensure[index_2 + 1] = True
                     applyer_add_list.save()
 
                     friend_list = FriendList.objects.get(user_name=username)
@@ -195,8 +195,8 @@ class FriendConsumer(WebsocketConsumer):
 
                     # TODO: index_2 大概率bug 思路是倒序获取这个apply_list中username的最新出现index
                     index_2 = len(applyer_add_list.apply_list) - list(reversed(applyer_add_list.apply_list)).index(username)
-                    applyer_add_list.apply_ensure[index_2] = False
-                    applyer_add_list.reply_ensure[index_1] = True
+                    applyer_add_list.apply_ensure[index_2 + 1] = False
+                    applyer_add_list.reply_ensure[index_2 + 1] = True
                     applyer_add_list.save()
 
                     friend_list = FriendList.objects.get(user_name=username)
