@@ -76,7 +76,7 @@ class FriendRelationTest(TestCase):
         print("あああ")
         print("fgroup_name : " + str(fgroup_name))
         print("group_list : " + group_list[1])
-        self.assertTrue(fgroup_name in group_list)
+        self.assertTrue(str(fgroup_name) in group_list)
 
 
     def test_flist_get(self):
