@@ -103,13 +103,17 @@ class FriendConsumer(WebsocketConsumer):
         # USER_NAME_LIST.append(username)
         CONSUMER2_OBJECT_LIST.append(self)
 
-    def websocket_receive(self, text_data):
+    def websocket_receive(self, message):
         """
         客户端浏览器向服务端发送消息，对应ws.send()
         """
         direction = ''
-        print(text_data)
-        message = json.loads(text_data)
+        print(type(message))
+        print(type(message['text']))
+        print(message['text'])
+        print(message)
+
+        message = json.loads(message['text'])
         direction = message['direction']
 
 
