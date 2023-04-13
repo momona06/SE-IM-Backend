@@ -15,45 +15,53 @@ from FriendRelation.models import FriendList, Friend, AddList
 
 def delete_friend(req: HttpRequest):
     if req.method == "DELETE":
-        body = json.loads(req.body.decode("utf-8"))
-        username = str(body["username"])
-        token = str(body["token"])
-        friend_name = str(body["friend_name"])
-        user_model = get_user_model()
-        user = user_model.objects.filter(username=username).first()
-        im_user = IMUser.objects.filter(user=user).first()
-        if im_user.token != token:
+        try:
+            body = json.loads(req.body.decode("utf-8"))
+            username = str(body["username"])
+            token = str(body["token"])
+            friend_name = str(body["friend_name"])
+            user_model = get_user_model()
+            user = user_model.objects.filter(username=username).first()
+            im_user = IMUser.objects.filter(user=user).first()
+            if im_user.token != token:
+                return JsonResponse({
+                    'code': -2,
+                    'info': "Token Error",
+                })
+
+            friend = Friend.objects.filter(friend_name=friend_name, user_name=username).first()
+
+            if friend is None:
+                return JsonResponse({
+                    'code': -4,
+                    'info': 'Friend Not Exists'
+                })
+
+            flist = FriendList.objects.get(user_name=username)
+            for friend_name in flist.friend_list:
+                if friend.friend_name == friend_name:
+                    friend_name.remove()
+                    break
+            flist.save()
+            friend.delete()
+            # lis = 0
+            # for li, gname in enumerate(flist.group_list):
+            #     if gname == friend.group_name:
+            #         lis = li
+            #         break
+            # flist.friend_list[lis].remove()
+            # flist.save()
             return JsonResponse({
-                'code': -2,
-                'info': "Token Error",
+                'code': 0,
+                'info': "Delete Friend Succeed"
+            })
+        except Exception as e:
+            print(e)
+            return JsonResponse({
+                "code": -100,
+                "info": "Unexpected error"
             })
 
-        friend = Friend.objects.filter(friend_name=friend_name, user_name=username).first()
-
-        if friend is None:
-            return JsonResponse({
-                'code': -4,
-                'info': 'Friend Not Exists'
-            })
-
-        flist = FriendList.objects.get(user_name=username)
-        for friend_name in flist.friend_list:
-            if friend.friend_name == friend_name:
-                friend_name.remove()
-                break
-        flist.save()
-        friend.delete()
-        # lis = 0
-        # for li, gname in enumerate(flist.group_list):
-        #     if gname == friend.group_name:
-        #         lis = li
-        #         break
-        # flist.friend_list[lis].remove()
-        # flist.save()
-        return JsonResponse({
-            'code': 0,
-            'info': "Delete Friend Succeed"
-        })
 
     else:
         return BAD_METHOD
