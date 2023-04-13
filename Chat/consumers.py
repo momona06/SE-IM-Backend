@@ -224,10 +224,10 @@ class FriendConsumer(WebsocketConsumer):
                     # 发送list到client
 
                 else:
-                    self.send(text_data="Unknown Function")
+                    self.send(text_data=function + "Unknown Function")
 
             else:
-                self.send(text_data="Unknown Direction")
+                self.send(text_data=direction + "Unknown Direction")
 
         except Exception as e:
             self.send(text_data="Unexpected Error")
