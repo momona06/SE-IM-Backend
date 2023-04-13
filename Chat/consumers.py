@@ -148,8 +148,8 @@ class FriendConsumer(WebsocketConsumer):
                 receiver_add_list.save()
 
                 # 若receiver在线申请发送到receiver
-                return_field = {"applyer": apply_from}
-                self.send(text_data=json.dumps(return_field))
+                # return_field = {"applyer": apply_from}
+                # self.send(text_data=json.dumps(return_field))
 
             elif function == 'confirm':
                 # 修改数据库
