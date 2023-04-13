@@ -201,8 +201,8 @@ class FriendConsumer(WebsocketConsumer):
                 for li, peo in enumerate(receiver_add_list.reply_list):
                     if peo == apply_from:
                         lis = li
-                receiver_add_list.reply_answer[li] = False  #
-                receiver_add_list.reply_ensure[li] = True
+                receiver_add_list.reply_answer[lis] = False  #
+                receiver_add_list.reply_ensure[lis] = True
                 receiver_add_list.save()
 
                 # TODO: index_2 大概率bug 思路是倒序获取这个apply_list中username的最新出现index
@@ -214,14 +214,14 @@ class FriendConsumer(WebsocketConsumer):
                 applyer_add_list.apply_answer[lis] = False  #
                 applyer_add_list.apply_ensure[lis] = True
                 applyer_add_list.save()
-                    # friend_list = FriendList.objects.get(user_name=username)
-                    # friend_list.friend_list[0].append(apply_from)
-                    # friend_list.save()
+                # friend_list = FriendList.objects.get(user_name=username)
+                # friend_list.friend_list[0].append(apply_from)
+                # friend_list.save()
 
-                    # friend = Friend(user_name=username,
-                    #                 friend_name=friend_list.group_list[0],
-                    #                 friend_list=friend_list)
-                    # friend.save()
+                # friend = Friend(user_name=username,
+                #                 friend_name=friend_list.group_list[0],
+                #                 friend_list=friend_list)
+                # friend.save()
                 # 若applyer在线结果发送到applyer
                 # return_field = {"function": "decline"}
                 # self.send(text_data=json.dumps(return_field))
