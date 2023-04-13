@@ -162,8 +162,9 @@ def user_register(request: HttpRequest):
                 friend_list = FriendList(user_name=username, group_list=group, friend_list=list())
                 friend_list.save()
 
-                add_list = AddList(user_name=username, reply_list=list(), reply_answer=list(), reply_ensure=list(),
-                                   apply_list=list(), apply_answer=list())
+                add_list = AddList(user_name=username,
+                                   reply_list=list(), reply_answer=list(), reply_ensure=list(),
+                                   apply_list=list(), apply_answer=list(), apply_ensure=list())
                 add_list.save()
 
                 return JsonResponse({
