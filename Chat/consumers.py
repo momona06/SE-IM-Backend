@@ -169,14 +169,14 @@ class FriendConsumer(WebsocketConsumer):
                     applyer_add_list.apply_ensure[index_2 - 1] = True
                     applyer_add_list.save()
 
-                    friend_list = FriendList.objects.get(user_name=username)
-                    friend_list.friend_list[0].append(apply_from)
-                    friend_list.save()
-
-                    friend = Friend(user_name=username,
-                                    friend_name=friend_list.group_list[0],
-                                    friend_list=friend_list)
-                    friend.save()
+                    # friend_list = FriendList.objects.get(user_name=username)
+                    # friend_list.friend_list[0].append(apply_from)
+                    # friend_list.save()
+                    #
+                    # friend = Friend(user_name=username,
+                    #                 friend_name=friend_list.group_list[0],
+                    #                 group_name=group)
+                    # friend.save()
                 # 若applyer在线结果发送到applyer
                 # return_field = {"function": "confirm"}
                 # self.send(text_data=json.dumps(return_field))
@@ -203,10 +203,10 @@ class FriendConsumer(WebsocketConsumer):
                     friend_list.friend_list[0].append(apply_from)
                     friend_list.save()
 
-                    friend = Friend(user_name=username,
-                                    friend_name=friend_list.group_list[0],
-                                    friend_list=friend_list)
-                    friend.save()
+                    # friend = Friend(user_name=username,
+                    #                 friend_name=friend_list.group_list[0],
+                    #                 friend_list=friend_list)
+                    # friend.save()
                 # 若applyer在线结果发送到applyer
                 # return_field = {"function": "decline"}
                 # self.send(text_data=json.dumps(return_field))
