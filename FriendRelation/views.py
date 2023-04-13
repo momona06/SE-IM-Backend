@@ -148,10 +148,6 @@ def create_friend_group(req: HttpRequest):
                     })
 
             flist.group_list.append(fgroup_name)
-            print("group print start")
-            for i in flist.group_list:
-                print(i)
-            print("end")
             # flist.friend_list.append([])
             flist.save()
 
@@ -188,17 +184,25 @@ def get_friend_list(req: HttpRequest):
                     'friendlist': []
                 })
 
+            print(1001)
+
             flist = FriendList.objects.get(user_name=username)
 
             return_list = []
+            print(1002)
 
             flist_len = len(flist.group_list)
+            print(1003)
 
             for i in range(flist_len):
+
+                print("views i" + str(i))
                 for friend_name in flist.friend_list[i]:
+                    print("views friend name" + friend_name)
                     friend = Friend.objects.filter(friend_name=friend_name, user_name=username).first()
                     group_name = friend.group_name
                     return_list.append({"username": friend_name, "groupname": group_name})
+                    print("view done")
             return JsonResponse({
                 "code": 0,
                 "info": "Friendlist Get",
