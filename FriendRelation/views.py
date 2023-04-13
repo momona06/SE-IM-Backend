@@ -150,6 +150,7 @@ def create_friend_group(req: HttpRequest):
             flist.group_list.append(fgroup_name)
             # flist.friend_list.append([])
             flist.save()
+
             return JsonResponse({
                 "code": 0,
                 "info": "CreateGroup Succeed"

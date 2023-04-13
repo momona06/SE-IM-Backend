@@ -66,7 +66,10 @@ class FriendRelationTest(TestCase):
         print("start")
         print(FriendList.objects.filter(username=username, group_name=fgroup_name))
         print("end")
-        self.assertTrue(FriendList.objects.filter(username=username, group_name=fgroup_name).exists())
+
+        group_list = FriendList.objects.get(user_name=username).group_list
+        self.assertTrue(fgroup_name in group_list)
+
 
     def test_flist_get(self):
         username = random.randint(100_000_000_000, 999_999_999_999)
