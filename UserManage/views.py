@@ -140,7 +140,7 @@ def check_email_valid(email):
 
 def user_register(request: HttpRequest):
     if request.method == 'POST':
-        try:
+        # try:
             body = json.loads(request.body.decode("utf-8"))
             username = str(body["username"])
             password = str(body["password"])
@@ -158,15 +158,13 @@ def user_register(request: HttpRequest):
                 tem_im_user = CreateIMUser(tem_user, get_new_token())
                 tem_im_user.save()
 
-                group_list = list()
-                group_list.append("default")
-                friend_list_tem = [[]]
-                friend_list = FriendList(user_name=username, group_list=group_list, friend_list=friend_list_tem)
+                group = ['default']
+                friend_list = FriendList(user_name=username, group_list=group, friend_list=list())
                 friend_list.save()
-                new_list = FriendList.objects.get(user_name=username).friend_list
 
-                add_list = AddList(user_name=username, reply_list=list(), reply_answer=list(), reply_ensure=list(),
-                                   apply_list=list(), apply_answer=list())
+                add_list = AddList(user_name=username,
+                                   reply_list=list(), reply_answer=list(), reply_ensure=list(),
+                                   apply_list=list(), apply_answer=list(), apply_ensure=list())
                 add_list.save()
 
                 return JsonResponse({
@@ -178,12 +176,12 @@ def user_register(request: HttpRequest):
                     "code": -2,
                     "info": "Invalid Userdata",
                 })
-        except Exception as e:
-            print(e)
-            return JsonResponse({
-                "code": -1,
-                "info": "Unexpected error"
-            })
+        # except Exception as e:
+        #     print(e)
+        #     return JsonResponse({
+        #         "code": -1,
+        #         "info": "Unexpected error"
+        #     })
     else:
         return BAD_METHOD
 
@@ -255,6 +253,8 @@ def user_login(request, identity, password, login_filter):
             if tem_user:
                 tem_im_user = IMUser.objects.filter(user=tem_user).first()
                 if tem_im_user is not None:
+                    print(tem_im_user.user.username)
+                    print(tem_im_user.token)
                     tem_im_user.token = get_new_token()
                     tem_im_user.save()
                 else:
