@@ -91,7 +91,7 @@ class FriendRelationTest(TestCase):
         self.friend_group_create(username, token, fgroup_name)
         cur_list.append({"groupname": "default", "userlist": []})
         cur_list.append({"groupname": fgroup_name, "userlist": []})
-        flist = FriendList.objects.filter(user_name=username, fgroup_name=fgroup_name).first()
+        # flist = FriendList.objects.filter(user_name=username, fgroup_name=fgroup_name).first()
         # 10个名字为数字的用户
         for i in range(10):
             cur_f = str(fname_base + 1)
