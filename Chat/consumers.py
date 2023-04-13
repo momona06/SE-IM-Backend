@@ -49,7 +49,6 @@ class ChatConsumer(WebsocketConsumer):
         raise StopConsumer()
 
 
-
 # def send(self, text_data=None, bytes_data=None, close=False):
 #     if text_data is not None:
 #         super().send({"type": "websocket.send", "text": text_data})
