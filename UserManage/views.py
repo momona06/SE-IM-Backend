@@ -140,7 +140,7 @@ def check_email_valid(email):
 
 def user_register(request: HttpRequest):
     if request.method == 'POST':
-        try:
+        # try:
             body = json.loads(request.body.decode("utf-8"))
             username = str(body["username"])
             password = str(body["password"])
@@ -174,12 +174,12 @@ def user_register(request: HttpRequest):
                     "code": -2,
                     "info": "Invalid Userdata",
                 })
-        except Exception as e:
-            print(e)
-            return JsonResponse({
-                "code": -1,
-                "info": "Unexpected error"
-            })
+        # except Exception as e:
+        #     print(e)
+        #     return JsonResponse({
+        #         "code": -1,
+        #         "info": "Unexpected error"
+        #     })
     else:
         return BAD_METHOD
 
