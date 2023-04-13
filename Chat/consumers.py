@@ -108,7 +108,7 @@ class FriendConsumer(WebsocketConsumer):
         客户端浏览器向服务端发送消息，对应ws.send()
         """
         direction = ''
-
+        message = json.loads(message)
         direction = message['direction']
 
 
