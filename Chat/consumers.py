@@ -157,17 +157,25 @@ class FriendConsumer(WebsocketConsumer):
                 apply_to = message['to']
                 receiver_add_list = AddList.objects.get(user_name=apply_to)
                 applyer_add_list = AddList.objects.get(user_name=apply_from)
-                sent_boolean, index_1 = check_sent_list(apply_from, receiver_add_list)
-                if sent_boolean and not applyer_add_list.apply_list.count(username) == 0:
-                    receiver_add_list.reply_answer[index_1] = True  #
-                    receiver_add_list.reply_ensure[index_1] = True
-                    receiver_add_list.save()
+                # sent_boolean, index_1 = check_sent_list(apply_from, receiver_add_list)
+                # if sent_boolean and not applyer_add_list.apply_list.count(username) == 0:
+                lis = 0
+                for li, peo in enumerate(receiver_add_list.reply_list):
+                    if peo == apply_from:
+                        lis = li
+                receiver_add_list.reply_answer[li] = True  #
+                receiver_add_list.reply_ensure[li] = True
+                receiver_add_list.save()
 
                     # TODO: index_2 大概率bug 思路是倒序获取这个apply_list中username的最新出现index
-                    index_2 = len(applyer_add_list.apply_list) - list(reversed(applyer_add_list.apply_list)).index(username)
-                    applyer_add_list.apply_ensure[index_2 - 1] = True  #
-                    applyer_add_list.apply_ensure[index_2 - 1] = True
-                    applyer_add_list.save()
+                #index_2 = len(applyer_add_list.apply_list) - list(reversed(applyer_add_list.apply_list)).index(username)
+                lis = 0
+                for li, peo in enumerate(applyer_add_list.apply_list):
+                    if peo == apply_from:
+                        lis = li
+                applyer_add_list.apply_answer[lis] = True  #
+                applyer_add_list.apply_ensure[lis] = True
+                applyer_add_list.save()
 
                     # friend_list = FriendList.objects.get(user_name=username)
                     # friend_list.friend_list[0].append(apply_from)
@@ -185,20 +193,27 @@ class FriendConsumer(WebsocketConsumer):
                 # 修改数据库
                 apply_from = message['from']
                 apply_to = message['to']
-                user_add_list = AddList.objects.get(user_name=apply_to)
+                receiver_add_list = AddList.objects.get(user_name=apply_to)
                 applyer_add_list = AddList.objects.get(user_name=apply_from)
-                sent_boolean, index_1 = check_sent_list(apply_from, user_add_list)
-                if sent_boolean and not applyer_add_list.apply_list.count(username) == 0:
-                    user_add_list.reply_answer[index_1] = False
-                    user_add_list.reply_ensure[index_1] = True
-                    user_add_list.save()
+                # sent_boolean, index_1 = check_sent_list(apply_from, receiver_add_list)
+                # if sent_boolean and not applyer_add_list.apply_list.count(username) == 0:
+                lis = 0
+                for li, peo in enumerate(receiver_add_list.reply_list):
+                    if peo == apply_from:
+                        lis = li
+                receiver_add_list.reply_answer[li] = False  #
+                receiver_add_list.reply_ensure[li] = True
+                receiver_add_list.save()
 
-                    # TODO: index_2 大概率bug 思路是倒序获取这个apply_list中username的最新出现index
-                    index_2 = len(applyer_add_list.apply_list) - list(reversed(applyer_add_list.apply_list)).index(username)
-                    applyer_add_list.apply_ensure[index_2 - 1] = False
-                    applyer_add_list.reply_ensure[index_2 - 1] = True
-                    applyer_add_list.save()
-
+                # TODO: index_2 大概率bug 思路是倒序获取这个apply_list中username的最新出现index
+                # index_2 = len(applyer_add_list.apply_list) - list(reversed(applyer_add_list.apply_list)).index(username)
+                lis = 0
+                for li, peo in enumerate(applyer_add_list.apply_list):
+                    if peo == apply_from:
+                        lis = li
+                applyer_add_list.apply_answer[lis] = False  #
+                applyer_add_list.apply_ensure[lis] = True
+                applyer_add_list.save()
                     # friend_list = FriendList.objects.get(user_name=username)
                     # friend_list.friend_list[0].append(apply_from)
                     # friend_list.save()
