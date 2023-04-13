@@ -121,8 +121,7 @@ class FriendConsumer(WebsocketConsumer):
         if direction == '/friend/client2server':
             username = message['username']
             function = message['function']
-            apply_from = message['from']
-            apply_to = message['to']
+
 
             user_model = get_user_model()
             user = user_model.objects.get(username=username)
@@ -130,6 +129,8 @@ class FriendConsumer(WebsocketConsumer):
 
             if function == 'apply':
                 # 修改数据库
+                apply_from = message['from']
+                apply_to = message['to']
                 applyer_add_list = AddList.objects.get(user_name=apply_from)
                 receiver_add_list = AddList.objects.get(user_name=apply_to)
                 '''
@@ -156,6 +157,8 @@ class FriendConsumer(WebsocketConsumer):
 
             elif function == 'confirm':
                 # 修改数据库
+                apply_from = message['from']
+                apply_to = message['to']
                 receiver_add_list = AddList.objects.get(user_name=apply_to)
                 applyer_add_list = AddList.objects.get(user_name=apply_from)
                 sent_boolean, index_1 = check_sent_list(apply_from, receiver_add_list)
@@ -184,6 +187,8 @@ class FriendConsumer(WebsocketConsumer):
 
             elif function == 'decline':
                 # 修改数据库
+                apply_from = message['from']
+                apply_to = message['to']
                 user_add_list = AddList.objects.get(user_name=apply_to)
                 applyer_add_list = AddList.objects.get(user_name=apply_from)
                 sent_boolean, index_1 = check_sent_list(apply_from, user_add_list)
