@@ -100,6 +100,8 @@ def delete_friend_group(req: HttpRequest):
             empty = True
             for friend_name in flist.friend_list:
                 friend = Friend.objects.filter(friend_name=friend_name,user_name=username).first()
+                if friend is None :
+                    break
                 if friend.group_name == fgroup_name:
                     empty = False
                     break
