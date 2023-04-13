@@ -171,7 +171,7 @@ class FriendConsumer(WebsocketConsumer):
                 #index_2 = len(applyer_add_list.apply_list) - list(reversed(applyer_add_list.apply_list)).index(username)
                 lis = 0
                 for li, peo in enumerate(applyer_add_list.apply_list):
-                    if peo == apply_from:
+                    if peo == apply_to:
                         lis = li
                 applyer_add_list.apply_answer[lis] = True  #
                 applyer_add_list.apply_ensure[lis] = True
@@ -209,7 +209,7 @@ class FriendConsumer(WebsocketConsumer):
                 # index_2 = len(applyer_add_list.apply_list) - list(reversed(applyer_add_list.apply_list)).index(username)
                 lis = 0
                 for li, peo in enumerate(applyer_add_list.apply_list):
-                    if peo == apply_from:
+                    if peo == apply_to:
                         lis = li
                 applyer_add_list.apply_answer[lis] = False  #
                 applyer_add_list.apply_ensure[lis] = True
