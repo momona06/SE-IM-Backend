@@ -53,14 +53,55 @@ class FriendRelationTest(TestCase):
         return self.client.delete("/friend/deletefgroup", data=payload, content_type="application/json")
 
 
-    def test_fgroup_add(self):
-        pass
+    def test_fgroup_create(self):
+        username = random.randint(100_000_000_000, 999_999_999_999)
+        password = random.randint(100_000_000_000, 999_999_999_999)
+        fgroup_name = random.randint(100_000_000_000, 999_999_999_999)
+
+        self.user_register(username, password)
+        res_login = self.user_login(username, password)
+
+        token = res_login.json()["token"]
+        res = self.friend_group_create(username, token, fgroup_name)
+        self.assertJSONEqual(res.content, {"code": 0, "info": "CreateGroup Succeed"})
+        self.assertEqual(res.json()["code"], 0)
+        self.assertTrue(FriendList.objects.filter(username=username, group_name=fgroup_name).exists())
 
     def test_flist_get(self):
-        pass
+        username = random.randint(100_000_000_000, 999_999_999_999)
+        password = random.randint(100_000_000_000, 999_999_999_999)
+        fgroup_name = random.randint(100_000_000_000, 999_999_999_999)
+        fname_base = random.randint(100_000_000_000, 999_000_000_000)
+        self.user_register(username, password)
+        res_login = self.user_login(username, password)
+        token = res_login.json()["token"]
+        cur_list = []
+        self.friend_group_create(username, token, fgroup_name)
+        cur_list.append({"groupname":"default","userlist":[]})
+        cur_list.append({"groupname":fgroup_name,"userlist":[]})
+        flist = FriendList.objects.filter(user_name=username,fgroup_name=fgroup_name).first()
+        #10个名字为数字的用户
+        for i in range(10):
+            cur_f = str(fname_base+1)
+            self.friend_to_group_add(username,token,cur_f,fgroup_name)
+            for dics in cur_list:
+                if dics["groupname"] == fgroup_name:
+                    dics["userlist"].append(cur_f)
+        res = self.friend_list_get(username,token)
+        self.assertJSONEqual(res.content, {"code": 0, "info": "Friendlist get","friendlist":cur_list})
 
     def test_friend_to_group(self):
-        pass
+        username = random.randint(100_000_000_000, 999_999_999_999)
+        password = random.randint(100_000_000_000, 999_999_999_999)
+        fgroup_name = random.randint(100_000_000_000, 999_999_999_999)
+        fname_base = random.randint(100_000_000_000, 999_000_000_000)
+        self.user_register(username, password)
+        res_login = self.user_login(username, password)
+        token = res_login.json()["token"]
+        self.friend_group_create(username, token, fgroup_name)
+        res = self.friend_to_group_add(username,token,fname_base,fgroup_name)
+        self.assertJSONEqual(res.content, {"code": 0, "info": "AddGroup Succeed"})
+
 
     def test_delete_friend(self):
         username = random.randint(100_000_000_000, 999_999_999_999)
