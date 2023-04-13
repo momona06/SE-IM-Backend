@@ -197,7 +197,7 @@ def get_friend_list(req: HttpRequest):
             for i in range(flist_len):
 
                 print("views i" + str(i))
-                for friend_name in flist.friend_list[i]:
+                for friend_name in flist.friend_list:
                     print("views friend name" + friend_name)
                     friend = Friend.objects.filter(friend_name=friend_name, user_name=username).first()
                     group_name = friend.group_name
