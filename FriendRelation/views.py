@@ -297,7 +297,11 @@ def check_user(request):
 
             im_user = IMUser.objects.filter(user=my_user).first()
 
-            token_check_http(im_user.token, token)
+            if im_user.token != token:
+                return JsonResponse({
+                    'code': -2,
+                    'info': "Token Error",
+                })
 
             is_friend = checkFriendRelation(my_username, check_name)
 
