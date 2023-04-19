@@ -80,6 +80,36 @@ def check_sent_list(other_name, user_add_list):
     return untreated, index
 
 
+def modify_add_request_list_with_username(other_username, add_list, answer, mode = 0):
+    """
+    mode = 0 : add_list.reply 从addlist的
+    mode = 1 : add_list.apply
+    """
+    index = search_ensure_false_request_index(other_username, add_list, mode=mode)
+    if index == -1:
+        return False
+    if mode == 0:
+        add_list.reply_answer[index] = answer  #
+        add_list.reply_ensure[index] = True
+    elif mode == 1:
+        add_list.apply_answer[index] = answer  #
+        add_list.apply_ensure[index] = True
+    add_list.save()
+    return True
+
+
+def search_ensure_false_request_index(other_username, add_list, mode = 0):
+    if mode == 0:
+        for li, peo in enumerate(add_list.reply_list):
+            if peo == other_username and not add_list.reply_ensure[li]:
+                return li
+    elif mode == 1:
+        for li, peo in enumerate(add_list.apply_list):
+            if peo == other_username and not add_list.apply_ensure[li]:
+                return li
+    return -1
+
+
 class FriendConsumer(WebsocketConsumer):
     # self看作当前触发事件的客户端
 
@@ -129,27 +159,28 @@ class FriendConsumer(WebsocketConsumer):
                 apply_to = message['to']
                 applyer_add_list = AddList.objects.get(user_name=apply_from)
                 receiver_add_list = AddList.objects.get(user_name=apply_to)
+
                 '''
                 确保之前发送的申请被回复前不能再发送申请
                 '''
-                # sent_boolean = self.check_sent_list(username, receiver_add_list)[0]
-                #
-                # if sent_boolean:
-                #     self.send(text_data="Has Been Sent")
-                # else:
-                applyer_add_list.apply_list.append(apply_to)
-                applyer_add_list.apply_answer.append(False)
-                applyer_add_list.apply_ensure.append(False)
-                applyer_add_list.save()
 
-                receiver_add_list.reply_list.append(apply_from)
-                receiver_add_list.reply_answer.append(False)
-                receiver_add_list.reply_ensure.append(False)
-                receiver_add_list.save()
 
-                # 若receiver在线申请发送到receiver
-                # return_field = {"applyer": apply_from}
-                # self.send(text_data=json.dumps(return_field))
+                if not search_ensure_false_request_index(apply_from, receiver_add_list, mode=0)==-1:
+                     self.send(text_data="Has Been Sent")
+                else:
+                    applyer_add_list.apply_list.append(apply_to)
+                    applyer_add_list.apply_answer.append(False)
+                    applyer_add_list.apply_ensure.append(False)
+                    applyer_add_list.save()
+
+                    receiver_add_list.reply_list.append(apply_from)
+                    receiver_add_list.reply_answer.append(False)
+                    receiver_add_list.reply_ensure.append(False)
+                    receiver_add_list.save()
+
+                    # 若receiver在线申请发送到receiver
+                    # return_field = {"applyer": apply_from}
+                    # self.send(text_data=json.dumps(return_field))
 
             elif function == 'confirm':
                 # 修改数据库
@@ -159,32 +190,18 @@ class FriendConsumer(WebsocketConsumer):
                 applyer_add_list = AddList.objects.get(user_name=apply_from)
                 # sent_boolean, index_1 = check_sent_list(apply_from, receiver_add_list)
                 # if sent_boolean and not applyer_add_list.apply_list.count(username) == 0:
-                lis = 0
-                for li, peo in enumerate(receiver_add_list.reply_list):
-                    if peo == apply_from:
-                        lis = li
-                receiver_add_list.reply_answer[li] = True  #
-                receiver_add_list.reply_ensure[li] = True
-                receiver_add_list.save()
 
-                    # TODO: index_2 大概率bug 思路是倒序获取这个apply_list中username的最新出现index
-                #index_2 = len(applyer_add_list.apply_list) - list(reversed(applyer_add_list.apply_list)).index(username)
-                lis = 0
-                for li, peo in enumerate(applyer_add_list.apply_list):
-                    if peo == apply_to:
-                        lis = li
-                applyer_add_list.apply_answer[lis] = True  #
-                applyer_add_list.apply_ensure[lis] = True
-                applyer_add_list.save()
+                modify_add_request_list_with_username(apply_from, receiver_add_list, True)
+                modify_add_request_list_with_username(apply_to, applyer_add_list, True, mode=1)
 
-                    # friend_list = FriendList.objects.get(user_name=username)
-                    # friend_list.friend_list[0].append(apply_from)
-                    # friend_list.save()
-                    #
-                    # friend = Friend(user_name=username,
-                    #                 friend_name=friend_list.group_list[0],
-                    #                 group_name=group)
-                    # friend.save()
+                friend_list = FriendList.objects.get(user_name=username)
+                friend_list.friend_list[0].append(apply_from)
+                friend_list.save()
+
+                friend = Friend(user_name=username,
+                                 friend_name=apply_from,
+                                 group_name=friend_list.group_list[0])
+                friend.save()
                 # 若applyer在线结果发送到applyer
                 # return_field = {"function": "confirm"}
                 # self.send(text_data=json.dumps(return_field))
@@ -195,34 +212,10 @@ class FriendConsumer(WebsocketConsumer):
                 apply_to = message['to']
                 receiver_add_list = AddList.objects.get(user_name=apply_to)
                 applyer_add_list = AddList.objects.get(user_name=apply_from)
-                # sent_boolean, index_1 = check_sent_list(apply_from, receiver_add_list)
-                # if sent_boolean and not applyer_add_list.apply_list.count(username) == 0:
-                lis = 0
-                for li, peo in enumerate(receiver_add_list.reply_list):
-                    if peo == apply_from:
-                        lis = li
-                receiver_add_list.reply_answer[lis] = False  #
-                receiver_add_list.reply_ensure[lis] = True
-                receiver_add_list.save()
 
-                # TODO: index_2 大概率bug 思路是倒序获取这个apply_list中username的最新出现index
-                # index_2 = len(applyer_add_list.apply_list) - list(reversed(applyer_add_list.apply_list)).index(username)
-                lis = 0
-                for li, peo in enumerate(applyer_add_list.apply_list):
-                    if peo == apply_to:
-                        lis = li
-                applyer_add_list.apply_answer[lis] = False  #
-                applyer_add_list.apply_ensure[lis] = True
-                applyer_add_list.save()
-                # friend_list = FriendList.objects.get(user_name=username)
-                # friend_list.friend_list[0].append(apply_from)
-                # friend_list.save()
+                modify_add_request_list_with_username(apply_from, receiver_add_list, False)
+                modify_add_request_list_with_username(apply_to, applyer_add_list, False, mode=1)
 
-                # friend = Friend(user_name=username,
-                #                 friend_name=friend_list.group_list[0],
-                #                 friend_list=friend_list)
-                # friend.save()
-                # 若applyer在线结果发送到applyer
                 # return_field = {"function": "decline"}
                 # self.send(text_data=json.dumps(return_field))
 
@@ -272,8 +265,6 @@ class FriendConsumer(WebsocketConsumer):
 
         else:
             self.send(text_data=direction + "Unknown Direction")
-
-
 
     def websocket_disconnect(self, message):
         """
