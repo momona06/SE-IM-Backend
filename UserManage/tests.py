@@ -155,4 +155,4 @@ class UserManageTest(TestCase):
         email="zhoujin@mails.tsinghua.edu.cn"
         res= self.userSendEmail(email)
         #res = self.userBindEmail(email,res_sms_code,username)
-        self.assertJSONEqual(res.json()["code"],0)
+        self.assertEqual(res.json()["code"],0)
