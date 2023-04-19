@@ -206,7 +206,7 @@ def user_login_pre_treat(request: HttpRequest):
                 })
             return user_login(request, username, password, "username")
         elif not email == "":
-            if not check_user_data_valid(password=password) or check_email_valid(email):
+            if not check_email_valid(email=email):
                 return JsonResponse({
                     "code": -2,
                     "info": "Invalid Userdata"
