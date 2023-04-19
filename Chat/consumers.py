@@ -198,8 +198,8 @@ class FriendConsumer(WebsocketConsumer):
                                  group_name=friend_list.group_list[0])
                 friend.save()
                 # 若applyer在线结果发送到applyer
-                # return_field = {"function": "confirm"}
-                # self.send(text_data=json.dumps(return_field))
+                return_field = {"function": "confirm"}
+                self.send(text_data=json.dumps(return_field))
 
             elif function == 'decline':
                 # 修改数据库
@@ -211,8 +211,8 @@ class FriendConsumer(WebsocketConsumer):
                 modify_add_request_list_with_username(apply_from, receiver_add_list, False)
                 modify_add_request_list_with_username(apply_to, applyer_add_list, False, mode=1)
 
-                # return_field = {"function": "decline"}
-                # self.send(text_data=json.dumps(return_field))
+                return_field = {"function": "decline"}
+                self.send(text_data=json.dumps(return_field))
 
             elif function == 'fetchapplylist':
                 add_list = AddList.objects.get(user_name=username)
