@@ -59,26 +59,6 @@ class ChatConsumer(WebsocketConsumer):
 #     if close:
 #         self.close(close)
 
-def check_sent_list(other_name, user_add_list):
-    """
-    只能通过reply_ensure判断是否处理过
-    param: 另一个人的username, message, 查询者的add_list,
-            mode=0 -> apply_list 实现有问题 默认mode=1
-            mode=1 -> reply_list
-    untreated: 真为有未处理的好友请求
-    index: 未处理好友请求所在列表中的index
-    """
-    time = user_add_list.apply_list.count(other_name)
-    index = -1
-    untreated = False
-    for i in range(0, time):
-        # 0, last_index, index, next_index.....
-        index = user_add_list.reply_list.index(other_name, index + 1)
-        if not user_add_list.reply_ensure[index]:
-            untreated = True
-
-    return untreated, index
-
 
 def modify_add_request_list_with_username(other_username, add_list, answer, mode = 0):
     """
@@ -188,8 +168,7 @@ class FriendConsumer(WebsocketConsumer):
                 apply_to = message['to']
                 receiver_add_list = AddList.objects.get(user_name=apply_to)
                 applyer_add_list = AddList.objects.get(user_name=apply_from)
-                # sent_boolean, index_1 = check_sent_list(apply_from, receiver_add_list)
-                # if sent_boolean and not applyer_add_list.apply_list.count(username) == 0:
+
 
                 modify_add_request_list_with_username(apply_from, receiver_add_list, True)
                 modify_add_request_list_with_username(apply_to, applyer_add_list, True, mode=1)
