@@ -45,7 +45,20 @@ class UserManageTest(TestCase):
             "token": token
         }
         return self.client.put("/user/revise", data=payload, content_type="application/json")
-
+    
+    def userSendEmail(self,email):
+        payload = {
+            "email":email
+        }
+        return self.client.post("/user/send_email", data=payload, content_type="application/json")
+    
+    def userBindEmail(self,email,code,username):
+        payload = {
+            "email":email,
+            "code":code,
+            "username":username
+        }
+        return self.client.post("/user/email", data=payload, content_type="application/json")
 
     def testRegister(self):
         #username = secrets.token_hex(4)
@@ -134,3 +147,12 @@ class UserManageTest(TestCase):
 
         token = res_lin.json()["token"]
         res_lout = self.userLogout(username, token)
+    
+    def testEmail(self):
+        username = random.randint(100_000_000_000, 999_999_999_999)
+        password = random.randint(100_000_000_000, 999_999_999_999)
+        self.userRegister(username, password)
+        email="zhoujin@mails.tsinghua.edu.cn"
+        res_sms_code = self.userSendEmail(email).json()["sms_code"]
+        res = self.userBindEmail(email,res_sms_code,username)
+        self.assertJSONEqual(res.json()["code"],0)
