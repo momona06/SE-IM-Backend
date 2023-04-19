@@ -32,10 +32,15 @@ class MyConsumerTestCase(TestCase):
         }
         return self.client.post("/user/register", data=payload, content_type="application/json")
 
+    def login(self,username, password, email=""):
+        payload = {
+            "username": username,
+            "password": password,
+            "email": email
+        }
+        return self.client.post("/user/login", data=payload, content_type="application/json")
+
     async def test_consumer(self):
-
-
-
         # 创建一个 WebsocketCommunicator 实例
         communicator = WebsocketCommunicator(ChatConsumer.as_asgi(), "/ws/")
 
