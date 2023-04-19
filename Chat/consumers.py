@@ -62,7 +62,7 @@ class ChatConsumer(WebsocketConsumer):
 
 def modify_add_request_list_with_username(other_username, add_list, answer, mode = 0):
     """
-    mode = 0 : add_list.reply 从addlist的
+    mode = 0 : add_list.reply
     mode = 1 : add_list.apply
     """
     index = search_ensure_false_request_index(other_username, add_list, mode=mode)
@@ -140,13 +140,10 @@ class FriendConsumer(WebsocketConsumer):
                 applyer_add_list = AddList.objects.get(user_name=apply_from)
                 receiver_add_list = AddList.objects.get(user_name=apply_to)
 
-                '''
-                确保之前发送的申请被回复前不能再发送申请
-                '''
-
-
-                if not search_ensure_false_request_index(apply_from, receiver_add_list, mode=0)==-1:
-                     self.send(text_data="Has Been Sent")
+                if not search_ensure_false_request_index(apply_to, applyer_add_list, mode=1)==-1:
+                    # 确保被回复前不能重复发送
+                    # mode=1意为在applyer_add_list.applylist中寻找apply_to
+                    self.send(text_data="Has Been Sent")
                 else:
                     applyer_add_list.apply_list.append(apply_to)
                     applyer_add_list.apply_answer.append(False)
@@ -159,8 +156,27 @@ class FriendConsumer(WebsocketConsumer):
                     receiver_add_list.save()
 
                     # 若receiver在线申请发送到receiver
-                    # return_field = {"applyer": apply_from}
-                    # self.send(text_data=json.dumps(return_field))
+                    return_field = {"applyer": apply_from}
+                    self.send(text_data=json.dumps(return_field))
+
+                    add_list = AddList.objects.get(user_name=username)
+                    return_field = []
+                    flen = len(add_list.apply_list)
+                    for li in range(flen):
+                        return_field.append(
+                            {
+                                "username": add_list.apply_list[li],
+                                "is_confirmed": add_list.apply_answer[li],
+                                "make_sure": add_list.apply_ensure[li]
+                            }
+                        )
+                    self.send(text_data=json.dumps(
+                        {
+                            'function': 'applylist',
+                            'applylist': return_field
+                        }
+                    )
+                    )
 
             elif function == 'confirm':
                 # 修改数据库
