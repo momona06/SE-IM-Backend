@@ -14,8 +14,28 @@ from selenium.webdriver.support.wait import WebDriverWait
 from consumers import ChatConsumer
 
 class MyConsumerTestCase(TestCase):
+    def __init__(self):
+        super().__init__()
+        username_0 = "test00"
+        password_0 = "123456"
+        username_1 = "test01"
+        password_1 = "123456"
 
-    async def test_my_consumer(self):
+        self.register(username_0,password_0)
+        self.register(username_1,password_1)
+
+
+    def register(self, username, password):
+        payload = {
+            "username": username,
+            "password": password
+        }
+        return self.client.post("/user/register", data=payload, content_type="application/json")
+
+    async def test_consumer(self):
+
+
+
         # 创建一个 WebsocketCommunicator 实例
         communicator = WebsocketCommunicator(ChatConsumer.as_asgi(), "/ws/")
 
