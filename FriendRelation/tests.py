@@ -8,10 +8,11 @@ from django.contrib.auth.models import User
 from UserManage.models import IMUser
 from FriendRelation.models import Friend, FriendList
 
-
 class FriendRelationTest(TestCase):
-    username = "test00"
-    password = "123456"
+    def __init__(self, methodName: str = ...):
+        super().__init__(methodName)
+        self.username = "test00"
+        self.password = "123456"
 
 
     def friend_group_create(self, username, token, fgroup_name):
