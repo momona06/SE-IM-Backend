@@ -83,14 +83,16 @@ class FriendRelationTest(TestCase):
 
 
     def test_flist_get(self):
-        fgroup_name = random.randint(100_000_000_000, 999_999_999_999)
-        fname_base = random.randint(100_000_000_000, 999_000_000_000)
-        self.user_register(username, password)
-        res_login = self.user_login(username, password)
+        fgroup_name = "1111"
+        fname_base = "999999"
+
+        self.user_cancel(self.username,self.password)
+        self.user_register(self.username, self.password)
+        res_login = self.user_login(self.username, self.password)
         token = res_login.json()["token"]
         cur_list = []
 
-        self.friend_group_create(username, token, fgroup_name)
+        self.friend_group_create(self.username, token, fgroup_name)
 
         cur_list.append({"groupname": "default", "userlist": []})
 
@@ -100,12 +102,12 @@ class FriendRelationTest(TestCase):
 
         for i in range(10):
             cur_f = str(fname_base + 1)
-            self.friend_to_group_add(username, token, cur_f, fgroup_name)
+            self.friend_to_group_add(self.username, token, cur_f, fgroup_name)
             for dics in cur_list:
                 if dics["groupname"] == fgroup_name:
                     dics["userlist"].append(cur_f)
 
-        res = self.friend_list_get(username, token)
+        res = self.friend_list_get(self.username, token)
 
         self.assertEqual(res.json()["code"], 0)
 
