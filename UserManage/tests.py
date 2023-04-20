@@ -113,29 +113,28 @@ class UserManageTest(TestCase):
     def testRevise(self):
         #username = secrets.token_hex(10)
         #password = secrets.token_hex(10)
-        username = random.randint(100_000_000_000, 999_999_999_999)
-        password = random.randint(100_000_000_000, 999_999_999_999)
 
-        input_password = password
-        res_reg = self.userRegister(username, password)
-        res_lin = self.userLogin(username, password)
+        input_password = self.password
+        res_reg = self.userRegister(self.username, self.password)
+        res_lin = self.userLogin(self.username, self.password)
         self.assertEqual(res_reg.json()["code"], 0)
         self.assertEqual(res_lin.json()["code"], 0)
 
         user_model = get_user_model()
-        self.assertTrue(user_model.objects.filter(username=username).exists())
-        user = user_model.objects.filter(username=username).first()
+        self.assertTrue(user_model.objects.filter(username=self.username).exists())
+        user = user_model.objects.filter(username=self.username).first()
         im_user = IMUser.objects.filter(user=user).first()
 
         token = res_lin.json()['token']
 
         # no email yet
         revise_field_list = ["username", "password"]
-        revise_content_list = [random.randint(100_000_000_000, 999_999_999_999), random.randint(100_000_000_000, 999_999_999_999)]
+        revise_content_list = ["test01", "1234567"]
         #for field, content in zip(revise_field_list, revise_content_list):
-        res_rev = self.userRevise(revise_field_list[1], revise_content_list[1], username, input_password, token)
-            #self.assertEqual(res_rev.json()["code"], 0)
+        res_rev = self.userRevise(revise_field_list[1], revise_content_list[1], self.username, input_password, token)
+        self.assertEqual(res_rev.json()["code"], 0)
             #self.assertEqual(res_rev.json()["info"],"dd")
 
+        self.userRevise(revise_field_list[1], input_password, self.username, revise_content_list[1], token)
         token = res_lin.json()["token"]
-        res_lout = self.userLogout(username, token)
+        res_lout = self.userLogout(self.username, token)
