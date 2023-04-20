@@ -197,36 +197,33 @@ class FriendRelationTest(TestCase):
         return self.client.post("/friend/searchuser", data=payload, content_type="application/json")
 
     def test_check_user(self):
-        username = random.randint(100_000_000_000, 999_999_999_999)
-        password = random.randint(100_000_000_000, 999_999_999_999)
+        username_1 = self.username
 
-        username_1 = username
-        password_1 = random.randint(100_000_000_000, 999_999_999_999)
-
-        self.user_register(username, password)
-        res_login = self.user_login(username, password)
+        self.user_cancel(self.username,self.password)
+        self.user_register(self.username, self.password)
+        res_login = self.user_login(self.username, self.password)
 
         token = res_login.json()["token"]
 
-        res_check = self.user_check(username, username_1, token)
+        res_check = self.user_check(self.username, username_1, token)
         self.assertEqual(res_check.json()["code"], -4)
 
-        username_1 = username + 1
+        username_1 = self.username + "11"
 
-        self.user_register(username_1, password_1)
+        self.user_register(username_1, self.password)
         user_model = get_user_model()
         self.assertTrue(user_model.objects.filter(username=username_1).exists())
 
-        res_check = self.user_check(username, username_1, token)
+        res_check = self.user_check(self.username, username_1, token)
         self.assertEqual(res_check.json()["code"], 0)
 
-        res_check = self.user_check(username - 1, username_1, token)
+        res_check = self.user_check(self.username + "987", username_1, token)
         self.assertEqual(res_check.json()["code"], -3)
 
-        res_check = self.user_check(username, username_1 + 1, token)
+        res_check = self.user_check(self.username, username_1 + "987", token)
         self.assertEqual(res_check.json()["code"], -20)
 
-        res_check = self.user_check(username, username_1, 0)
+        res_check = self.user_check(self.username, username_1, 0)
         self.assertEqual(res_check.json()["code"], -2)
 
     def testSearchUser(self):
