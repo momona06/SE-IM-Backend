@@ -12,6 +12,7 @@ from django.contrib.auth.models import User
 from UserManage.models import IMUser, TokenPoll, CreateIMUser, EmailCode
 from django.core import mail
 
+
 def revise(req: HttpRequest):
     if req.method == "PUT":
         body = json.loads(req.body.decode("utf-8"))
