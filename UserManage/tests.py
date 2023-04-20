@@ -6,11 +6,10 @@ from FriendRelation.models import FriendList
 import json
 import random
 
+PASSWORD = "123456"
+USERNAME = "test00"
+
 class UserManageTest(TestCase):
-    def __init__(self, methodName: str = ...):
-        super().__init__(methodName)
-        self.username = "test00"
-        self.password = "123456"
 
     def userRegister(self, username, password):
         payload = {
@@ -56,14 +55,14 @@ class UserManageTest(TestCase):
         #username = secrets.token_hex(4)
         #password = secrets.token_hex(4)
 
-        self.userCancel(self.username,self.password)
-        res = self.userRegister(self.username, self.password)
+        self.userCancel(USERNAME,PASSWORD)
+        res = self.userRegister(USERNAME, PASSWORD)
 
         self.assertJSONEqual(res.content, {"code": 0, "info": "Register Succeed"})
         self.assertEqual(res.json()["code"], 0)
         user_model = get_user_model()
-        user = user_model.objects.filter(username=self.username).first()
-        self.assertTrue(user_model.objects.filter(username=self.username).exists())
+        user = user_model.objects.filter(username=USERNAME).first()
+        self.assertTrue(user_model.objects.filter(username=USERNAME).exists())
         self.assertTrue(IMUser.objects.filter(user=user).exists())
 
     def testLoginLogout(self):
@@ -71,55 +70,55 @@ class UserManageTest(TestCase):
         #username = secrets.token_hex(10)
         #password = secrets.token_hex(10)
 
-        self.userCancel(self.username,self.password)
-        res_reg = self.userRegister(self.username, self.password)
-        res_lin = self.userLogin(self.username, self.password)
+        self.userCancel(USERNAME,PASSWORD)
+        res_reg = self.userRegister(USERNAME, PASSWORD)
+        res_lin = self.userLogin(USERNAME, PASSWORD)
         self.assertEqual(res_reg.json()["code"], 0)
         self.assertEqual(res_lin.json()["code"], 0)
         user_model = get_user_model()
-        self.assertTrue(user_model.objects.filter(username=self.username).exists())
+        self.assertTrue(user_model.objects.filter(username=USERNAME).exists())
 
-        user = user_model.objects.filter(username=self.username).first()
+        user = user_model.objects.filter(username=USERNAME).first()
         im_user = IMUser.objects.filter(user=user).first()
 
         token = res_lin.json()["token"]
-        res_lout = self.userLogout(self.username, token)
+        res_lout = self.userLogout(USERNAME, token)
         im_user = IMUser.objects.filter(user=user).first()
         self.assertEqual(res_lout.json()["code"], 0)
 
     def testCancel(self):
         #username = secrets.token_hex(10)
         #password = secrets.token_hex(10)
-        self.userCancel(self.username,self.password)
-        input_password = self.password
+        self.userCancel(USERNAME,PASSWORD)
+        input_password = PASSWORD
 
-        res_reg = self.userRegister(self.username, self.password)
-        res_lin = self.userLogin(self.username, self.password)
+        res_reg = self.userRegister(USERNAME, PASSWORD)
+        res_lin = self.userLogin(USERNAME, PASSWORD)
         self.assertEqual(res_lin.json()["code"], 0)
 
         user_model = get_user_model()
-        self.assertTrue(user_model.objects.filter(username=self.username).exists())
-        user = user_model.objects.filter(username=self.username).first()
+        self.assertTrue(user_model.objects.filter(username=USERNAME).exists())
+        user = user_model.objects.filter(username=USERNAME).first()
         im_user = IMUser.objects.filter(user=user).first()
 
 
-        res_cel = self.userCancel(self.username, input_password)
-        self.assertFalse(user_model.objects.filter(username=self.username).exists())
+        res_cel = self.userCancel(USERNAME, input_password)
+        self.assertFalse(user_model.objects.filter(username=USERNAME).exists())
 
 
     def testRevise(self):
         #username = secrets.token_hex(10)
         #password = secrets.token_hex(10)
 
-        input_password = self.password
-        res_reg = self.userRegister(self.username, self.password)
-        res_lin = self.userLogin(self.username, self.password)
+        input_password = PASSWORD
+        res_reg = self.userRegister(USERNAME, PASSWORD)
+        res_lin = self.userLogin(USERNAME, PASSWORD)
         self.assertEqual(res_reg.json()["code"], 0)
         self.assertEqual(res_lin.json()["code"], 0)
 
         user_model = get_user_model()
-        self.assertTrue(user_model.objects.filter(username=self.username).exists())
-        user = user_model.objects.filter(username=self.username).first()
+        self.assertTrue(user_model.objects.filter(username=USERNAME).exists())
+        user = user_model.objects.filter(username=USERNAME).first()
         im_user = IMUser.objects.filter(user=user).first()
 
         token = res_lin.json()['token']
@@ -128,10 +127,10 @@ class UserManageTest(TestCase):
         revise_field_list = ["username", "password"]
         revise_content_list = ["test01", "1234567"]
         #for field, content in zip(revise_field_list, revise_content_list):
-        res_rev = self.userRevise(revise_field_list[1], revise_content_list[1], self.username, input_password, token)
+        res_rev = self.userRevise(revise_field_list[1], revise_content_list[1], USERNAME, input_password, token)
         self.assertEqual(res_rev.json()["code"], 0)
             #self.assertEqual(res_rev.json()["info"],"dd")
 
-        self.userRevise(revise_field_list[1], input_password, self.username, revise_content_list[1], token)
+        self.userRevise(revise_field_list[1], input_password, USERNAME, revise_content_list[1], token)
         token = res_lin.json()["token"]
-        res_lout = self.userLogout(self.username, token)
+        res_lout = self.userLogout(USERNAME, token)
