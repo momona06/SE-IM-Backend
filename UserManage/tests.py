@@ -93,22 +93,21 @@ class UserManageTest(TestCase):
     def testCancel(self):
         #username = secrets.token_hex(10)
         #password = secrets.token_hex(10)
-        username = random.randint(100_000_000_000, 999_999_999_999)
-        password = random.randint(100_000_000_000, 999_999_999_999)
-        input_password = password
+        self.userCancel(self.username,self.password)
+        input_password = self.password
 
-        res_reg = self.userRegister(username, password)
-        res_lin = self.userLogin(username, password)
+        res_reg = self.userRegister(self.username, self.password)
+        res_lin = self.userLogin(self.username, self.password)
         self.assertEqual(res_lin.json()["code"], 0)
 
         user_model = get_user_model()
-        self.assertTrue(user_model.objects.filter(username=username).exists())
-        user = user_model.objects.filter(username=username).first()
+        self.assertTrue(user_model.objects.filter(username=self.username).exists())
+        user = user_model.objects.filter(username=self.username).first()
         im_user = IMUser.objects.filter(user=user).first()
 
 
-        res_cel = self.userCancel(username, input_password)
-        self.assertFalse(user_model.objects.filter(username=username).exists())
+        res_cel = self.userCancel(self.username, input_password)
+        self.assertFalse(user_model.objects.filter(username=self.username).exists())
 
 
     def testRevise(self):
