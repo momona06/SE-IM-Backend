@@ -84,7 +84,7 @@ class FriendRelationTest(TestCase):
 
     def test_flist_get(self):
         fgroup_name = "1111"
-        fname_base = "999999"
+        fname_base = 999999
 
         self.user_cancel(self.username,self.password)
         self.user_register(self.username, self.password)
@@ -112,44 +112,42 @@ class FriendRelationTest(TestCase):
         self.assertEqual(res.json()["code"], 0)
 
     def test_friend_to_group(self):
-        username = random.randint(100_000_000_000, 999_999_999_999)
-        password = random.randint(100_000_000_000, 999_999_999_999)
-        fgroup_name = random.randint(100_000_000_000, 999_999_999_999)
-        fname_base = random.randint(100_000_000_000, 999_000_000_000)
-        self.user_register(username, password)
-        res_login = self.user_login(username, password)
+        fgroup_name = "1111"
+        fname_base = 9999999
+
+        self.user_cancel(self.username,self.password)
+        self.user_register(self.username, self.password)
+        res_login = self.user_login(self.username, self.password)
         token = res_login.json()["token"]
-        self.friend_group_create(username, token, fgroup_name)
-        res = self.friend_to_group_add(username, token, fname_base, fgroup_name)
+        self.friend_group_create(self.username, token, fgroup_name)
+        res = self.friend_to_group_add(self.username, token, fname_base, fgroup_name)
         self.assertJSONEqual(res.content, {"code": 0, "info": "AddGroup Succeed"})
 
     def test_delete_friend(self):
-        username = random.randint(100_000_000_000, 999_999_999_999)
-        password = random.randint(100_000_000_000, 999_999_999_999)
+        username_1 = self.username + str(1)
 
-        username_1 = username + 1
+        self.user_cancel(self.username,self.password)
+        self.user_cancel(username_1,self.password)
+        self.user_register(self.username, self.password)
+        self.user_register(username_1, self.password)
 
-        self.user_register(username, password)
-        self.user_register(username_1, password)
+        token = self.user_login(self.username, self.password).json()["token"]
 
-        token = self.user_login(username, password).json()["token"]
-
-        friend_list = FriendList.objects.get(user_name=username)
-        friend = Friend(user_name=username, friend_name=username_1, group_name=friend_list.group_list[0])
+        friend_list = FriendList.objects.get(user_name=self.username)
+        friend = Friend(user_name=self.username, friend_name=username_1, group_name=friend_list.group_list[0])
         friend.save()
 
-        res = self.friend_delete(username, 0, username_1)
+        res = self.friend_delete(self.username, 0, username_1)
         self.assertEqual(res.json()["code"], -2)
 
-        res = self.friend_delete(username, token, username - 1)
+        res = self.friend_delete(self.username, token, self.username + "2")
         self.assertEqual(res.json()["code"], -1)
 
-        res = self.friend_delete(username, token, username_1)
+        res = self.friend_delete(self.username, token, username_1)
         self.assertEqual(res.json()["code"], 0)
 
     def test_delete_fgroup(self):
-        username = random.randint(100_000_000_000, 999_999_999_999)
-        password = random.randint(100_000_000_000, 999_999_999_999)
+
 
         self.user_register(username, password)
 
