@@ -7,6 +7,14 @@ import json
 import random
 
 class UserManageTest(TestCase):
+    def __init__(self):
+        super().__init__()
+        self.username = "test00"
+        self.password = "123456"
+
+        self.userCancel(self.username,self.password)
+
+
     def userRegister(self, username, password):
         payload = {
             "username": username,
@@ -50,16 +58,15 @@ class UserManageTest(TestCase):
     def testRegister(self):
         #username = secrets.token_hex(4)
         #password = secrets.token_hex(4)
-        username = random.randint(100_000_000_000, 999_999_999_999)
-        password = random.randint(100_000_000_000, 999_999_999_999)
 
-        res = self.userRegister(username, password)
+        self.userCancel(self.username,self.password)
+        res = self.userRegister(self.username, self.password)
 
         self.assertJSONEqual(res.content, {"code": 0, "info": "Register Succeed"})
         self.assertEqual(res.json()["code"], 0)
         user_model = get_user_model()
-        user = user_model.objects.filter(username=username).first()
-        self.assertTrue(user_model.objects.filter(username=username).exists())
+        user = user_model.objects.filter(username=self.username).first()
+        self.assertTrue(user_model.objects.filter(username=self.username).exists())
         self.assertTrue(IMUser.objects.filter(user=user).exists())
 
     def testLoginLogout(self):
