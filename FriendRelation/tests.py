@@ -147,23 +147,22 @@ class FriendRelationTest(TestCase):
         self.assertEqual(res.json()["code"], 0)
 
     def test_delete_fgroup(self):
+        self.user_cancel(self.username,self.password)
+        self.user_register(self.username, self.password)
 
+        token = self.user_login(self.username, self.password).json()["token"]
 
-        self.user_register(username, password)
-
-        token = self.user_login(username, password).json()["token"]
-
-        self.friend_group_create(username, token, "1")
+        self.friend_group_create(self.username, token, "1")
 
         # token fail
-        res = self.friend_group_delete(username, 0, "1")
+        res = self.friend_group_delete(self.username, 0, "1")
         self.assertEqual(res.json()["code"], -2)
 
         #
-        res = self.friend_group_delete(username, token, "2")
+        res = self.friend_group_delete(self.username, token, "2")
         self.assertEqual(res.json()["code"], -4)
 
-        res = self.friend_group_delete(username, token, "1")
+        res = self.friend_group_delete(self.username, token, "1")
         self.assertEqual(res.json()["code"], 0)
 
     # nzh code
