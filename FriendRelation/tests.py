@@ -68,6 +68,7 @@ class FriendRelationTest(TestCase):
     def test_fgroup_create(self):
         fgroup_name = "111"
 
+        self.user_cancel(self.username,self.password)
         self.user_register(self.username, self.password)
         res_login = self.user_login(self.username, self.password)
 
@@ -82,8 +83,6 @@ class FriendRelationTest(TestCase):
 
 
     def test_flist_get(self):
-        username = random.randint(100_000_000_000, 999_999_999_999)
-        password = random.randint(100_000_000_000, 999_999_999_999)
         fgroup_name = random.randint(100_000_000_000, 999_999_999_999)
         fname_base = random.randint(100_000_000_000, 999_000_000_000)
         self.user_register(username, password)
