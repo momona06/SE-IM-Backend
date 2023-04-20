@@ -7,13 +7,8 @@ import json
 import random
 
 class UserManageTest(TestCase):
-    def __init__(self):
-        super().__init__()
-        self.username = "test00"
-        self.password = "123456"
-
-        self.userCancel(self.username,self.password)
-
+    username = "test00"
+    password = "123456"
 
     def userRegister(self, username, password):
         payload = {

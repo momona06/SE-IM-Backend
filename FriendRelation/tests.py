@@ -10,12 +10,9 @@ from FriendRelation.models import Friend, FriendList
 
 
 class FriendRelationTest(TestCase):
-    def __init__(self):
-        super().__init__()
-        self.username = "test00"
-        self.password = "123456"
+    username = "test00"
+    password = "123456"
 
-        self.user_cancel(self.username,self.password)
 
     def friend_group_create(self, username, token, fgroup_name):
         payload = {
