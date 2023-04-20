@@ -15,7 +15,7 @@ class FriendRelationTest(TestCase):
         self.username = "test00"
         self.password = "123456"
 
-        self.userCancel(self.username,self.password)
+        self.user_cancel(self.username,self.password)
 
     def friend_group_create(self, username, token, fgroup_name):
         payload = {
@@ -66,19 +66,17 @@ class FriendRelationTest(TestCase):
         return self.client.delete("/user/cancel", data=payload, content_type="application/json")
 
     def test_fgroup_create(self):
-        username = random.randint(100_000_000_000, 999_999_999_999)
-        password = random.randint(100_000_000_000, 999_999_999_999)
-        fgroup_name = random.randint(100_000_000_000, 999_999_999_999)
+        fgroup_name = "111"
 
-        self.user_register(username, password)
-        res_login = self.user_login(username, password)
+        self.user_register(self.username, self.password)
+        res_login = self.user_login(self.username, self.password)
 
         token = res_login.json()["token"]
-        res = self.friend_group_create(username, token, fgroup_name)
+        res = self.friend_group_create(self.username, token, fgroup_name)
         self.assertJSONEqual(res.content, {"code": 0, "info": "CreateGroup Succeed"})
         self.assertEqual(res.json()["code"], 0)
 
-        group_list = FriendList.objects.get(user_name=username).group_list
+        group_list = FriendList.objects.get(user_name=self.username).group_list
 
         self.assertTrue(str(fgroup_name) in group_list)
 
