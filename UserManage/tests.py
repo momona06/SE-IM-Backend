@@ -73,21 +73,20 @@ class UserManageTest(TestCase):
 
         #username = secrets.token_hex(10)
         #password = secrets.token_hex(10)
-        username = random.randint(100_000_000_000, 999_999_999_999)
-        password = random.randint(100_000_000_000, 999_999_999_999)
 
-        res_reg = self.userRegister(username, password)
-        res_lin = self.userLogin(username, password)
+        self.userCancel(self.username,self.password)
+        res_reg = self.userRegister(self.username, self.password)
+        res_lin = self.userLogin(self.username, self.password)
         self.assertEqual(res_reg.json()["code"], 0)
         self.assertEqual(res_lin.json()["code"], 0)
         user_model = get_user_model()
-        self.assertTrue(user_model.objects.filter(username=username).exists())
+        self.assertTrue(user_model.objects.filter(username=self.username).exists())
 
-        user = user_model.objects.filter(username=username).first()
+        user = user_model.objects.filter(username=self.username).first()
         im_user = IMUser.objects.filter(user=user).first()
 
         token = res_lin.json()["token"]
-        res_lout = self.userLogout(username, token)
+        res_lout = self.userLogout(self.username, token)
         im_user = IMUser.objects.filter(user=user).first()
         self.assertEqual(res_lout.json()["code"], 0)
 
