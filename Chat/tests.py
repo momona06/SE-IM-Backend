@@ -5,7 +5,9 @@ from django.contrib.auth.models import User
 from UserManage.models import IMUser
 from django.test import TestCase
 
-from channels.testing import ChannelsLiveServerTestCase
+from channels.testing import ChannelsLiveServerTestCase, ApplicationCommunicator, WebsocketCommunicator, HttpCommunicator
+
+
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
@@ -13,5 +15,11 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait
 
 
-class ChatTest(ChannelsLiveServerTestCase):
+class ChatAsyncTest(ChannelsLiveServerTestCase):
+    pass
+
+
+
+
+class ChatTest(ApplicationCommunicator):
     pass

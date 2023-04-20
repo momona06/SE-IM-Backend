@@ -1,5 +1,5 @@
 from channels.exceptions import StopConsumer
-from channels.generic.websocket import WebsocketConsumer
+from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
 from pprint import *
 import json
 
@@ -14,50 +14,75 @@ CONSUMER_OBJECT_LIST = []
 CONSUMER2_OBJECT_LIST = []
 USER_NAME_LIST = []
 
-
-class ChatConsumer(WebsocketConsumer):
-
-    def websocket_connect(self, message):
-        """
-        客户端浏览器发来连接请求之后就会被触发
-        """
-
-        # 服务端接收连接，向客户端浏览器发送一个加密字符串
-        self.accept()
-        # 连接成功
-        CONSUMER_OBJECT_LIST.append(self)
-
-    def websocket_receive(self, message):
-        """
-        客户端浏览器向服务端发送消息，此方法自动触发
-        """
-
-        print("接受到消息了", message)
-
-        # 服务端给客户端回一条消息
-        # self.send(text_data=message["text"])
-        for obj in CONSUMER_OBJECT_LIST:
-            obj.send(text_data=message["text"])
-
-    def websocket_disconnect(self, message):
-        """
-        客户端浏览器主动断开连接
-        """
-
-        # 服务端断开连接
-        CONSUMER_OBJECT_LIST.remove(self)
-        raise StopConsumer()
+# chat/consumers.py
 
 
-# def send(self, text_data=None, bytes_data=None, close=False):
-#     if text_data is not None:
-#         super().send({"type": "websocket.send", "text": text_data})
-#     elif bytes_data is not None:
-#         super().send({"type": "websocket.send", "bytes": bytes_data})
-#     else:
-#         raise ValueError("You must pass one of bytes_data or text_data")
-#     if close:
-#         self.close(close)
+
+class ChatConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        # self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
+        # self.room_group_name = "chat_%s" % self.room_name
+        #
+        # # Join room group
+        # await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        pprint(self.scope)
+        await self.accept()
+
+    async def disconnect(self, message):
+        # Leave room group
+        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+
+    # Receive message from WebSocket
+    async def receive(self, message):
+        text_data_json = json.loads(message)
+        message = text_data_json["message"]
+
+        # Send message to room group
+        await self.channel_layer.group_send(
+            self.room_group_name, {"type": "chat_message", "message": message}
+        )
+
+    # Receive message from room group
+    async def chat_message(self, message):
+        message = message["message"]
+
+        # Send message to WebSocket
+        await self.send(text_data=json.dumps({"message": message}))
+
+# class ChatConsumer(WebsocketConsumer):
+#
+#     def websocket_connect(self, message):
+#         """
+#         客户端浏览器发来连接请求之后就会被触发
+#         """
+#
+#         # 服务端接收连接，向客户端浏览器发送一个加密字符串
+#         self.accept()
+#         # 连接成功
+#         CONSUMER_OBJECT_LIST.append(self)
+#
+#     def websocket_receive(self, message):
+#         """
+#         客户端浏览器向服务端发送消息，此方法自动触发
+#         """
+#
+#         print("接受到消息了", message)
+#
+#         # 服务端给客户端回一条消息
+#         # self.send(text_data=message["text"])
+#         for obj in CONSUMER_OBJECT_LIST:
+#             obj.send(text_data=message["text"])
+#
+#     def websocket_disconnect(self, message):
+#         """
+#         客户端浏览器主动断开连接
+#         """
+#
+#         # 服务端断开连接
+#         CONSUMER_OBJECT_LIST.remove(self)
+#         raise StopConsumer()
+
+
 
 def check_sent_list(other_name, user_add_list):
     """
@@ -222,6 +247,7 @@ class FriendConsumer(WebsocketConsumer):
                 #                 friend_name=friend_list.group_list[0],
                 #                 friend_list=friend_list)
                 # friend.save()
+
                 # 若applyer在线结果发送到applyer
                 # return_field = {"function": "decline"}
                 # self.send(text_data=json.dumps(return_field))
