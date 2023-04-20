@@ -11,7 +11,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait
-from consumers import ChatConsumer
+from Chat.consumers import FriendConsumer
 
 class MyConsumerTestCase(TestCase):
     def __init__(self):
@@ -42,7 +42,7 @@ class MyConsumerTestCase(TestCase):
 
     async def test_consumer(self):
         # 创建一个 WebsocketCommunicator 实例
-        communicator = WebsocketCommunicator(ChatConsumer.as_asgi(), "/ws/")
+        communicator = WebsocketCommunicator(FriendConsumer.as_asgi(), "/ws/")
 
         # 连接 WebSocket
         connected, _= await communicator.connect()
