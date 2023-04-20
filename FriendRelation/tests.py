@@ -57,6 +57,14 @@ class FriendRelationTest(TestCase):
         }
         return self.client.delete("/friend/deletefgroup", data=payload, content_type="application/json")
 
+
+    def user_cancel(self, username, input_password):
+        payload = {
+            "username": username,
+            "input_password": input_password
+        }
+        return self.client.delete("/user/cancel", data=payload, content_type="application/json")
+
     def test_fgroup_create(self):
         username = random.randint(100_000_000_000, 999_999_999_999)
         password = random.randint(100_000_000_000, 999_999_999_999)
