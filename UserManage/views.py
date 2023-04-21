@@ -288,7 +288,7 @@ def send_email(request:HttpRequest):
     if request.method == 'GET':
         return HttpResponse("send_email")
     if request.method == 'POST':
-        #try:
+        try:
             body = json.loads(request.body.decode("utf-8"))
             send_list = [] 
             send_list.append(str(body['email']))
@@ -305,12 +305,12 @@ def send_email(request:HttpRequest):
                 "code" : 0,
                 "info" : "验证码已发送"
             })
-        # except Exception as e:
-        #     print(e)
-        #     return JsonResponse({
-        #         "code" : -1,
-        #         "info" : "发送失败"
-        #     })
+        except Exception as e:
+            print(e)
+            return JsonResponse({
+                "code" : -1,
+                "info" : "发送失败"
+            })
 def bind_email(request):
     if request.method == 'GET':
         return HttpResponse('bind_email')
@@ -327,12 +327,12 @@ def bind_email(request):
                 user.save()
                 return JsonResponse({
                     "code": 0,
-                    "info":"successfully bind"
+                    "info":"绑定成功"
                 })                
         except Exception as e:
             print(e)
             return JsonResponse({
                 "code": -1,
-                "info": "Unexpected error"
+                "info": "验证码错误"
             })
         return None
