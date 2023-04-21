@@ -41,10 +41,10 @@ class MyConsumerTestCase(TestCase):
         # 连接 WebSocket
         connected, _= await communicator.connect()
 
-        '''
-        
         # 发送消息到 Consumer
         await communicator.send_json_to({"type": "my_message", "content": "Hello world!"})
+
+        '''
 
         # 接收 Consumer 的响应
         response = await communicator.receive_json_from()
