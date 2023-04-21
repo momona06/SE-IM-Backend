@@ -101,6 +101,9 @@ def search_ensure_false_request_index(other_username, add_list, mode=0):
 
 class FriendConsumer(WebsocketConsumer):
     # self看作当前触发事件的客户端
+    def __init__(self, *args, **kwargs):
+        super().__init__(args, kwargs)
+        self.curuser = None
 
     def websocket_token_check(self, user_token, token):
         if user_token != token:
@@ -115,18 +118,11 @@ class FriendConsumer(WebsocketConsumer):
         # self：连接的客户端的数据结构，可以调用self.send()发送信息
         # self.send()：发送信息到客户端触发onmessage函数，可以发送json信息
         # self.scope: 本次连接的基本信息，dict格式
-
+        self.curuser = self.scope['user'].username
         # 服务端接收连接，向客户端浏览器发送一个加密字符串
         self.accept()
         # USER_NAME_LIST.append(username)
         CONSUMER2_OBJECT_LIST.append(self)
-        # while True:
-        #     time.sleep(2)
-        #     self.send(text_data=json.dumps({
-        #         'code': 200,
-        #         'message': "heartbeat",
-        #         'function': "heartbeat"
-        #     }))
 
     def websocket_receive(self, message):
         """
@@ -202,13 +198,15 @@ class FriendConsumer(WebsocketConsumer):
                                 "make_sure": add_list.apply_ensure[li]
                             }
                         )
-                    self.send(text_data=json.dumps(
-                        {
-                            'function': 'applylist',
-                            'applylist': return_field
-                        }
-                    )
-                    )
+                    for user in CONSUMER2_OBJECT_LIST:
+                        if user.curuser == apply_to:
+                            user.send(text_data=json.dumps(
+                                {
+                                    'function': 'applylist',
+                                    'applylist': return_field
+                                }
+                            )
+                        )
 
             elif function == 'confirm':
                 # 修改数据库
