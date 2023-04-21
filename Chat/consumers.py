@@ -107,6 +107,7 @@ class FriendConsumer(WebsocketConsumer):
         # self.scope: 本次连接的基本信息，dict格式
 
         # 服务端接收连接，向客户端浏览器发送一个加密字符串
+        
         self.accept()
         # USER_NAME_LIST.append(username)
         CONSUMER2_OBJECT_LIST.append(self)
