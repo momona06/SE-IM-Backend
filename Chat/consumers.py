@@ -32,7 +32,8 @@ class ChatConsumer(WebsocketConsumer):
             time.sleep(2)
             self.send(text_data=json.dumps({
                 'code': 200,
-                'message': "heartbeat"
+                'message': "heartbeat",
+                'function': "heartbeat"
             }))
 
     def websocket_receive(self, message):
