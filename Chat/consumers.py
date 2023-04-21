@@ -110,6 +110,13 @@ class FriendConsumer(WebsocketConsumer):
         self.accept()
         # USER_NAME_LIST.append(username)
         CONSUMER2_OBJECT_LIST.append(self)
+        while True:
+            time.sleep(2)
+            self.send(text_data=json.dumps({
+                'code': 200,
+                'message': "heartbeat",
+                'function': "heartbeat"
+            }))
 
     def websocket_receive(self, message):
         """
