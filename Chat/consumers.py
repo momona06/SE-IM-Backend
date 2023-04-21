@@ -13,11 +13,9 @@ from django.contrib.auth import get_user_model, authenticate
 
 # 定义一个列表，用于存放当前在线的用户
 CONSUMER_OBJECT_LIST = []
-
 CONSUMER2_OBJECT_LIST = []
 USER_NAME_LIST = []
 
-# chat/consumers.py
 
 
 # channel: a specific user
@@ -149,13 +147,12 @@ def check_sent_list(other_name, user_add_list):
 
 
 class FriendConsumer(WebsocketConsumer):
-    # self看作当前触发事件的客户端
 
     def websocket_token_check(self, user_token, token):
         if user_token != token:
             self.close()
 
-    def websocket_connect(self, message):
+    def connect(self, message):
         """
         客户端浏览器发来连接请求之后触发，对应ws.onopen()
         """
@@ -166,11 +163,11 @@ class FriendConsumer(WebsocketConsumer):
         # self.scope: 本次连接的基本信息，dict格式
 
         # 服务端接收连接，向客户端浏览器发送一个加密字符串
+        CONSUMER2_OBJECT_LIST.append(self)
         self.accept()
         # USER_NAME_LIST.append(username)
-        CONSUMER2_OBJECT_LIST.append(self)
 
-    def websocket_receive(self, message):
+    def receive(self, message):
         """
         客户端浏览器向服务端发送消息，对应ws.send()
         """
@@ -336,7 +333,7 @@ class FriendConsumer(WebsocketConsumer):
 
 
 
-    def websocket_disconnect(self, message):
+    def disconnect(self, message):
         """
         客户端浏览器主动断开连接，对应ws.onclose()
         """
