@@ -46,6 +46,12 @@ class MyConsumerTestCase(TestCase):
         # 发送消息到 Consumer
         await communicator.send_json_to({"type": "my_message", "content": "Hello world!"})
 
+        response = await communicator.receive_from()
+        assert response == "hello"
+
+        await communicator.disconnect()
+
+
         '''
 
         # 接收 Consumer 的响应
@@ -66,4 +72,4 @@ class MyConsumerTestCase(TestCase):
         '''
 
         # 关闭 WebSocket 连接
-        await communicator.disconnect()
+        # await communicator.disconnect()
