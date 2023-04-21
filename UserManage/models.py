@@ -14,3 +14,7 @@ class IMUser(models.Model):
 
 class TokenPoll(models.Model):
     token = models.CharField(max_length=100)
+
+class EmailCode(models.Model):
+    email = models.EmailField(max_length=50, verbose_name="邮箱")
+    code = models.CharField(max_length=20, verbose_name="验证码")

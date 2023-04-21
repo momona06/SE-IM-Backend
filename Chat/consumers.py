@@ -7,6 +7,7 @@ from UserManage.models import IMUser, TokenPoll
 from FriendRelation.models import FriendList, Friend, AddList
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model, authenticate
+import time
 
 # 定义一个列表，用于存放当前在线的用户
 CONSUMER_OBJECT_LIST = []
@@ -26,6 +27,14 @@ class ChatConsumer(WebsocketConsumer):
         self.accept()
         # 连接成功
         CONSUMER_OBJECT_LIST.append(self)
+
+        # while True:
+        #     time.sleep(2)
+        #     self.send(text_data=json.dumps({
+        #         'code': 200,
+        #         'message': "heartbeat",
+        #         'function': "heartbeat"
+        #     }))
 
     def websocket_receive(self, message):
         """
@@ -108,9 +117,17 @@ class FriendConsumer(WebsocketConsumer):
         # self.scope: 本次连接的基本信息，dict格式
 
         # 服务端接收连接，向客户端浏览器发送一个加密字符串
+
         self.accept()
         # USER_NAME_LIST.append(username)
         CONSUMER2_OBJECT_LIST.append(self)
+        # while True:
+        #     time.sleep(2)
+        #     self.send(text_data=json.dumps({
+        #         'code': 200,
+        #         'message': "heartbeat",
+        #         'function': "heartbeat"
+        #     }))
 
     def websocket_receive(self, message):
         """
@@ -125,23 +142,47 @@ class FriendConsumer(WebsocketConsumer):
         username = message['username']
         function = message['function']
 
-        user_model = get_user_model()
-        user = user_model.objects.get(username=username)
-        im_user = IMUser.objects.get(user=user)
-
-        if function == 'apply':
-            # 修改数据库
-            apply_from = message['from']
-            apply_to = message['to']
-            applyer_add_list = AddList.objects.get(user_name=apply_from)
-            receiver_add_list = AddList.objects.get(user_name=apply_to)
-
-
-            if not search_ensure_false_request_index(apply_to, applyer_add_list, mode=1) == -1:
-                # 确保被回复前不能重复发送
-                # mode=1意为在applyer_add_list.applylist中寻找apply_to
-                self.send(text_data="Has Been Sent")
+            if message['function'] == 'heartbeat':
+                #add_list = AddList.objects.get(user_name=username)
+                #return_field = []
+                #flen = len(add_list.reply_list)
+                # for li in range(flen):
+                #     return_field.append(
+                #         {
+                #             "username": add_list.reply_list[li],
+                #             "is_confirmed": add_list.reply_answer[li],
+                #             "make_sure": add_list.reply_ensure[li]
+                #         }
+                #     )
+                self.send(text_data=json.dumps(
+                        {
+                            'function': 'heartbeatconfirm'
+                            #'receivelist': return_field
+                        }
+                    )
+                )
             else:
+                username = message['username']
+                function = message['function']
+
+            user_model = get_user_model()
+            user = user_model.objects.get(username=username)
+            im_user = IMUser.objects.get(user=user)
+
+            if function == 'apply':
+                # 修改数据库
+                apply_from = message['from']
+                apply_to = message['to']
+                applyer_add_list = AddList.objects.get(user_name=apply_from)
+                receiver_add_list = AddList.objects.get(user_name=apply_to)
+                '''
+                确保之前发送的申请被回复前不能再发送申请
+                '''
+                # sent_boolean = self.check_sent_list(username, receiver_add_list)[0]
+                #
+                # if sent_boolean:
+                #     self.send(text_data="Has Been Sent")
+                # else:
                 applyer_add_list.apply_list.append(apply_to)
                 applyer_add_list.apply_answer.append(False)
                 applyer_add_list.apply_ensure.append(False)
@@ -153,9 +194,85 @@ class FriendConsumer(WebsocketConsumer):
                 receiver_add_list.save()
 
                 # 若receiver在线申请发送到receiver
-                return_field = {"applyer": apply_from}
-                self.send(text_data=json.dumps(return_field))
+                # return_field = {"applyer": apply_from}
+                # self.send(text_data=json.dumps(return_field))
 
+            elif function == 'confirm':
+                # 修改数据库
+                apply_from = message['from']
+                apply_to = message['to']
+                receiver_add_list = AddList.objects.get(user_name=apply_to)
+                applyer_add_list = AddList.objects.get(user_name=apply_from)
+                # sent_boolean, index_1 = check_sent_list(apply_from, receiver_add_list)
+                # if sent_boolean and not applyer_add_list.apply_list.count(username) == 0:
+                lis = 0
+                for li, peo in enumerate(receiver_add_list.reply_list):
+                    if peo == apply_from:
+                        lis = li
+                receiver_add_list.reply_answer[li] = True  #
+                receiver_add_list.reply_ensure[li] = True
+                receiver_add_list.save()
+
+                    # TODO: index_2 大概率bug 思路是倒序获取这个apply_list中username的最新出现index
+                #index_2 = len(applyer_add_list.apply_list) - list(reversed(applyer_add_list.apply_list)).index(username)
+                lis = 0
+                for li, peo in enumerate(applyer_add_list.apply_list):
+                    if peo == apply_to:
+                        lis = li
+                applyer_add_list.apply_answer[lis] = True  #
+                applyer_add_list.apply_ensure[lis] = True
+                applyer_add_list.save()
+
+                    # friend_list = FriendList.objects.get(user_name=username)
+                    # friend_list.friend_list[0].append(apply_from)
+                    # friend_list.save()
+                    #
+                    # friend = Friend(user_name=username,
+                    #                 friend_name=friend_list.group_list[0],
+                    #                 group_name=group)
+                    # friend.save()
+                # 若applyer在线结果发送到applyer
+                # return_field = {"function": "confirm"}
+                # self.send(text_data=json.dumps(return_field))
+
+            elif function == 'decline':
+                # 修改数据库
+                apply_from = message['from']
+                apply_to = message['to']
+                receiver_add_list = AddList.objects.get(user_name=apply_to)
+                applyer_add_list = AddList.objects.get(user_name=apply_from)
+                # sent_boolean, index_1 = check_sent_list(apply_from, receiver_add_list)
+                # if sent_boolean and not applyer_add_list.apply_list.count(username) == 0:
+                lis = 0
+                for li, peo in enumerate(receiver_add_list.reply_list):
+                    if peo == apply_from:
+                        lis = li
+                receiver_add_list.reply_answer[lis] = False  #
+                receiver_add_list.reply_ensure[lis] = True
+                receiver_add_list.save()
+
+                # TODO: index_2 大概率bug 思路是倒序获取这个apply_list中username的最新出现index
+                # index_2 = len(applyer_add_list.apply_list) - list(reversed(applyer_add_list.apply_list)).index(username)
+                lis = 0
+                for li, peo in enumerate(applyer_add_list.apply_list):
+                    if peo == apply_to:
+                        lis = li
+                applyer_add_list.apply_answer[lis] = False  #
+                applyer_add_list.apply_ensure[lis] = True
+                applyer_add_list.save()
+                # friend_list = FriendList.objects.get(user_name=username)
+                # friend_list.friend_list[0].append(apply_from)
+                # friend_list.save()
+
+                # friend = Friend(user_name=username,
+                #                 friend_name=friend_list.group_list[0],
+                #                 friend_list=friend_list)
+                # friend.save()
+                # 若applyer在线结果发送到applyer
+                # return_field = {"function": "decline"}
+                # self.send(text_data=json.dumps(return_field))
+
+            elif function == 'fetchapplylist':
                 add_list = AddList.objects.get(user_name=username)
                 return_field = []
                 flen = len(add_list.apply_list)
@@ -167,99 +284,48 @@ class FriendConsumer(WebsocketConsumer):
                             "make_sure": add_list.apply_ensure[li]
                         }
                     )
+                self.send(text_data=json.dumps({
+                            'function': 'applylist',
+                            'applylist': return_field
+                        }
+                    )
+                )
+                # 发送list到client
+
+            elif function == 'fetchreceivelist':
+                add_list = AddList.objects.get(user_name=username)
+                return_field = []
+                flen = len(add_list.reply_list)
+                for li in range(flen):
+                    return_field.append(
+                        {
+                            "username": add_list.reply_list[li],
+                            "is_confirmed": add_list.reply_answer[li],
+                            "make_sure": add_list.reply_ensure[li]
+                        }
+                    )
                 self.send(text_data=json.dumps(
-                    {
-                        'function': 'applylist',
-                        'applylist': return_field
-                    }
+                        {
+                            'function': 'receivelist',
+                            'receivelist': return_field
+                        }
+                    )
                 )
-                )
+                # 发送list到client
 
-        elif function == 'confirm':
-            # 修改数据库
-            apply_from = message['from']
-            apply_to = message['to']
-            receiver_add_list = AddList.objects.get(user_name=apply_to)
-            applyer_add_list = AddList.objects.get(user_name=apply_from)
-
-            modify_add_request_list_with_username(apply_from, receiver_add_list, True)
-            modify_add_request_list_with_username(apply_to, applyer_add_list, True, mode=1)
-
-            friend_list = FriendList.objects.get(user_name=username)
-            friend_list.friend_list[0].append(apply_from)
-            friend_list.save()
-
-            friend = Friend(user_name=username,
-                            friend_name=apply_from,
-                            group_name=friend_list.group_list[0])
-            friend.save()
-            # 若applyer在线结果发送到applyer
-            return_field = {"function": "confirm"}
-            self.send(text_data=json.dumps(return_field))
-
-        elif function == 'decline':
-            # 修改数据库
-            apply_from = message['from']
-            apply_to = message['to']
-            receiver_add_list = AddList.objects.get(user_name=apply_to)
-            applyer_add_list = AddList.objects.get(user_name=apply_from)
-
-            modify_add_request_list_with_username(apply_from, receiver_add_list, False)
-            modify_add_request_list_with_username(apply_to, applyer_add_list, False, mode=1)
-
-            return_field = {"function": "decline"}
-            self.send(text_data=json.dumps(return_field))
-
-        elif function == 'fetchapplylist':
-            add_list = AddList.objects.get(user_name=username)
-            return_field = []
-            flen = len(add_list.apply_list)
-            for li in range(flen):
-                return_field.append(
-                    {
-                        "username": add_list.apply_list[li],
-                        "is_confirmed": add_list.apply_answer[li],
-                        "make_sure": add_list.apply_ensure[li]
-                    }
-                )
-            self.send(text_data=json.dumps({
-                'function': 'applylist',
-                'applylist': return_field
-            }
-            )
-            )
-            # 发送list到client
-
-        elif function == 'fetchreceivelist':
-            add_list = AddList.objects.get(user_name=username)
-            return_field = []
-            flen = len(add_list.reply_list)
-            for li in range(flen):
-                return_field.append(
-                    {
-                        "username": add_list.reply_list[li],
-                        "is_confirmed": add_list.reply_answer[li],
-                        "make_sure": add_list.reply_ensure[li]
-                    }
-                )
-            self.send(text_data=json.dumps(
-                {
-                    'function': 'receivelist',
-                    'receivelist': return_field
-                }
-            )
-            )
-            # 发送list到client
+            else:
+                self.send(text_data=function + "Unknown Function")
 
         else:
-            self.send(text_data=function + "Unknown Function")
+            self.send(text_data=direction + "Unknown Direction")
 
 
-def websocket_disconnect(self, message):
-    """
-    客户端浏览器主动断开连接，对应ws.onclose()
-    """
 
-    # USER_NAME_LIST.remove(username)
-    CONSUMER2_OBJECT_LIST.remove(self)
-    raise StopConsumer()
+    def websocket_disconnect(self, message):
+        """
+        客户端浏览器主动断开连接，对应ws.onclose()
+        """
+
+        # USER_NAME_LIST.remove(username)
+        CONSUMER2_OBJECT_LIST.remove(self)
+        raise StopConsumer()

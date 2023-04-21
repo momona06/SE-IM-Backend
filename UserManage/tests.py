@@ -10,7 +10,6 @@ PASSWORD = "123456"
 USERNAME = "test00"
 
 class UserManageTest(TestCase):
-
     def userRegister(self, username, password):
         payload = {
             "username": username,
@@ -49,7 +48,20 @@ class UserManageTest(TestCase):
             "token": token
         }
         return self.client.put("/user/revise", data=payload, content_type="application/json")
-
+    
+    def userSendEmail(self,email):
+        payload = {
+            "email":email
+        }
+        return self.client.post("/user/send_email", data=payload, content_type="application/json")
+    
+    def userBindEmail(self,email,code,username):
+        payload = {
+            "email":email,
+            "code":code,
+            "username":username
+        }
+        return self.client.post("/user/email", data=payload, content_type="application/json")
 
     def testRegister(self):
         #username = secrets.token_hex(4)
@@ -134,3 +146,12 @@ class UserManageTest(TestCase):
         self.userRevise(revise_field_list[1], input_password, USERNAME, revise_content_list[1], token)
         token = res_lin.json()["token"]
         res_lout = self.userLogout(USERNAME, token)
+    
+    def testEmail(self):
+        username = random.randint(100_000_000_000, 999_999_999_999)
+        password = random.randint(100_000_000_000, 999_999_999_999)
+        self.userRegister(username, password)
+        email="zhoujin@mails.tsinghua.edu.cn"
+        res= self.userSendEmail(email)
+        #res = self.userBindEmail(email,res_sms_code,username)
+        self.assertEqual(res.json()["code"],0)
