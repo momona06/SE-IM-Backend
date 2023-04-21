@@ -174,6 +174,8 @@ class FriendConsumer(WebsocketConsumer):
                     # 确保被回复前不能重复发送
                     # mode=1意为在applyer_add_list.applylist中寻找apply_to
                     self.send(text_data="Has Been Sent")
+                elif apply_to in FriendList.objects.get(user_name=apply_from).friend_list:
+                    self.send(text_data="Is Already a Friend")
                 else:
                     applyer_add_list.apply_list.append(apply_to)
                     applyer_add_list.apply_answer.append(False)
