@@ -28,13 +28,13 @@ class ChatConsumer(WebsocketConsumer):
         # 连接成功
         CONSUMER_OBJECT_LIST.append(self)
 
-        while True:
-            time.sleep(2)
-            self.send(text_data=json.dumps({
-                'code': 200,
-                'message': "heartbeat",
-                'function': "heartbeat"
-            }))
+        # while True:
+        #     time.sleep(2)
+        #     self.send(text_data=json.dumps({
+        #         'code': 200,
+        #         'message': "heartbeat",
+        #         'function': "heartbeat"
+        #     }))
 
     def websocket_receive(self, message):
         """
@@ -111,13 +111,13 @@ class FriendConsumer(WebsocketConsumer):
         self.accept()
         # USER_NAME_LIST.append(username)
         CONSUMER2_OBJECT_LIST.append(self)
-        while True:
-            time.sleep(2)
-            self.send(text_data=json.dumps({
-                'code': 200,
-                'message': "heartbeat",
-                'function': "heartbeat"
-            }))
+        # while True:
+        #     time.sleep(2)
+        #     self.send(text_data=json.dumps({
+        #         'code': 200,
+        #         'message': "heartbeat",
+        #         'function': "heartbeat"
+        #     }))
 
     def websocket_receive(self, message):
         """
@@ -283,7 +283,26 @@ class FriendConsumer(WebsocketConsumer):
                     )
                 )
                 # 发送list到client
-
+            elif function == 'heartbeat':
+                #add_list = AddList.objects.get(user_name=username)
+                #return_field = []
+                #flen = len(add_list.reply_list)
+                # for li in range(flen):
+                #     return_field.append(
+                #         {
+                #             "username": add_list.reply_list[li],
+                #             "is_confirmed": add_list.reply_answer[li],
+                #             "make_sure": add_list.reply_ensure[li]
+                #         }
+                #     )
+                self.send(text_data=json.dumps(
+                        {
+                            'function': 'heartbeatconfirm'
+                            #'receivelist': return_field
+                        }
+                    )
+                )
+                # 发送list到client
             else:
                 self.send(text_data=function + "Unknown Function")
 
