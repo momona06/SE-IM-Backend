@@ -218,16 +218,19 @@ class FriendConsumer(WebsocketConsumer):
                 modify_add_request_list_with_username(apply_from, receiver_add_list, True)
                 modify_add_request_list_with_username(apply_to, applyer_add_list, True, mode=1)
 
-                friend_list = FriendList.objects.get(user_name=username)
-                friend_list.friend_list.append(apply_from)
-                friend_list.save()
+                friend_list1 = FriendList.objects.get(user_name=username)
+                friend_list1.friend_list.append(apply_from)
+                friend_list1.save()
+                friend_list2 = FriendList.objects.get(user_name=apply_from)
+                friend_list2.friend_list.append(username)
+                friend_list2.save()
 
                 friend1 = Friend(user_name=username,
                                 friend_name=apply_from,
-                                group_name=friend_list.group_list[0])
+                                group_name=friend_list1.group_list[0])
                 friend2 = Friend(user_name=apply_from,
                                 friend_name=username,
-                                group_name=friend_list.group_list[0])
+                                group_name=friend_list2.group_list[0])
                 friend1.save()
                 friend2.save()
                 # 若applyer在线结果发送到applyer
