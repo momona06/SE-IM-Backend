@@ -22,44 +22,64 @@ USER_NAME_LIST = []
 
 # channel: a specific user
 # group: a group of channels (users)
+
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        # pprint(self.scope)
+        print('kwargs =', self.scope['url_route']['kwargs'])
+        kw = self.scope['url_route']['kwargs']
+        print('channel_name=', self.channel_name)
+        if 'room_name' in kw.keys():
+            self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
+            self.room_group_name = "chat_%s" % self.room_name
+            await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+            print('room_name = ', self.room_name)
+            print('room_group_name = ', self.room_group_name)
+        elif 'friend_name' in kw.keys():
+            self.friend_name = self.scope["url_route"]["kwargs"]["friend_name"]
+            CONSUMER_OBJECT_LIST.append(self)
 
-        self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
-        print('room_name = ', self.room_name)
-        self.room_group_name = "chat_%s" % self.room_name
-        print('room_group_name = ', self.room_group_name)
-
-        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-
-        ###
         # Clients.objects.create(channel_name=self.channel_name)
 
         await self.accept()
 
     # Receive message from WebSocket
     async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message = text_data_json["message"]
-        print('text_data_json =', text_data_json)
+        json_data = json.loads(text_data)
+        message = json_data["message"]
+        print('json_data =', json_data)
         # Send message to room group
-        await self.channel_layer.group_send(
-            self.room_group_name, {
-                "type": "chat_message",
-                "message": message
-            }
-        )
 
-        ###
-        # channel_layer = get_channel_layer()
-        # await channel_layer.send(
-        #     "channel_name", {
-        #     "type": "chat1_message",
-        #     "text": "Hello there!",
-        # })
+        kw = self.scope['url_route']['kwargs']
 
-        # Receive message from room group
+        if 'room_name' in kw.keys():
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "chat_message",
+                    "message": message
+                }
+            )
+        elif 'friend_name' in kw.keys():
+            # channel_layer = get_channel_layer()
+            # await channel_layer.send(
+            #     "channel_name",
+            #     {
+            #         "type": "channel_message",
+            #         "text": "Hello there!"
+            #     }
+            # )
+
+            friend_name = json_data['friend_name']
+            for obj in CONSUMER_OBJECT_LIST:
+                if obj.friend_name == friend_name:
+                    self.send(text_data=json.dumps(
+                        {
+                        'message': message,
+                        }
+                        )
+                    )
+
+
 
     async def chat_message(self, event):
         message = event["message"]
@@ -69,22 +89,37 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "message": message
         }))
 
+    async def channel_message(self, event):
+        # Handles the "chat.message" event when it's sent to us.
+        message = event["message"]
+        print('event =', event)
+        await self.send(text_data=json.dumps({
+            "message": message
+        }))
+
+
     async def disconnect(self, message):
         # Leave room group
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
+        kw = self.scope['url_route']['kwargs']
 
-        ###
+        if 'room_name' in kw.keys():
+            await self.channel_layer.group_discard(
+                self.room_group_name,
+                self.channel_name
+            )
+        elif 'friend_name' in kw.keys():
+            CONSUMER_OBJECT_LIST.remove(self)
+            raise StopConsumer()
+
         # Clients.objects.filter(channel_name=self.channel_name).delete()
 
 
-
-
-    ###
     async def chat1_message(self, event):
         await self.send(text_data=event["text"])
+
+
+
+
 
 
 
@@ -295,6 +330,8 @@ class FriendConsumer(WebsocketConsumer):
 
         else:
             self.send(text_data=function + "Unknown Function")
+
+
 
 
 
