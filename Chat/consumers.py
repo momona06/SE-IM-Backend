@@ -139,7 +139,6 @@ class FriendConsumer(WebsocketConsumer):
         print(message)
 
         message = json.loads(message['text'])
-        username = message['username']
         function = message['function']
 
         if message['function'] == 'heartbeat':
