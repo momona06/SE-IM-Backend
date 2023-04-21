@@ -224,10 +224,14 @@ class FriendConsumer(WebsocketConsumer):
                 friend_list.friend_list.append(apply_from)
                 friend_list.save()
 
-                friend = Friend(user_name=username,
+                friend1 = Friend(user_name=username,
                                 friend_name=apply_from,
                                 group_name=friend_list.group_list[0])
-                friend.save()
+                friend2 = Friend(user_name=apply_from,
+                                friend_name=username,
+                                group_name=friend_list.group_list[0])
+                friend1.save()
+                friend2.save()
                 # 若applyer在线结果发送到applyer
                 return_field = {"function": "confirm"}
                 self.send(text_data=json.dumps(return_field))
