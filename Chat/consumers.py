@@ -116,16 +116,12 @@ class FriendConsumer(WebsocketConsumer):
         """
         客户端浏览器向服务端发送消息，对应ws.send()
         """
-        # direction = ''
         print(type(message))
         print(type(message['text']))
         print(message['text'])
         print(message)
 
         message = json.loads(message['text'])
-        # direction = message['direction']
-
-        # if direction == '/friend/client2server':
         username = message['username']
         function = message['function']
 
@@ -257,9 +253,6 @@ class FriendConsumer(WebsocketConsumer):
         else:
             self.send(text_data=function + "Unknown Function")
 
-
-# else:
-#    self.send(text_data=direction + "Unknown Direction")
 
 def websocket_disconnect(self, message):
     """
