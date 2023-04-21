@@ -221,7 +221,7 @@ class FriendConsumer(WebsocketConsumer):
                 modify_add_request_list_with_username(apply_to, applyer_add_list, True, mode=1)
 
                 friend_list = FriendList.objects.get(user_name=username)
-                friend_list.friend_list[0].append(apply_from)
+                friend_list.friend_list.append(apply_from)
                 friend_list.save()
 
                 friend = Friend(user_name=username,
