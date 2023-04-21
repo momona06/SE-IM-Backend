@@ -136,6 +136,7 @@ class FriendConsumer(WebsocketConsumer):
             applyer_add_list = AddList.objects.get(user_name=apply_from)
             receiver_add_list = AddList.objects.get(user_name=apply_to)
 
+
             if not search_ensure_false_request_index(apply_to, applyer_add_list, mode=1) == -1:
                 # 确保被回复前不能重复发送
                 # mode=1意为在applyer_add_list.applylist中寻找apply_to
