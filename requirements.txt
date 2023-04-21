@@ -16,7 +16,8 @@ pycodestyle
 pylint
 
 channels
-# channels_redis
+channels_postgres
+
 daphne
 psycopg2
 

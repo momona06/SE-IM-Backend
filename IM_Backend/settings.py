@@ -29,6 +29,7 @@ ALLOWED_HOSTS = [
 
 INSTALLED_APPS = [
     'channels',
+    'channels_postgres'
     'daphne',
     'FriendRelation',
     'UserManage',
@@ -69,18 +70,28 @@ TEMPLATES = [
     },
 ]
 
-# WSGI_APPLICATION = 'IM_Backend.wsgi.application'
-
 ASGI_APPLICATION = "IM_Backend.asgi.application"
 
-# CHANNEL_LAYERS = {
-#     'default': {
-#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
-#         'CONFIG': {
-#             'hosts': [('127.0.0.1', 8000)],
-#         },
-#     },
-# }
+
+if not DEBUG:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_postgres.core.PostgresChannelLayer',
+            'CONFIG': {
+                'hosts': [('database-postgresql.OverFlowLab.secoder.local', 5432)],
+            },
+        },
+    }
+
+else:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_postgres.core.PostgresChannelLayer',
+            'CONFIG': {
+                'hosts': [('127.0.0.1', 5432)],
+            },
+        },
+    }
 
 # DATABASES = {
 #     'default': {
