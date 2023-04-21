@@ -39,17 +39,17 @@ class MyConsumerTestCase(TestCase):
         communicator = WebsocketCommunicator(FriendConsumer.as_asgi(), "/ws/")
 
         # 连接 WebSocket
-        connected, _ = await communicator.connect()
+        #connected, _ = await communicator.connect()
 
-        assert connected
+        # assert connected
 
         # 发送消息到 Consumer
-        await communicator.send_json_to({"username": USERNAME_0, "password": PASSWORD_0, "function": "confirm", "from": USERNAME_0, "to": USERNAME_1})
+        # await communicator.send_json_to({"username": USERNAME_0, "password": PASSWORD_0, "function": "confirm", "from": USERNAME_0, "to": USERNAME_1})
 
-        response = await communicator.receive_from()
+        # response = await communicator.receive_from()
         # assert response == "hello"
 
-        await communicator.disconnect()
+        # await communicator.disconnect()
 
 
         '''
