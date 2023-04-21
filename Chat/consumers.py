@@ -297,6 +297,5 @@ def websocket_disconnect(self, message):
 
     # USER_NAME_LIST.remove(username)
 
-
     CONSUMER2_OBJECT_LIST.remove(self)
     raise StopConsumer()
