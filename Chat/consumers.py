@@ -28,7 +28,7 @@ class ChatConsumer(WebsocketConsumer):
         # 连接成功
         CONSUMER_OBJECT_LIST.append(self)
 
-        for i in range(10):
+        while True:
             time.sleep(2)
             self.send(text_data=json.dumps({
                 'code': 200,
