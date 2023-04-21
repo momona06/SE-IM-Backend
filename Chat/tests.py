@@ -39,7 +39,9 @@ class MyConsumerTestCase(TestCase):
         communicator = WebsocketCommunicator(FriendConsumer.as_asgi(), "/ws/")
 
         # 连接 WebSocket
-        connected, _= await communicator.connect()
+        connected, _ = await communicator.connect()
+
+        assert connected
 
         # 发送消息到 Consumer
         await communicator.send_json_to({"type": "my_message", "content": "Hello world!"})
