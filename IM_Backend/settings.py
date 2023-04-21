@@ -29,7 +29,7 @@ ALLOWED_HOSTS = [
 
 INSTALLED_APPS = [
     'channels',
-    'channels_postgres'
+    'channels_postgres',
     'daphne',
     'FriendRelation',
     'UserManage',
