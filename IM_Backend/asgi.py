@@ -13,7 +13,7 @@ from django.urls import path
 
 
 websocket_urlpatterns = [
-    path('chat', ChatConsumer.as_asgi()),
+    path('chat/<room_name>', ChatConsumer.as_asgi()),
     path('wsconnect', FriendConsumer.as_asgi())
 ]
 

@@ -1,5 +1,6 @@
 from channels.exceptions import StopConsumer
 from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
+from channels.layers import get_channel_layer
 from pprint import *
 import json
 
@@ -7,6 +8,8 @@ from UserManage.models import IMUser, TokenPoll
 from FriendRelation.models import FriendList, Friend, AddList
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model, authenticate
+
+
 
 # 定义一个列表，用于存放当前在线的用户
 CONSUMER_OBJECT_LIST = []
@@ -17,37 +20,74 @@ USER_NAME_LIST = []
 # chat/consumers.py
 
 
-
+# channel: a specific user
+# group: a group of channels (users)
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
-        self.room_group_name = "chat_%s" % self.room_name
+        # pprint(self.scope)
 
-        # Join room group
+        self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
+        print('room_name = ', self.room_name)
+        self.room_group_name = "chat_%s" % self.room_name
+        print('room_group_name = ', self.room_group_name)
+
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-        pprint(self.scope)
+
+        ###
+        # Clients.objects.create(channel_name=self.channel_name)
+
         await self.accept()
+
+    # Receive message from WebSocket
+    async def receive(self, text_data):
+        text_data_json = json.loads(text_data)
+        message = text_data_json["message"]
+        print('text_data_json =', text_data_json)
+        # Send message to room group
+        await self.channel_layer.group_send(
+            self.room_group_name, {
+                "type": "chat_message",
+                "message": message
+            }
+        )
+
+        ###
+        # channel_layer = get_channel_layer()
+        # await channel_layer.send(
+        #     "channel_name", {
+        #     "type": "chat1_message",
+        #     "text": "Hello there!",
+        # })
+
+        # Receive message from room group
+
+    async def chat_message(self, event):
+        message = event["message"]
+        print('event =', event)
+        # Send message to WebSocket
+        await self.send(text_data=json.dumps({
+            "message": message
+        }))
 
     async def disconnect(self, message):
         # Leave room group
-        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
-
-    # Receive message from WebSocket
-    async def receive(self, message):
-        text_data_json = json.loads(message)
-        message = text_data_json["message"]
-
-        # Send message to room group
-        await self.channel_layer.group_send(
-            self.room_group_name, {"type": "chat_message", "message": message}
+        await self.channel_layer.group_discard(
+            self.room_group_name,
+            self.channel_name
         )
 
-    # Receive message from room group
-    async def chat_message(self, message):
-        message = message["message"]
+        ###
+        # Clients.objects.filter(channel_name=self.channel_name).delete()
 
-        # Send message to WebSocket
-        await self.send(text_data=json.dumps({"message": message}))
+
+
+
+    ###
+    async def chat1_message(self, event):
+        await self.send(text_data=event["text"])
+
+
+
 
 
 
