@@ -78,7 +78,12 @@ if not DEBUG:
         'default': {
             'BACKEND': 'channels_postgres.core.PostgresChannelLayer',
             'CONFIG': {
-                'hosts': [('database-postgresql.OverFlowLab.secoder.local', 5432)],
+                'HOST': 'database-postgresql.OverFlowLab.secoder.local',  # ip地址
+                'ENGINE': 'django.db.backends.postgresql_psycopg2',
+                'NAME': 'postgres',  # 连接的数据库
+                'PORT': 5432,  # 端口
+                'USER': 'postgres',  # 用户名
+                'PASSWORD': '123456'  # 密码
             },
         },
     }
@@ -88,7 +93,12 @@ else:
         'default': {
             'BACKEND': 'channels_postgres.core.PostgresChannelLayer',
             'CONFIG': {
-                'hosts': [('127.0.0.1', 5432)],
+                'HOST': '127.0.0.1',  # 网址
+                'ENGINE': 'django.db.backends.postgresql_psycopg2',  # 默认
+                'NAME': 'postgres',  # 连接的数据库
+                'PORT': 5432,  # 端口
+                'USER': 'postgres',  # 用户名
+                'PASSWORD': '1234'  # 密码
             },
         },
     }
@@ -110,6 +120,14 @@ if not DEBUG:
             'PORT': 5432,  # 端口
             'USER': 'postgres',  # 用户名
             'PASSWORD': '123456'  # 密码
+        },
+        'channels_postgres': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',  # 默认
+            'NAME': 'postgres',  # 连接的数据库
+            'HOST': 'database-postgresql.OverFlowLab.secoder.local',  # ip地址
+            'PORT': 5432,  # 端口
+            'USER': 'postgres',  # 用户名
+            'PASSWORD': '123456'  # 密码
         }
     }
 
@@ -124,6 +142,14 @@ else:
             'PORT': 5432,         # 端口
             'USER': 'postgres',   # 用户名
             'PASSWORD': '1234'    # 密码
+        },
+        'channels_postgres': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',  # 默认
+            'NAME': 'postgres',  # 连接的数据库
+            'HOST': '127.0.0.1',  # 网址
+            'PORT': 5432,  # 端口
+            'USER': 'postgres',  # 用户名
+            'PASSWORD': '1234'  # 密码
         }
     }
 
