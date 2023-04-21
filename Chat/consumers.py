@@ -155,6 +155,7 @@ class FriendConsumer(WebsocketConsumer):
                 }
             )
             )
+
         else:
             username = message['username']
             function = message['function']
