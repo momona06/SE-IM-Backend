@@ -7,6 +7,7 @@ from UserManage.models import IMUser, TokenPoll
 from FriendRelation.models import FriendList, Friend, AddList
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model, authenticate
+import time
 
 # 定义一个列表，用于存放当前在线的用户
 CONSUMER_OBJECT_LIST = []
@@ -26,6 +27,13 @@ class ChatConsumer(WebsocketConsumer):
         self.accept()
         # 连接成功
         CONSUMER_OBJECT_LIST.append(self)
+
+        for i in range(10):
+            time.sleep(2)
+            self.send(text_data=json.dumps({
+                'code': 200,
+                'message': "heartbeat"
+            }))
 
     def websocket_receive(self, message):
         """
@@ -283,3 +291,4 @@ class FriendConsumer(WebsocketConsumer):
         # USER_NAME_LIST.remove(username)
         CONSUMER2_OBJECT_LIST.remove(self)
         raise StopConsumer()
+
