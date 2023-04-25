@@ -11,8 +11,8 @@ from django.contrib.auth import get_user_model, authenticate
 
 
 # 定义一个列表，用于存放当前在线的用户
+CHAT_OBJECT_LIST = []
 CONSUMER_OBJECT_LIST = []
-CONSUMER2_OBJECT_LIST = []
 USER_NAME_LIST = []
 
 
@@ -22,6 +22,8 @@ USER_NAME_LIST = []
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+
+
         print('kwargs =', self.scope['url_route']['kwargs'])
         kw = self.scope['url_route']['kwargs']
         print('channel_name=', self.channel_name)
@@ -41,11 +43,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         elif 'friend_name' in kw.keys():
             self.friend_name = self.scope["url_route"]["kwargs"]["friend_name"]
-            CONSUMER_OBJECT_LIST.append(self)
+            CHAT_OBJECT_LIST.append(self)
 
         # Clients.objects.create(channel_name=self.channel_name)
 
         await self.accept()
+
 
 
     async def receive(self, text_data):
@@ -59,13 +62,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # json_data = {'message': 'res', 'friend_name': 'sw'}
 
         # fetch and init data
-        message = json_info["message"]
         function = json_info["function"]
         kw = self.scope['url_route']['kwargs']
 
         # function zone
         if function == 'send_message':
-            await self.send_message(kw, json_info, message)
+            await self.send_message(kw, json_info)
 
         elif function == 'withdraw_message':
             await self.withdraw_message()
@@ -98,7 +100,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 self.channel_name
             )
         elif 'friend_name' in kw.keys():
-            CONSUMER_OBJECT_LIST.remove(self)
+            CHAT_OBJECT_LIST.remove(self)
             raise StopConsumer()
 
         # Clients.objects.filter(channel_name=self.channel_name).delete()
@@ -125,7 +127,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }))
 
 
-    async def send_message(self, kw, json_info, message):
+    async def send_message(self, kw, json_info):
+        message = json_info['message']
+
+        //username = json_info['username']
 
 
         if 'group_name' in kw.keys():
@@ -227,7 +232,8 @@ class FriendConsumer(WebsocketConsumer):
         # self.scope: 本次连接的基本信息，dict格式
 
         # 服务端接收连接，向客户端浏览器发送一个加密字符串
-        CONSUMER2_OBJECT_LIST.append(self)
+        print(self.channel_name)
+        CONSUMER_OBJECT_LIST.append(self)
         self.accept()
         # USER_NAME_LIST.append(username)
 
@@ -394,14 +400,11 @@ class FriendConsumer(WebsocketConsumer):
 
 
 
-
-
-
     def websocket_disconnect(self, message):
         """
         客户端浏览器主动断开连接，对应ws.onclose()
         """
 
         # USER_NAME_LIST.remove(username)
-        CONSUMER2_OBJECT_LIST.remove(self)
+        CONSUMER_OBJECT_LIST.remove(self)
         raise StopConsumer()
