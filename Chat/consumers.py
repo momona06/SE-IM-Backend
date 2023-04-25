@@ -353,13 +353,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'selection':'list_create',
             'member_list':['A', 'B'],
             'room_name': 'lob',
+            'username': 'Ashitemaru'
         }
         """
         room_name = json_info['room_name']
         member_list = json_info['member_list']
         selection = json_info['selection']
         if selection == 'list_create':
-
             chat_room = create_chatroom()
             chat_time_line = create_chat_timeline()
             chat_room.timeline_id = chat_time_line.timeline_id

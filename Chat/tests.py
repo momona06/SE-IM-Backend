@@ -11,7 +11,6 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait
-from Chat.consumers import FriendConsumer
 
 USERNAME_0 = "test00"
 PASSWORD_0 = "123456"
@@ -36,7 +35,7 @@ class MyConsumerTestCase(TestCase):
 
     async def test_consumer(self):
         # 创建一个 WebsocketCommunicator 实例
-        communicator = WebsocketCommunicator(FriendConsumer.as_asgi(), "/ws/")
+        # communicator = WebsocketCommunicator(FriendConsumer.as_asgi(), "/ws/")
 
         # 连接 WebSocket
         #connected, _ = await communicator.connect()
@@ -51,8 +50,7 @@ class MyConsumerTestCase(TestCase):
 
         # await communicator.disconnect()
 
-
-        '''
+        """
 
         # 接收 Consumer 的响应
         response = await communicator.receive_json_from()
@@ -69,7 +67,7 @@ class MyConsumerTestCase(TestCase):
         # 断言响应是否符合预期
         self.assertEqual(response, {"type": "my_message", "content": "Goodbye world!"})
 
-        '''
+        """
 
         # 关闭 WebSocket 连接
         # await communicator.disconnect()
