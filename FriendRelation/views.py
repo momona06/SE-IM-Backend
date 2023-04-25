@@ -6,7 +6,6 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.contrib.auth import authenticate, get_user_model
 
 from utils.utils_request import template_request, BAD_METHOD
-from utils.utils_token import token_check_http
 
 from django.contrib.auth.models import User
 from UserManage.models import IMUser, TokenPoll, create_im_user
