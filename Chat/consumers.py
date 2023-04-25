@@ -509,7 +509,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 new_master_name = json_info['new_master_name']
 
                 new_master = self.check_user_exist_with_username(function_name, new_master_name)
-                if not new_master is None:
+                if not new_master is None and \
+                        await self.check_user_in_chatroom_with_username(function_name,chatroom,new_master_name):
                     chatroom.master_name = new_master_name
                     await self.send(text_data=json.dumps({
                         'function': function_name,
