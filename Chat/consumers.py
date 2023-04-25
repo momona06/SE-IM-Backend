@@ -408,14 +408,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }))
         return manager_user
 
-    async def check_user_in_chatroom(self, function_name, chatroom, username):
+    async def check_user_in_chatroom(self, function_name, chatroom, username, message='User is not in the group'):
         user_id = User.objects.get(username=username).id
         if user_id in chatroom.mem_list:
             return True
         else:
             await self.send(text_data=json.dumps({
                 'function': function_name,
-                'message': 'User is not in the group'
+                'message': message
             }))
             return False
 
@@ -550,18 +550,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
             user = await self.check_user_exist(function_name, username)
             member = await self.check_user_exist(function_name, member_name, message='Member not found')
 
-            if not user is None and not member is None:
-                if user.id == chatroom.
+            if not user is None and not member is None and \
+                await self.check_user_in_chatroom(function_name,chatroom,username) and \
+                await self.check_user_in_chatroom(function_name,chatroom,member_name,
+                                                  message='Member is not in the group'):
 
-                if not user.id in chatroom.manager_list:
+                user_power = await get_power(chatroom, username)
+                member_power = await get_power(chatroom, member_name)
+
+                if user_power - member_power <= 0:
                     await self.send(text_data=json.dumps({
                         'function': function_name,
-                        'message': 'You are not the group manager'
+                        'message': 'Permission denied'
                     }))
                 else:
-                    if
-
-
+                    chatroom.manager_list.remove(member.id)
+                    chatroom.save()
+                    await self.send(text_data=json.dumps({
+                        'function': function_name,
+                        'message': 'Success'
+                    }))
 
 
     async def withdraw_message(self):
