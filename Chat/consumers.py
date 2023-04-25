@@ -80,6 +80,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
     async def chat_message(self, event):
+        # Handles the "chat_message" event when it's sent to us
         message = event["message"]
         print('event =', event)
         # Send message to WebSocket
@@ -88,7 +89,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }))
 
     async def channel_message(self, event):
-        # Handles the "chat.message" event when it's sent to us.
+
         message = event["message"]
         print('event =', event)
         await self.send(text_data=json.dumps({

@@ -66,7 +66,7 @@ TEMPLATES = [
 
 ASGI_APPLICATION = "IM_Backend.asgi.application"
 
-
+# 部署CHANNEL_LAYER
 if not DEBUG:
     CHANNEL_LAYERS = {
         'default': {
@@ -82,6 +82,7 @@ if not DEBUG:
         },
     }
 
+# 本地CHANNEL_LAYER
 else:
     CHANNEL_LAYERS = {
         'default': {
@@ -96,6 +97,7 @@ else:
             },
         },
     }
+
 
 # 部署PostGreSQL
 if not DEBUG:
@@ -172,7 +174,5 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 
 STATIC_URL = 'static/'
-
-# Default primary key field type
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

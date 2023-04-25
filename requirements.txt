@@ -4,9 +4,6 @@ pyOpenSSL
 
 django-cors-headers
 
-# pymysql
-# mysqlclient==2.1.0
-
 pytest
 pytest-asyncio
 pytest-django
@@ -22,5 +19,3 @@ daphne
 psycopg2
 
 selenium
-
-# uWSGI
