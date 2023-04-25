@@ -58,6 +58,7 @@ def username_list_to_id_list(username_list):
 
     return res_list
 
+
 def id_list_to_username_list(id_list):
     res_list = []
 
@@ -386,7 +387,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return False
         return True
 
-    async def check_user_exist_with_username(self, function_name,username):
+    async def check_user_exist_with_username(self, function_name, username):
         manager_user = User.objects.filter(username=username).first()
 
         if manager_user is None:
@@ -395,6 +396,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'message': 'User not found'
             }))
         return manager_user
+
+    async def check_user_in_chatroom_with_username(self, function_name, chatroom, username):
+        user_id = User.objects.get(username=username).id
+        if user_id in chatroom.mem_list:
+            return True
+        else:
+            await self.send(text_data=json.dumps({
+                'function': function_name,
+                'message': 'User is not in the group'
+            }))
+            return False
 
     async def create_group(self, json_info):
         """json_info =
@@ -419,7 +431,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'chatroom_id': chat_room.chatroom_id
         }))
 
-
     async def delete_group(self, json_info):
         """json_info =
         {
@@ -429,12 +440,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         function_name = 'delete_group'
 
         chatroom_id = json_info['chatroom_id']
-        chatroom = await self.find_chatroom_with_chatroom_id(function_name,chatroom_id)
+        chatroom = await self.find_chatroom_with_chatroom_id(function_name, chatroom_id)
 
         if not chatroom is None:
             username = None
 
-            if await self.check_chatroom_master_with_username(function_name,chatroom,username):
+            if await self.check_chatroom_master_with_username(function_name, chatroom, username):
                 chat_timeline = ChatTimeLine.objects.get(chatroom.timeline_id)
                 chatroom.delete()
                 chat_timeline.delete()
@@ -443,7 +454,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'function': function_name,
                     'message': 'Success'
                 }))
-
 
     async def appoint_manager(self, json_info):
         """json_info =
@@ -456,16 +466,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         function_name = 'appoint_manager'
 
         chatroom_id = json_info['chatroom_id']
-        chatroom = await self.find_chatroom_with_chatroom_id(function_name,chatroom_id)
+        chatroom = await self.find_chatroom_with_chatroom_id(function_name, chatroom_id)
 
         if not chatroom is None:
             username = None
             manager_name = json_info['manager_name']
 
             if await self.check_chatroom_master_with_username(function_name, chatroom, username):
-                manager_user = await self.check_user_exist_with_username(function_name,manager_name)
+                manager_user = await self.check_user_exist_with_username(function_name, manager_name)
 
-                if not manager_user is None:
+                if not manager_user is None and \
+                        await self.check_user_in_chatroom_with_username(function_name, chatroom, manager_name):
                     manager_user_id = manager_user.id
                     if manager_user_id in chatroom.manager_list:
                         await self.send(text_data=json.dumps({
@@ -479,8 +490,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             'message': 'Success'
                         }))
 
-
-    async def transfer_master(self,json_info):
+    async def transfer_master(self, json_info):
         """json_info =
         {
             'chatroom_id': 114514,
@@ -490,15 +500,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
         function_name = 'transfer_master'
 
         chatroom_id = json_info['chatroom_id']
-        chatroom = await self.find_chatroom_with_chatroom_id(function_name,chatroom_id)
+        chatroom = await self.find_chatroom_with_chatroom_id(function_name, chatroom_id)
 
         if not chatroom is None:
             username = None
 
-            if await self.check_chatroom_master_with_username(function_name,chatroom,username):
+            if await self.check_chatroom_master_with_username(function_name, chatroom, username):
                 new_master_name = json_info['new_master_name']
 
-                new_master = self.check_user_exist_with_username(function_name,new_master_name)
+                new_master = self.check_user_exist_with_username(function_name, new_master_name)
                 if not new_master is None:
                     chatroom.master_name = new_master_name
                     await self.send(text_data=json.dumps({
@@ -506,16 +516,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         'message': 'Success'
                     }))
 
-
-
-
     async def release_notice(self):
         pass
 
-
     async def remove_group_member(self):
         pass
-
 
     async def withdraw_message(self):
         pass
