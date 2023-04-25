@@ -355,7 +355,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         room_name = json_info['room_name']
         member_list = json_info['member_list']
         username = None
-        chat_room = create_chatroom(room_name,member_list,username)
+        chat_room = create_chatroom(room_name, member_list, username)
         chat_time_line = create_chat_timeline()
         chat_room.timeline_id = chat_time_line.timeline_id
         chat_time_line.chatroom_id = chat_room.chatroom_id
@@ -366,7 +366,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'function': 'create_group',
             'chatroom_id': chat_room.chatroom_id
         }))
-
 
     async def delete_group(self, json_info):
         """json_info =
@@ -379,19 +378,29 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         if chatroom is None:
             await self.send(text_data=json.dumps({
-            'function': 'delete_group',
-            'message': 'Group not found'
-        }))
-
-        username = None
-
-        if chatroom.master_name != username:
-            await self.send(text_data=json.dumps({
                 'function': 'delete_group',
-                'message': 'You are not the group master'
+                'message': 'Group not found'
             }))
 
+        else:
 
+            username = None
+
+            if chatroom.master_name != username:
+                await self.send(text_data=json.dumps({
+                    'function': 'delete_group',
+                    'message': 'You are not the group master'
+                }))
+
+            else:
+                chat_timeline = ChatTimeLine.objects.get(chatroom.timeline_id)
+                chatroom.delete()
+                chat_timeline.delete()
+
+                await self.send(text_data=json.dumps({
+                    'function': 'delete_group',
+                    'message': 'Success'
+                }))
 
 
     async def appoint_manage(self):
