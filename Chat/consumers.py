@@ -226,7 +226,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                     }
                 )
             for user in CONSUMER_OBJECT_LIST:
-                if user.curuser == apply_to:
+                if user.cur_user == apply_to:
                     user.send(text_data=json.dumps(
                         {
                             'function': 'applylist',
