@@ -12,6 +12,7 @@ from django.contrib.auth.models import User
 from UserManage.models import IMUser, TokenPoll, create_im_user, EmailCode
 from django.core import mail
 
+from Chat.models import ChatRoom
 
 def revise(req: HttpRequest):
     if req.method == "PUT":
@@ -38,7 +39,11 @@ def revise(req: HttpRequest):
                 })
             else:
                 if revise_field == "username":
+                    chatroom_list = ChatRoom.objects.filter()
+
                     user_rev.username = revise_content
+
+
                 elif revise_field == "password":
                     user_rev.set_password(revise_content)
                 elif revise_field == "email":
