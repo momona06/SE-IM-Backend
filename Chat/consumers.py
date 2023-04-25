@@ -356,7 +356,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         room_name = json_info['room_name']
         member_list = json_info['member_list']
         username = json_info['username']
-        chat_room = create_chatroom()
+        chat_room = create_chatroom(room_name,member_list,username)
         chat_time_line = create_chat_timeline()
         chat_room.timeline_id = chat_time_line.timeline_id
         chat_time_line.chatroom_id = chat_room.chatroom_id
