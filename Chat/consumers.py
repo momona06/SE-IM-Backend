@@ -2,6 +2,7 @@ from channels.exceptions import StopConsumer
 from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
 from pprint import *
 import json
+import time
 
 from UserManage.models import IMUser, TokenPoll
 from FriendRelation.models import FriendList, Friend, AddList
@@ -9,6 +10,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model, authenticate
 from Chat.models import *
 
+
+from channels.db import database_sync_to_async
 
 
 CONSUMER_OBJECT_LIST = []
@@ -56,33 +59,13 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
 
-        # Chat Ver
-
-        # print('kwargs =', self.scope['url_route']['kwargs'])
-        # kw = self.scope['url_route']['kwargs']
-        # print('channel_name=', self.channel_name)
-        # # kwargs = {'room_name': 'lobby'}
-        # # kwargs = {'friend_name': 'lobby'}
-        #
-        # # self.channel_name= specific.3f537!273029f6116a45e191c37bcd8afb37c0
-        #
-        # if 'group_name' in kw.keys():
-        #
-        #     # chat_room = ChatRoom.objects.filter(chatroom_id=)
-        #     self.group_name = self.scope["url_route"]["kwargs"]["group_name"]
-        #     self.chat_group_name = "chat_" + self.group_name
-        #
-        #     await self.channel_layer.group_add(self.chat_group_name, self.channel_name)
-        #
-        #     print('group_name = ', self.group_name)
-        #     print('chat_group_name = ', self.chat_group_name)
-        #
-        # elif 'friend_name' in kw.keys():
-        #     self.friend_name = self.scope["url_route"]["kwargs"]["friend_name"]
-        #     CHAT_OBJECT_LIST.append(self)
-
+        print('session =', self.scope['session'])
         CONSUMER_OBJECT_LIST.append(self)
+
         self.curuser = self.scope['user'].username
+
+        print('\nself.scope["user"] = ', self.scope['user'])
+        print('\nself.curuser / self.scope["user"].username = ', self.curuser)
         await self.accept()
 
     async def receive(self, text_data):
@@ -92,6 +75,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         # 2) text_data: original data from frontend
 
         json_info = json.loads(text_data)
+        print('\njson_info =', json_info)
         function = json_info["function"]
 
         # original function zone
@@ -115,11 +99,9 @@ class UserConsumer(AsyncWebsocketConsumer):
             await self.fetch_reply_list()
 
 
-
-
         # function zone
 
-        elif function == 'add_into_chat':
+        elif function == 'add_chat':
             await self.add_chat(json_info)
 
         elif function == 'leave_chat':
@@ -128,8 +110,11 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == 'send_message':
             await self.send_message(json_info)
 
+        elif function == 'ack_message':
+            await self.ack_message(json_info)
+
         elif function == 'withdraw_message':
-            await self.withdraw_message()
+            await self.withdraw_message(json_info)
 
         elif function == 'create_group':
             await self.create_group(json_info)
@@ -166,32 +151,44 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self):
 
-        kw = self.scope['url_route']['kwargs']
-
         CONSUMER_OBJECT_LIST.remove(self)
         raise StopConsumer()
 
 
+    # async def private_diffuse(self, event):
+    #     message = event["message"]
+    #
+    #     print('event in private_msg =', event)
+    #
+    #     await self.send(text_data=json.dumps({
+    #         "message": message
+    #     }))
 
-    async def private_diffuse(self, event):
-        message = event["message"]
-
-        print('event in private_msg =', event)
+    async def message_diffuse(self, event):
+        msg_body = event["msg_body"]
+        msg_id = event["msg_id"]
+        print('event in public_msg =', event)
+        # event = {'type': 'chat_message', 'message': 'res'}
 
         await self.send(text_data=json.dumps({
-            "message": message
+            'type': 'Msg',
+            'msg_id': msg_id,
+            "msg_body": msg_body
         }))
 
-    async def public_diffuse(self, event):
+    async def acknowledge_diffuse(self, event):
 
-        message = event["message"]
+        msg_id = event["msg_id"]
 
         print('event in public_msg =', event)
         # event = {'type': 'chat_message', 'message': 'res'}
 
         await self.send(text_data=json.dumps({
-            "message": message
+            'type': 'Ack',
+            'msg_id': msg_id,
+
         }))
+
 
 
     async def add_chat(self, json_info):
@@ -207,77 +204,174 @@ class UserConsumer(AsyncWebsocketConsumer):
             'room_name': 'lobby',
             'is_private': False
         }
-
         '''
-        # kw = self.scope['url_route']['kwargs']
 
-        user = User.objects.get(username=self.curuser)
-        im_user = IMUser.objects.get(user=user)
+        # user_name = self.curuser
+        user_name = 'user'
 
-        if json_info.is_private:
-            # self.friend_name = kw["friend_name"]
-            pass
+        user = await database_sync_to_async(User.objects.get)(username=user_name)
+        im_user = await database_sync_to_async(IMUser.objects.get)(user=user)
 
-        else:
+        room_name = json_info['room_name']
+        room_id = json_info['chatroom_id']
+        is_private = json_info['is_private']
 
-            new_onliner = OnlineUser(user_name=user.username, channel_name=self.channel_name)
-            new_onliner.save()
+        new_onliner = await OnlineUser(user_name=user_name, channel_name=self.channel_name, chatroom_id=room_id)
+        new_onliner.save()
 
-            # self.group_name = kw["group_name"]
-            self.group_name = json_info['room_name']
-            self.chat_group_name = "chat_" + self.group_name
+        chat_room = await database_sync_to_async(ChatRoom.objects.filter)(chatroom_id=room_id).first()
+        if chat_room is None:
+            self.send(text_data="chatroom not exists")
+            self.close()
 
-            await self.channel_layer.group_add(self.chat_group_name, self.channel_name)
+        self.group_name = json_info['room_name']
+        self.chat_group_name = "chat_" + self.group_name + room_id
+
+        await self.channel_layer.group_add(self.chat_group_name, self.channel_name)
 
 
 
     async def leave_chat(self, json_info):
         '''
         json_info: {
-            'chatroom_id": '5',
-            'room_name': 'default',
-            'is_private': True
         }
         '''
 
-        if json_info.is_private:
-            pass
+        user_name = 'user'
+        # user_name = self.curuser
 
-        else:
-            onliner = OnlineUser.objects.get(user_name=self.curuser)
-            onliner.delete()
-            if 'group_name' in kw.keys() or 'friend_name' in kw.keys():
-                await self.channel_layer.group_discard(self.chat_group_name, self.channel_name)
+        onliner = await database_sync_to_async(OnlineUser.objects.filter)(user_name=user_name).first()
+        if onliner is None:
+            self.send(text_data="you are not online")
+            self.close()
+
+        await database_sync_to_async(onliner.delete)()
+
+        await self.channel_layer.group_discard(self.chat_group_name, self.channel_name)
+
+
 
     async def send_message(self, json_info):
+        '''
+        json_info: {
+            'msg_type': 'text',
+            'msg_body': 'hello',
+            'ref_id': 16,
+        }
+        '''
 
-        kw = self.scope['url_route']['kwargs']
+        # Inspiration & Target
+        # striked by Msg R1
+        # send Ack 2(Msg 2) to cli A
+        # send Msg R3 to cli B
 
-        message = json_info['message']
+        # append the timeline
 
-        if 'group_name' in kw.keys():
+        user_name = self.curuser
 
-            print('json_data in <group> =', json_info)
+        onliner = await database_sync_to_async(OnlineUser.objects.filter)(user_name=user_name).first()
+        if onliner is None:
+            self.send('you are not in the chatroom')
+            self.close()
 
-            await self.channel_layer.group_send(
-                self.chat_group_name,
-                {
-                    "type": "public_diffuse",
-                    "message": message,
-                }
+        room_id = onliner.chatroom_id
+
+        chatroom = ChatRoom.objects.filter(chatroom_id=room_id).first()
+        if chatroom is None:
+            self.send('chatroom not exists')
+            self.close()
+
+
+        timeline = ChatTimeLine.objects.get(chatroom_id=room_id)
+
+        msg_type = json_info['msg_type']
+        msg_body = json_info['msg_body']
+
+        # ref_id = json_info['ref_id']
+        msg_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+        message = create_message(msg_type, msg_body, msg_time, user_name)
+
+        msg_id = message.msg_id
+
+        timeline.msg_line.append(message.msg_id)
+
+
+        await self.channel_layer.group_send(
+            self.chat_group_name,
+            {
+                "type": "message_diffuse",
+                'msg_id': msg_id,
+                'msg_body': msg_body,
+            }
+        )
+
+
+        await self.send(
+            text_data=json.dumps(
+            {
+                "type": "acknowledge_diffuse",
+                'msg_id': msg_id,
+            }
             )
+        )
 
-        elif 'friend_name' in kw.keys():
+        # for member in chatroom.mem_list:
+        #     online_member = await database_sync_to_async(OnlineUser.objects.filter)(user_name=member).first()
+        #     if online_member is None:
 
-            print('json_data in <friend> =', json_info)
 
-            await self.channel_layer.group_send(
-                self.chat_group_name,
-                {
-                    "type": "private_diffuse",
-                    "message": message,
-                }
+    async def ack_message(self, json_info):
+        '''
+        json_info: {
+            'msg_id': 16,
+        }
+        '''
+
+        # Inspiration & Target
+        # striked by Ack 4
+        # send Ack 5 to cli B
+        ### delete:[send Ack 6 to cli A]
+
+        # move the cursor
+
+
+        # user_name = self.curuser
+        user_name = 'user'
+
+        msg_id = json_info['msg_id']
+        sender = json_info['sender']
+
+        message = await database_sync_to_async(Message.objects.filter)(msg_id=msg_id).first()
+        if message is None:
+            self.send('message not exists')
+            self.close()
+
+        if message.sender != sender:
+            self.send('sender not match')
+            self.close()
+
+        chatroom = ChatRoom.objects.filter(chatroom_id=room_id).first()
+        if chatroom is None:
+            self.send('chatroom not exists')
+            self.close()
+
+        timeline = ChatTimeLine.objects.get(chatroom_id=room_id)
+
+        lis = 0
+        for li in chatroom.mem_list:
+            if li == user_name:
+                break
+            lis += 1
+
+        await self.send(
+            text_data=json.dumps(
+            {
+                "type": "acknowledge_diffuse",
+                'msg_id': msg_id,
+            }
             )
+        )
+
 
     async def create_group(self, json_info):
         """

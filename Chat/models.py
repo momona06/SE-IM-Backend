@@ -127,6 +127,11 @@ class ChatRoom(models.Model):
 
 
 
+def create_message(type, body, time, sender, is_reply = False, rel_id = 0):
+    new_message = Message(type = type, body = body, time = time, sender = sender,is_reply = is_reply, rel_id = rel_id)
+    new_message.save()
+    return new_message
+
 # Design philosophy: all info about the message itself should be put here
 
 # a specific message
@@ -139,18 +144,18 @@ class Message(models.Model):
     type = models.CharField(max_length=20)
     body = models.CharField(max_length=500)
     time = models.CharField(max_length=100)
+    sender = models.CharField(max_length=100)
 
     is_reply = models.BooleanField(default=False)
     rel_id = models.BigIntegerField(default=0)
 
-    is_read = ArrayField(
-        models.BooleanField(default=False)
-    )
+
 
 
 class OnlineUser(models.Model):
     user_name = models.CharField(max_length=100)
     channel_name = models.CharField(max_length=1000)
+    chatroom_id = models.BigIntegerField(default=0)
 
 
 
