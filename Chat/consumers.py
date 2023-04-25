@@ -443,7 +443,6 @@ class FriendConsumer(WebsocketConsumer):
                 self.send(text_data=function + "Unknown Function")
 
 
-
 def websocket_disconnect(self, message):
     """
     客户端浏览器主动断开连接，对应ws.onclose()
