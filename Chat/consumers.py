@@ -159,7 +159,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.delete_group(json_info)
 
         elif function == 'appoint_manage':
-            await self.appoint_manage(json_info)
+            await self.appoint_manager(json_info)
 
         elif function == 'transfer_master':
             await self.transfer_master()
@@ -435,11 +435,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 }))
 
 
-    async def appoint_manage(self, json_info):
+    async def appoint_manager(self, json_info):
         """json_info =
         {
             'chatroom_id': 114514,
-            'manage_name': 'ashitemaru'
+            'manager_name': 'ashitemaru'
         }
         """
 
@@ -452,7 +452,29 @@ class ChatConsumer(AsyncWebsocketConsumer):
             username = None
 
             if await self.check_chatroom_master_with_username(function_name, chatroom, username):
-                manage_list = chatroom.manager_list
+                manager_user = User.objects.filter(username=username).first()
+
+                if manager_user is None:
+                    await self.send(text_data=json.dumps({
+                        'function': function_name,
+                        'message': 'User not found'
+                    }))
+                else:
+                    manager_user_id = manager_user.id
+                    if manager_user_id in chatroom.manager_list:
+                        await self.send(text_data=json.dumps({
+                            'function': function_name,
+                            'message': 'User is aleady an manager'
+                        }))
+                    else:
+                        chatroom.manager_list.append(manager_user_id)
+                        await self.send(text_data=json.dumps({
+                            'function': function_name,
+                            'message': 'Success'
+                        }))
+
+
+
 
 
         pass
