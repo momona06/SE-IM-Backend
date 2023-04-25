@@ -175,6 +175,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         '''
         room_name = json_info['room_name']
         member_list = json_info['member_list']
+        selection = json_info['selection']
         if selection == 'list_create':
 
             chat_room = create_chatroom()
@@ -355,7 +356,7 @@ class FriendConsumer(WebsocketConsumer):
                                 "make_sure": add_list.apply_ensure[li]
                             }
                         )
-                    for user in CONSUMER2_OBJECT_LIST:
+                    for user in CONSUMER_OBJECT_LIST:
                         if user.curuser == apply_to:
                             user.send(text_data=json.dumps(
                                 {
