@@ -88,7 +88,7 @@ class ChatRoom(models.Model):
     # dup_id = models.BigIntegerField(default=0)
 
     # a chatroom must own a specified room_name
-    room_name = models.CharField(max_length=30, default='private_chat')
+    room_name = models.CharField(max_length=30, default='default')
 
     is_private = models.BooleanField(default=True)
 
@@ -146,6 +146,11 @@ class Message(models.Model):
     is_read = ArrayField(
         models.BooleanField(default=False)
     )
+
+
+class OnlineUser(models.Model):
+    user_name = models.CharField(max_length=100)
+    channel_name = models.CharField(max_length=1000)
 
 
 

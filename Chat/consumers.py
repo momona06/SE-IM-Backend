@@ -9,13 +9,10 @@ from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model, authenticate
 from Chat.models import *
 
-# 定义一个列表，用于存放当前在线的用户
-CHAT_OBJECT_LIST = []
+
+
 CONSUMER_OBJECT_LIST = []
 USER_NAME_LIST = []
-
-
-
 
 
 def modify_add_request_list_with_username(other_username, add_list, answer, mode=0):
@@ -48,20 +45,16 @@ def search_ensure_false_request_index(other_username, add_list, mode=0):
     return -1
 
 
-
 # channel: the specific user
 # group: a group of channels (users)
 
-class ChatConsumer(AsyncWebsocketConsumer):
-
+class UserConsumer(AsyncWebsocketConsumer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
         self.curuser = None
-    ### COPY
+
     async def connect(self):
-
-
 
         # Chat Ver
 
@@ -88,12 +81,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         #     self.friend_name = self.scope["url_route"]["kwargs"]["friend_name"]
         #     CHAT_OBJECT_LIST.append(self)
 
-
         CONSUMER_OBJECT_LIST.append(self)
         self.curuser = self.scope['user'].username
         await self.accept()
-
-
 
     async def receive(self, text_data):
 
@@ -101,18 +91,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # 1) self: self.scope/self.channel_name...
         # 2) text_data: original data from frontend
 
-
         json_info = json.loads(text_data)
-
-        # fetch and init data
         function = json_info["function"]
-        kw = self.scope['url_route']['kwargs']
 
         # original function zone
 
         if function == 'heartbeat':
-            await self.heat_beat()
-
+            await self.heart_beat()
 
         elif function == 'apply':
             await self.apply_friend()
@@ -131,9 +116,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
 
+
         # function zone
+
+        elif function == 'add_into_chat':
+            await self.add_chat(json_info)
+
+        elif function == 'leave_chat':
+            await self.leave_chat(json_info)
+
         elif function == 'send_message':
-            await self.send_message(kw, json_info)
+            await self.send_message(json_info)
 
         elif function == 'withdraw_message':
             await self.withdraw_message()
@@ -145,7 +138,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.delete_group(json_info)
 
         elif function == 'appoint_manage':
-            await self.appoint_manage()
+            await self.appoint_manager()
 
         elif function == 'transfer_master':
             await self.transfer_master()
@@ -153,9 +146,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         elif function == 'remove_group_member':
             await self.remove_group_member()
 
-
-
-    async def heat_beat(self):
+    async def heart_beat(self):
         pass
 
     async def apply_friend(self):
@@ -163,7 +154,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def confirm_friend(self):
         pass
-
 
     async def decline_friend(self):
         pass
@@ -174,22 +164,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def fetch_reply_list(self):
         pass
 
-
     async def disconnect(self):
-        # Leave room group
-        kw = self.scope['url_route']['kwargs']
 
-        # if 'group_name' in kw.keys():
-        #     await self.channel_layer.group_discard(self.chat_group_name, self.channel_name)
-        # elif 'friend_name' in kw.keys():
-        #     CHAT_OBJECT_LIST.remove(self)
-        #     raise StopConsumer()
+        kw = self.scope['url_route']['kwargs']
 
         CONSUMER_OBJECT_LIST.remove(self)
         raise StopConsumer()
-
-        # Clients.objects.filter(channel_name=self.channel_name).delete()
-
 
 
 
@@ -203,7 +183,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }))
 
     async def public_diffuse(self, event):
-        # Handles the "chat_message" event when it's sent to us
+
         message = event["message"]
 
         print('event in public_msg =', event)
@@ -214,11 +194,66 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }))
 
 
-    async def send_message(self, kw, json_info):
+    async def add_chat(self, json_info):
+        '''
+        json_info: {
+            'chatroom_id': '5',
+            'room_name': 'default',
+            'is_private': True
+        }
+
+        json_info: {
+            'chatroom_id': '8',
+            'room_name': 'lobby',
+            'is_private': False
+        }
+
+        '''
+        # kw = self.scope['url_route']['kwargs']
+
+        user = User.objects.get(username=self.curuser)
+        im_user = IMUser.objects.get(user=user)
+
+        if json_info.is_private:
+            # self.friend_name = kw["friend_name"]
+            pass
+
+        else:
+
+            new_onliner = OnlineUser(user_name=user.username, channel_name=self.channel_name)
+            new_onliner.save()
+
+            # self.group_name = kw["group_name"]
+            self.group_name = json_info['room_name']
+            self.chat_group_name = "chat_" + self.group_name
+
+            await self.channel_layer.group_add(self.chat_group_name, self.channel_name)
+
+
+
+    async def leave_chat(self, json_info):
+        '''
+        json_info: {
+            'chatroom_id": '5',
+            'room_name': 'default',
+            'is_private': True
+        }
+        '''
+
+        if json_info.is_private:
+            pass
+
+        else:
+            onliner = OnlineUser.objects.get(user_name=self.curuser)
+            onliner.delete()
+            if 'group_name' in kw.keys() or 'friend_name' in kw.keys():
+                await self.channel_layer.group_discard(self.chat_group_name, self.channel_name)
+
+    async def send_message(self, json_info):
+
+        kw = self.scope['url_route']['kwargs']
+
         message = json_info['message']
-
-        # username = json_info['username']
-
 
         if 'group_name' in kw.keys():
 
@@ -244,12 +279,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 }
             )
 
-
     async def create_group(self, json_info):
-        """json_info =
+        """
+        json_info =
         {
-            'selection':'list_create',
-            'member_list':['A', 'B'],
+            'selection': 'list_create',
+            'member_list': ['A', 'B'],
             'room_name': 'lob',
         }
         """
@@ -268,11 +303,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         elif selection == 'based_create':
             pass
 
-
     async def delete_group(self, json_info):
         pass
 
-    async def appoint_manage(self):
+    async def appoint_manager(self):
         pass
 
     async def transfer_master(self):
@@ -303,22 +337,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 '''
 NOT WORK
 '''
+
 
 class FriendConsumer(WebsocketConsumer):
     # self看作当前触发事件的客户端
@@ -420,7 +442,7 @@ class FriendConsumer(WebsocketConsumer):
                                     'applylist': return_field
                                 }
                             )
-                        )
+                            )
 
             elif function == 'confirm':
                 # 修改数据库
@@ -440,11 +462,11 @@ class FriendConsumer(WebsocketConsumer):
                 friend_list2.save()
 
                 friend1 = Friend(user_name=username,
-                                friend_name=apply_from,
-                                group_name=friend_list1.group_list[0])
+                                 friend_name=apply_from,
+                                 group_name=friend_list1.group_list[0])
                 friend2 = Friend(user_name=apply_from,
-                                friend_name=username,
-                                group_name=friend_list2.group_list[0])
+                                 friend_name=username,
+                                 group_name=friend_list2.group_list[0])
                 friend1.save()
                 friend2.save()
                 # 若applyer在线结果发送到applyer
