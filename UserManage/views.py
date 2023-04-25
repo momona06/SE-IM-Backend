@@ -9,7 +9,8 @@ from utils.utils_request import BAD_METHOD
 from django.contrib.auth import authenticate, get_user_model
 
 from django.contrib.auth.models import User
-from UserManage.models import IMUser, TokenPoll, create_im_user
+from UserManage.models import IMUser, TokenPoll, create_im_user, EmailCode
+from django.core import mail
 
 
 def revise(req: HttpRequest):
@@ -206,7 +207,7 @@ def user_login_pre_treat(request: HttpRequest):
                 })
             return user_login(request, username, password, "username")
         elif not email == "":
-            if not check_user_data_valid(password=password) or check_email_valid(email):
+            if not check_email_valid(email=email):
                 return JsonResponse({
                     "code": -2,
                     "info": "Invalid Userdata"
@@ -248,7 +249,8 @@ def user_login(request, identity, password, login_filter):
             if login_filter == "username":
                 tem_user = authenticate(username=identity, password=password)
             else:
-                tem_user = authenticate(email=identity, password=password)
+                cur_user = User.objects.get(email=identity).username
+                tem_user = authenticate(username=cur_user, password=password)
 
             if tem_user:
                 tem_im_user = IMUser.objects.filter(user=tem_user).first()
@@ -282,14 +284,55 @@ def user_login(request, identity, password, login_filter):
         })
 
 
+def send_email(request:HttpRequest):
+    if request.method == 'GET':
+        return HttpResponse("send_email")
+    if request.method == 'POST':
+        try:
+            body = json.loads(request.body.decode("utf-8"))
+            send_list = []
+            send_list.append(str(body['email']))
+            sms_code = '%06d' % random.randint(0, 999999)
+            cur_email = EmailCode(email=str(body['email']), code=sms_code)
+            cur_email.save()
+            mail.send_mail(
+                subject = '邮箱验证',
+                message = '您的验证码为：{0}'.format(sms_code),
+                from_email = '2840206224@qq.com',
+                recipient_list = send_list
+            )
+            return JsonResponse({
+                "code" : 0,
+                "info" : "验证码已发送"
+            })
+        except Exception as e:
+            print(e)
+            return JsonResponse({
+                "code" : -1,
+                "info" : "发送失败"
+            })
 def bind_email(request):
-    try:
-        body = json.loads(request.body.decode("utf-8"))
-        email = str(body["email"])
-    except Exception as e:
-        print(e)
-        return JsonResponse({
-            "code": -1,
-            "info": "Unexpected error"
-        })
-    return None
+    if request.method == 'GET':
+        return HttpResponse('bind_email')
+    if request.method == 'POST':
+        try:
+            body = json.loads(request.body.decode("utf-8"))
+            cur_email = str(body["email"])
+            cur_code = str(body['code'])
+            cur_user = str(body["username"])
+            if EmailCode.objects.filter(email=cur_email, code=cur_code).first() is not None:
+                user_model = get_user_model()
+                user = user_model.objects.get(username=cur_user)
+                user.email = cur_email
+                user.save()
+                return JsonResponse({
+                    "code": 0,
+                    "info":"绑定成功"
+                })
+        except Exception as e:
+            print(e)
+            return JsonResponse({
+                "code": -1,
+                "info": "验证码错误"
+            })
+        return None

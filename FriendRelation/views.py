@@ -191,10 +191,14 @@ def get_friend_list(req: HttpRequest):
             flist_len = len(flist.group_list)
 
             for i in range(flist_len):
+                return_list.append({
+                    "groupname":flist.group_list[i],
+                    "username":[]
+                })
                 for friend_name in flist.friend_list:
                     friend = Friend.objects.filter(friend_name=friend_name, user_name=username).first()
-                    group_name = friend.group_name
-                    return_list.append({"username": friend_name, "groupname": group_name})
+                    if flist.group_list[i] == friend.group_name:
+                        return_list[i]['username'].append(friend_name)
             return JsonResponse({
                 "code": 0,
                 "info": "Friendlist Get",
