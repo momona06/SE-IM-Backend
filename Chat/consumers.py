@@ -350,12 +350,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         {
             'member_list':['A', 'B'],
             'room_name': 'lob',
-            'username': 'Ashitemaru'
         }
         """
         room_name = json_info['room_name']
         member_list = json_info['member_list']
-        username = json_info['username']
+        username = None
         chat_room = create_chatroom(room_name,member_list,username)
         chat_time_line = create_chat_timeline()
         chat_room.timeline_id = chat_time_line.timeline_id
@@ -363,9 +362,31 @@ class ChatConsumer(AsyncWebsocketConsumer):
         chat_room.save()
         chat_time_line.save()
 
+        await self.send(text_data=json.dumps({
+            'function': 'create_group',
+        }))
+
 
     async def delete_group(self, json_info):
-        pass
+        """json_info =
+        {
+            'chatroom_id': 114514,
+        }
+        """
+        chatroom_id = json_info['chatroom_id']
+        chatroom = ChatRoom.objects.filter(chatroom_id=chatroom_id).first()
+
+        if chatroom is None:
+            await self.send(text_data=json.dumps({
+            'function': 'delete_group',
+            'result': 'Group not found'
+        }))
+
+        username = None
+
+
+
+
 
 
     async def appoint_manage(self):

@@ -54,7 +54,6 @@ class ChatTimeLine(models.Model):
 
 
 def create_chatroom(room_name, mem_list, master_name, is_private=False, is_notice=True, is_top=False):
-    # TODO: group id
     new_chatroom = ChatRoom(is_private=is_private, room_name=room_name,
                             mem_count=len(mem_list), mem_list=mem_list,
                             is_notice=is_notice, is_top=is_top,
