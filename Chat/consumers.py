@@ -16,46 +16,81 @@ USER_NAME_LIST = []
 
 
 
+
+
+def modify_add_request_list_with_username(other_username, add_list, answer, mode=0):
+    """
+    mode = 0 : add_list.reply
+    mode = 1 : add_list.apply
+    """
+    index = search_ensure_false_request_index(other_username, add_list, mode=mode)
+    if index == -1:
+        return False
+    if mode == 0:
+        add_list.reply_answer[index] = answer  #
+        add_list.reply_ensure[index] = True
+    elif mode == 1:
+        add_list.apply_answer[index] = answer  #
+        add_list.apply_ensure[index] = True
+    add_list.save()
+    return True
+
+
+def search_ensure_false_request_index(other_username, add_list, mode=0):
+    if mode == 0:
+        for li, peo in enumerate(add_list.reply_list):
+            if peo == other_username and not add_list.reply_ensure[li]:
+                return li
+    elif mode == 1:
+        for li, peo in enumerate(add_list.apply_list):
+            if peo == other_username and not add_list.apply_ensure[li]:
+                return li
+    return -1
+
+
+
 # channel: the specific user
 # group: a group of channels (users)
 
 class ChatConsumer(AsyncWebsocketConsumer):
 
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(args, kwargs)
+        self.curuser = None
     ### COPY
-
     async def connect(self):
 
 
-        print('kwargs =', self.scope['url_route']['kwargs'])
-        kw = self.scope['url_route']['kwargs']
-        print('channel_name=', self.channel_name)
-        # kwargs = {'room_name': 'lobby'}
-        # kwargs = {'friend_name': 'lobby'}
 
-        # self.channel_name= specific.3f537!273029f6116a45e191c37bcd8afb37c0
+        # Chat Ver
 
-        if 'group_name' in kw.keys():
+        # print('kwargs =', self.scope['url_route']['kwargs'])
+        # kw = self.scope['url_route']['kwargs']
+        # print('channel_name=', self.channel_name)
+        # # kwargs = {'room_name': 'lobby'}
+        # # kwargs = {'friend_name': 'lobby'}
+        #
+        # # self.channel_name= specific.3f537!273029f6116a45e191c37bcd8afb37c0
+        #
+        # if 'group_name' in kw.keys():
+        #
+        #     # chat_room = ChatRoom.objects.filter(chatroom_id=)
+        #     self.group_name = self.scope["url_route"]["kwargs"]["group_name"]
+        #     self.chat_group_name = "chat_" + self.group_name
+        #
+        #     await self.channel_layer.group_add(self.chat_group_name, self.channel_name)
+        #
+        #     print('group_name = ', self.group_name)
+        #     print('chat_group_name = ', self.chat_group_name)
+        #
+        # elif 'friend_name' in kw.keys():
+        #     self.friend_name = self.scope["url_route"]["kwargs"]["friend_name"]
+        #     CHAT_OBJECT_LIST.append(self)
 
-            # chat_room = ChatRoom.objects.filter(chatroom_id=)
-            self.group_name = self.scope["url_route"]["kwargs"]["group_name"]
-            self.chat_group_name = "chat_" + self.group_name
 
-
-
-
-
-            await self.channel_layer.group_add(self.chat_group_name, self.channel_name)
-
-            print('group_name = ', self.group_name)
-            print('chat_group_name = ', self.chat_group_name)
-
-        elif 'friend_name' in kw.keys():
-            self.friend_name = self.scope["url_route"]["kwargs"]["friend_name"]
-            CHAT_OBJECT_LIST.append(self)
-
-        # Clients.objects.create(channel_name=self.channel_name)
-
+        CONSUMER_OBJECT_LIST.append(self)
+        self.curuser = self.scope['user'].username
         await self.accept()
 
 
@@ -68,14 +103,36 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
         json_info = json.loads(text_data)
-        # json_data = {'message': 'res', 'friend_name': 'sw'}
 
         # fetch and init data
         function = json_info["function"]
         kw = self.scope['url_route']['kwargs']
 
+        # original function zone
+
+        if function == 'heartbeat':
+            await self.heat_beat()
+
+
+        elif function == 'apply':
+            await self.apply_friend()
+
+        elif function == 'confirm':
+            await self.confirm_friend()
+
+        elif function == 'decline':
+            await self.decline_friend()
+
+        elif function == 'fetchapplylist':
+            await self.fetch_apply_list()
+
+        elif function == 'fetchreplylist':
+            await self.fetch_reply_list()
+
+
+
         # function zone
-        if function == 'send_message':
+        elif function == 'send_message':
             await self.send_message(kw, json_info)
 
         elif function == 'withdraw_message':
@@ -98,18 +155,42 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
 
+    async def heat_beat(self):
+        pass
 
-    async def disconnect(self, message):
+    async def apply_friend(self):
+        pass
+
+    async def confirm_friend(self):
+        pass
+
+
+    async def decline_friend(self):
+        pass
+
+    async def fetch_apply_list(self):
+        pass
+
+    async def fetch_reply_list(self):
+        pass
+
+
+    async def disconnect(self):
         # Leave room group
         kw = self.scope['url_route']['kwargs']
 
-        if 'group_name' in kw.keys():
-            await self.channel_layer.group_discard(self.chat_group_name, self.channel_name)
-        elif 'friend_name' in kw.keys():
-            CHAT_OBJECT_LIST.remove(self)
-            raise StopConsumer()
+        # if 'group_name' in kw.keys():
+        #     await self.channel_layer.group_discard(self.chat_group_name, self.channel_name)
+        # elif 'friend_name' in kw.keys():
+        #     CHAT_OBJECT_LIST.remove(self)
+        #     raise StopConsumer()
+
+        CONSUMER_OBJECT_LIST.remove(self)
+        raise StopConsumer()
 
         # Clients.objects.filter(channel_name=self.channel_name).delete()
+
+
 
 
     async def private_diffuse(self, event):
@@ -222,41 +303,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
 
-def modify_add_request_list_with_username(other_username, add_list, answer, mode=0):
-    """
-    mode = 0 : add_list.reply
-    mode = 1 : add_list.apply
-    """
-    index = search_ensure_false_request_index(other_username, add_list, mode=mode)
-    if index == -1:
-        return False
-    if mode == 0:
-        add_list.reply_answer[index] = answer  #
-        add_list.reply_ensure[index] = True
-    elif mode == 1:
-        add_list.apply_answer[index] = answer  #
-        add_list.apply_ensure[index] = True
-    add_list.save()
-    return True
 
 
-def search_ensure_false_request_index(other_username, add_list, mode=0):
-    if mode == 0:
-        for li, peo in enumerate(add_list.reply_list):
-            if peo == other_username and not add_list.reply_ensure[li]:
-                return li
-    elif mode == 1:
-        for li, peo in enumerate(add_list.apply_list):
-            if peo == other_username and not add_list.apply_ensure[li]:
-                return li
-    return -1
 
+
+
+
+
+
+
+
+
+
+
+'''
+NOT WORK
+'''
 
 class FriendConsumer(WebsocketConsumer):
     # self看作当前触发事件的客户端
-    def __init__(self, *args, **kwargs):
-        super().__init__(args, kwargs)
-        self.curuser = None
 
     def websocket_token_check(self, user_token, token):
         if user_token != token:
@@ -278,32 +343,33 @@ class FriendConsumer(WebsocketConsumer):
         self.accept()
         # USER_NAME_LIST.append(username)
 
-    def receive(self, message):
+    def receive(self, text_data):
         """
         客户端浏览器向服务端发送消息，对应ws.send()
         """
 
+        # print(type(message))
+        # print(type(message['text']))
+        # print(message['text'])
+        # pprint(message)
 
-        print(type(message))
-        print(type(message['text']))
-        print(message['text'])
-        pprint(message)
+        # message = json.loads(message['text'])
+        # function = message['function']
 
-        message = json.loads(message['text'])
-        function = message['function']
+        json_info = json.loads(text_data)
+        function = json_info['function']
 
-        if message['function'] == 'heartbeat':
+        if json_info['function'] == 'heartbeat':
             self.send(text_data=json.dumps(
                 {
                     'function': 'heartbeatconfirm'
-                    # 'receivelist': return_field
                 }
             )
             )
 
         else:
-            username = message['username']
-            function = message['function']
+            username = json_info['username']
+            function = json_info['function']
 
             user_model = get_user_model()
             user = user_model.objects.get(username=username)
@@ -311,8 +377,8 @@ class FriendConsumer(WebsocketConsumer):
 
             if function == 'apply':
                 # 修改数据库
-                apply_from = message['from']
-                apply_to = message['to']
+                apply_from = json_info['from']
+                apply_to = json_info['to']
                 applyer_add_list = AddList.objects.get(user_name=apply_from)
                 receiver_add_list = AddList.objects.get(user_name=apply_to)
 
@@ -358,8 +424,8 @@ class FriendConsumer(WebsocketConsumer):
 
             elif function == 'confirm':
                 # 修改数据库
-                apply_from = message['from']
-                apply_to = message['to']
+                apply_from = json_info['from']
+                apply_to = json_info['to']
                 receiver_add_list = AddList.objects.get(user_name=apply_to)
                 applyer_add_list = AddList.objects.get(user_name=apply_from)
 
@@ -387,8 +453,8 @@ class FriendConsumer(WebsocketConsumer):
 
             elif function == 'decline':
                 # 修改数据库
-                apply_from = message['from']
-                apply_to = message['to']
+                apply_from = json_info['from']
+                apply_to = json_info['to']
                 receiver_add_list = AddList.objects.get(user_name=apply_to)
                 applyer_add_list = AddList.objects.get(user_name=apply_from)
 
@@ -443,7 +509,7 @@ class FriendConsumer(WebsocketConsumer):
                 self.send(text_data=function + "Unknown Function")
 
 
-def websocket_disconnect(self, message):
+def disconnect(self):
     """
     客户端浏览器主动断开连接，对应ws.onclose()
     """
