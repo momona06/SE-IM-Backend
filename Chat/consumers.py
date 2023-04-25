@@ -7,13 +7,13 @@ from UserManage.models import IMUser, TokenPoll
 from FriendRelation.models import FriendList, Friend, AddList
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model, authenticate
-import time
 
 # 定义一个列表，用于存放当前在线的用户
 CONSUMER_OBJECT_LIST = []
 
 CONSUMER2_OBJECT_LIST = []
 USER_NAME_LIST = []
+
 
 
 class ChatConsumer(WebsocketConsumer):
@@ -137,17 +137,6 @@ class FriendConsumer(WebsocketConsumer):
         function = message['function']
 
         if message['function'] == 'heartbeat':
-            # add_list = AddList.objects.get(user_name=username)
-            # return_field = []
-            # flen = len(add_list.reply_list)
-            # for li in range(flen):
-            #     return_field.append(
-            #         {
-            #             "username": add_list.reply_list[li],
-            #             "is_confirmed": add_list.reply_answer[li],
-            #             "make_sure": add_list.reply_ensure[li]
-            #         }
-            #     )
             self.send(text_data=json.dumps(
                 {
                     'function': 'heartbeatconfirm'
