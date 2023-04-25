@@ -81,7 +81,7 @@ async def get_power(chatroom, username):
         return 0
 
 
-class ChatConsumer(AsyncWebsocketConsumer):
+class UserConsumer(AsyncWebsocketConsumer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
