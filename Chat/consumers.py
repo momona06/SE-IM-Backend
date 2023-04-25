@@ -394,6 +394,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'function': function_name,
                 'message': 'User not found'
             }))
+        return manager_user
 
     async def create_group(self, json_info):
         """json_info =
@@ -459,16 +460,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         if not chatroom is None:
             username = None
+            manager_name = json_info['manager_name']
 
             if await self.check_chatroom_master_with_username(function_name, chatroom, username):
-                manager_user = User.objects.filter(username=username).first()
+                manager_user = await self.check_user_exist_with_username(function_name,manager_name)
 
-                if manager_user is None:
-                    await self.send(text_data=json.dumps({
-                        'function': function_name,
-                        'message': 'User not found'
-                    }))
-                else:
+                if not manager_user is None:
                     manager_user_id = manager_user.id
                     if manager_user_id in chatroom.manager_list:
                         await self.send(text_data=json.dumps({
@@ -499,6 +496,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
             username = None
 
             if await self.check_chatroom_master_with_username(function_name,chatroom,username):
+                new_master_name = json_info['new_master_name']
+
+                new_master = self.check_user_exist_with_username(function_name,new_master_name)
+                if not new_master is None:
+                    chatroom.master_name = new_master_name
+                    await self.send(text_data=json.dumps({
+                        'function': function_name,
+                        'message': 'Success'
+                    }))
 
 
 
