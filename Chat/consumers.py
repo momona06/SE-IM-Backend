@@ -70,6 +70,17 @@ def id_list_to_username_list(id_list):
     return res_list
 
 
+async def get_power(chatroom, username):
+    user_id = User.objects.get(username=username).id
+
+    if user_id == chatroom.master_name:
+        return 2
+    elif user_id in chatroom.manager_list:
+        return 1
+    else:
+        return 0
+
+
 class ChatConsumer(AsyncWebsocketConsumer):
 
     def __init__(self, *args, **kwargs):
@@ -539,7 +550,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
             user = await self.check_user_exist(function_name, username)
             member = await self.check_user_exist(function_name, member_name, message='Member not found')
 
+            if not user is None and not member is None:
+                if user.id == chatroom.
 
+                if not user.id in chatroom.manager_list:
+                    await self.send(text_data=json.dumps({
+                        'function': function_name,
+                        'message': 'You are not the group manager'
+                    }))
+                else:
+                    if
 
 
 
