@@ -147,7 +147,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.remove_group_member()
 
     async def heat_beat(self):
-        self.send(text_data=json.dumps(
+        await self.send(text_data=json.dumps(
             {
                 'function': 'heartbeatconfirm'
             }
@@ -171,9 +171,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if not search_ensure_false_request_index(apply_to, applyer_add_list, mode=1) == -1:
             # 确保被回复前不能重复发送
             # mode=1意为在applyer_add_list.applylist中寻找apply_to
-            self.send(text_data="Has Been Sent")
+            await self.send(text_data="Has Been Sent")
         elif apply_to in FriendList.objects.get(user_name=apply_from).friend_list:
-            self.send(text_data="Is Already a Friend")
+            await self.send(text_data="Is Already a Friend")
         else:
             applyer_add_list.apply_list.append(apply_to)
             applyer_add_list.apply_answer.append(False)
@@ -393,7 +393,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 NOT WORK
 '''
 
-
+'''
 class FriendConsumer(WebsocketConsumer):
     # self看作当前触发事件的客户端
 
@@ -591,4 +591,4 @@ def disconnect(self):
     # USER_NAME_LIST.remove(username)
 
     CONSUMER_OBJECT_LIST.remove(self)
-    raise StopConsumer()
+    raise StopConsumer()'''
