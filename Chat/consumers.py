@@ -29,7 +29,7 @@ async def modify_add_request_list_with_username(other_username, add_list, answer
     elif mode == 1:
         add_list.apply_answer[index] = answer  #
         add_list.apply_ensure[index] = True
-    add_list.save()
+    await sync_to_async(add_list.save)()
     return True
 
 
@@ -205,12 +205,12 @@ class UserConsumer(AsyncWebsocketConsumer):
             applyer_add_list.apply_list.append(apply_to)
             applyer_add_list.apply_answer.append(False)
             applyer_add_list.apply_ensure.append(False)
-            applyer_add_list.save()
+            await sync_to_async(applyer_add_list.save)()
 
             receiver_add_list.reply_list.append(apply_from)
             receiver_add_list.reply_answer.append(False)
             receiver_add_list.reply_ensure.append(False)
-            receiver_add_list.save()
+            await sync_to_async(receiver_add_list.save)()
 
             # 若receiver在线申请发送到receiver
 
@@ -248,10 +248,10 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         friend_list1 = await sync_to_async(FriendList.objects.get)(user_name=username)
         friend_list1.friend_list.append(apply_from)
-        friend_list1.save()
+        await sync_to_async(friend_list1.save)()
         friend_list2 = await sync_to_async(FriendList.objects.get)(user_name=apply_from)
         friend_list2.friend_list.append(username)
-        friend_list2.save()
+        await sync_to_async(friend_list2.save)()
 
         friend1 = Friend(user_name=username,
                          friend_name=apply_from,
@@ -259,8 +259,8 @@ class UserConsumer(AsyncWebsocketConsumer):
         friend2 = Friend(user_name=apply_from,
                          friend_name=username,
                          group_name=friend_list2.group_list[0])
-        friend1.save()
-        friend2.save()
+        await sync_to_async(friend1.save)()
+        await sync_to_async(friend2.save)()
         # 若applyer在线结果发送到applyer
         return_field = {"function": "confirm"}
         await self.send(text_data=json.dumps(return_field))
@@ -433,8 +433,8 @@ class UserConsumer(AsyncWebsocketConsumer):
         chat_time_line = create_chat_timeline()
         chat_room.timeline_id = chat_time_line.timeline_id
         chat_time_line.chatroom_id = chat_room.chatroom_id
-        chat_room.save()
-        chat_time_line.save()
+        await sync_to_async(chat_room.save)()
+        await sync_to_async(chat_time_line.save)()
 
         await self.send(text_data=json.dumps({
             'function': 'create_group',
@@ -564,7 +564,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                     }))
                 else:
                     chatroom.manager_list.remove(member.id)
-                    chatroom.save()
+                    await sync_to_async(chatroom.save)()
                     await self.send(text_data=json.dumps({
                         'function': function_name,
                         'message': 'Success'
