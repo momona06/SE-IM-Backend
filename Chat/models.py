@@ -74,7 +74,25 @@ def delete_chatroom():
     # ondel_chatroom = ChatRoom.objects.filter()
     pass
 
+# Design philosophy: all info about the message itself should be put here
 
+# a specific message
+class Message(models.Model):
+    msg_id = models.BigAutoField(primary_key=True)
+
+    # room_id = models.BigIntegerField(default=0)
+    # timeline_id = models.BigIntegerField(default=0)
+
+    type = models.CharField(max_length=20)
+    body = models.CharField(max_length=500)
+    time = models.CharField(max_length=100)
+    sender = models.CharField(max_length=100)
+    is_reply = models.BooleanField(default=False)
+    rel_id = models.BigIntegerField(default=0)
+
+    is_read = ArrayField(
+        models.BooleanField(default=False)
+    )
 # Design philosophy: all the info about the room should be put here
 # Pay attention: Public and Private Chatroom classified by the field 'is_private'
 
@@ -82,7 +100,7 @@ def delete_chatroom():
 class ChatRoom(models.Model):
     chatroom_id = models.BigAutoField(primary_key=True)
 
-    timeline_id = models.BigIntegerField(default=0)
+    #timeline_id = models.BigIntegerField(default=0)
 
     # mark the same room_name case
     # dup_id = models.BigIntegerField(default=0)
@@ -96,6 +114,9 @@ class ChatRoom(models.Model):
 
     mem_list = ArrayField(
         models.CharField(max_length=100)
+    )
+    not_read = ArrayField(
+        models.IntegerField(default=0)
     )
 
     is_notice = ArrayField(
@@ -111,7 +132,9 @@ class ChatRoom(models.Model):
     manager_list = ArrayField(
         models.CharField(max_length=100)
     )
-
+    mes_list = ArrayField(
+        Message()
+    )
     notice_id = models.BigIntegerField(default=0)
 
     notice_list = ArrayField(
@@ -127,25 +150,7 @@ class ChatRoom(models.Model):
 
 
 
-# Design philosophy: all info about the message itself should be put here
 
-# a specific message
-class Message(models.Model):
-    msg_id = models.BigAutoField(primary_key=True)
-
-    # room_id = models.BigIntegerField(default=0)
-    # timeline_id = models.BigIntegerField(default=0)
-
-    type = models.CharField(max_length=20)
-    body = models.CharField(max_length=500)
-    time = models.CharField(max_length=100)
-
-    is_reply = models.BooleanField(default=False)
-    rel_id = models.BigIntegerField(default=0)
-
-    is_read = ArrayField(
-        models.BooleanField(default=False)
-    )
 
 
 
