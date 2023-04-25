@@ -2,6 +2,19 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
 
+
+
+
+def create_chat_timeline():
+    new_timeline = ChatTimeLine()
+    new_timeline.save()
+    return new_timeline
+
+def delete_chat_timeline():
+    pass
+
+
+
 # Design philosophy: remove info about the chatroom and only reserve the necessary info
 
 # timeline for storage owned by a specific chatroom
@@ -19,7 +32,6 @@ class ChatTimeLine(models.Model):
     cursor_list = ArrayField(
         models.BigIntegerField(default=0)
     )
-
 
 
 
@@ -47,6 +59,21 @@ class ChatTimeLine(models.Model):
 
 
 
+def create_chatroom(room_name, is_private, mem_count, mem_list, is_notice, is_top, master_name, manager_list):
+    # TODO: DEL DUP
+    # chatroom_list = ChatRoom.objects.filter(room_name = room_name)
+    new_chatroom = ChatRoom(is_private = is_private, room_name = room_name,
+                            mem_count = len(mem_list), mem_list = mem_list,
+                            is_notice = is_notice, is_top = is_top,
+                            master_name = master_name, manager_list = [],
+                            notice_id = 0, notice_list = [])
+    new_chatroom.save()
+    return new_chatroom
+
+def delete_chatroom():
+    # ondel_chatroom = ChatRoom.objects.filter()
+    pass
+
 
 # Design philosophy: all the info about the room should be put here
 # Pay attention: Public and Private Chatroom classified by the field 'is_private'
@@ -55,9 +82,15 @@ class ChatTimeLine(models.Model):
 class ChatRoom(models.Model):
     chatroom_id = models.BigAutoField(primary_key=True)
 
-    is_private = models.BooleanField(default=True)
+    timeline_id = models.BigIntegerField(default=0)
 
+    # mark the same room_name case
+    # dup_id = models.BigIntegerField(default=0)
+
+    # a chatroom must own a specified room_name
     room_name = models.CharField(max_length=30, default='private_chat')
+
+    is_private = models.BooleanField(default=True)
 
     mem_count = models.BigIntegerField(default=2)
 

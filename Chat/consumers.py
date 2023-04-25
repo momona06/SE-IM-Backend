@@ -1,14 +1,14 @@
 from channels.exceptions import StopConsumer
 from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
 from channels.layers import get_channel_layer
-from pprint import *
+from pprint import pprint
 import json
 
 from UserManage.models import IMUser, TokenPoll
 from FriendRelation.models import FriendList, Friend, AddList
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model, authenticate
-
+from Chat.models import *
 
 # 定义一个列表，用于存放当前在线的用户
 CHAT_OBJECT_LIST = []
@@ -21,6 +21,10 @@ USER_NAME_LIST = []
 # group: a group of channels (users)
 
 class ChatConsumer(AsyncWebsocketConsumer):
+
+
+    ### COPY
+
     async def connect(self):
 
 
@@ -30,11 +34,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # kwargs = {'room_name': 'lobby'}
         # kwargs = {'friend_name': 'lobby'}
 
-        # channel_name= specific.3f537!273029f6116a45e191c37bcd8afb37c0
+        # self.channel_name= specific.3f537!273029f6116a45e191c37bcd8afb37c0
 
         if 'group_name' in kw.keys():
+
+            # chat_room = ChatRoom.objects.filter(chatroom_id=)
             self.group_name = self.scope["url_route"]["kwargs"]["group_name"]
-            self.chat_group_name = "chat_%s" % self.group_name
+            self.chat_group_name = "chat_" + self.group_name
+
+
+
+
 
             await self.channel_layer.group_add(self.chat_group_name, self.channel_name)
 
@@ -73,10 +83,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.withdraw_message()
 
         elif function == 'create_group':
-            await self.create_group()
+            await self.create_group(json_info)
 
         elif function == 'delete_group':
-            await self.delete_group()
+            await self.delete_group(json_info)
 
         elif function == 'appoint_manage':
             await self.appoint_manage()
@@ -95,10 +105,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         kw = self.scope['url_route']['kwargs']
 
         if 'group_name' in kw.keys():
-            await self.channel_layer.group_discard(
-                self.chat_group_name,
-                self.channel_name
-            )
+            await self.channel_layer.group_discard(self.chat_group_name, self.channel_name)
         elif 'friend_name' in kw.keys():
             CHAT_OBJECT_LIST.remove(self)
             raise StopConsumer()
@@ -158,10 +165,30 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
 
 
-    async def create_group(self, event):
-        pass
+    async def create_group(self, json_info):
+        '''json_info =
+        {
+            'selection':'list_create',
+            'member_list':['A', 'B'],
+            'room_name': 'lob',
+        }
+        '''
+        room_name = json_info['room_name']
+        member_list = json_info['member_list']
+        if selection == 'list_create':
 
-    async def delete_group(self, event):
+            chat_room = create_chatroom()
+            chat_time_line = create_chat_timeline()
+            chat_room.timeline_id = chat_time_line.timeline_id
+            chat_time_line.chatroom_id = chat_room.chatroom_id
+            chat_room.save()
+            chat_time_line.save()
+
+        elif selection == 'based_create':
+            pass
+
+
+    async def delete_group(self, json_info):
         pass
 
     async def appoint_manage(self):
@@ -221,7 +248,7 @@ class FriendConsumer(WebsocketConsumer):
         if user_token != token:
             self.close()
 
-    def websocket_connect(self, message):
+    def connect(self):
         """
         客户端浏览器发来连接请求之后触发，对应ws.onopen()
         """
@@ -231,16 +258,23 @@ class FriendConsumer(WebsocketConsumer):
         # self.send()：发送信息到客户端触发onmessage函数，可以发送json信息
         # self.scope: 本次连接的基本信息，dict格式
 
-        # 服务端接收连接，向客户端浏览器发送一个加密字符串
-        print(self.channel_name)
         CONSUMER_OBJECT_LIST.append(self)
         self.accept()
-        # USER_NAME_LIST.append(username)
 
-    def websocket_receive(self, message):
+    def receive(self, message):
         """
         客户端浏览器向服务端发送消息，对应ws.send()
         """
+
+
+        # json_info = json.loads(text_data)
+        # # json_data = {'message': 'res', 'friend_name': 'sw'}
+        #
+        # # fetch and init data
+        # function = json_info["function"]
+        # kw = self.scope['url_route']['kwargs']
+
+
         print(type(message))
         print(type(message['text']))
         print(message['text'])
@@ -400,11 +434,10 @@ class FriendConsumer(WebsocketConsumer):
 
 
 
-    def websocket_disconnect(self, message):
+    def disconnect(self, message):
         """
         客户端浏览器主动断开连接，对应ws.onclose()
         """
 
-        # USER_NAME_LIST.remove(username)
         CONSUMER_OBJECT_LIST.remove(self)
         raise StopConsumer()

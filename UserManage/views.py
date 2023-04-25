@@ -9,7 +9,7 @@ from utils.utils_request import BAD_METHOD
 from django.contrib.auth import authenticate, get_user_model
 
 from django.contrib.auth.models import User
-from UserManage.models import IMUser, TokenPoll, CreateIMUser
+from UserManage.models import IMUser, TokenPoll, create_im_user
 
 
 def revise(req: HttpRequest):
@@ -155,7 +155,7 @@ def user_register(request: HttpRequest):
 
                 tem_user = User.objects.create_user(username=username, password=password)
 
-                tem_im_user = CreateIMUser(tem_user, get_new_token())
+                tem_im_user = create_im_user(tem_user, get_new_token())
                 tem_im_user.save()
 
                 group = ['default']

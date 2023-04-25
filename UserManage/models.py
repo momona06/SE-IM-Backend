@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-def CreateIMUser(user, token):
+def create_im_user(user, token):
     im_user = IMUser(user=user, token=token)
     im_user.save()
     return im_user
