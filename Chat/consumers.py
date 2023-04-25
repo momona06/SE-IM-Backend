@@ -414,13 +414,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if not chatroom is None:
             username = None
 
-            if chatroom.master_name != username:
-                await self.send(text_data=json.dumps({
-                    'function': function_name,
-                    'message': 'You are not the group master'
-                }))
-
-            else:
+            if await self.check_chatroom_master_with_username(function_name,chatroom,username):
                 chat_timeline = ChatTimeLine.objects.get(chatroom.timeline_id)
                 chatroom.delete()
                 chat_timeline.delete()
@@ -442,10 +436,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
         function_name = 'appoint_manage'
 
         chatroom_id = json_info['chatroom_id']
-        chatroom = self.find_chatroom_with_chatroom_id(function_name,chatroom_id)
+        chatroom = await self.find_chatroom_with_chatroom_id(function_name,chatroom_id)
 
         if not chatroom is None:
             username = None
+
+            if await self.check_chatroom_master_with_username(function_name, chatroom, username):
+                manage_list = chatroom.manager_list
+
         pass
 
 
