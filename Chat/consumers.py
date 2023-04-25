@@ -149,7 +149,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == 'fetchapplylist':
             await self.fetch_apply_list(json_info)
 
-        elif function == 'fetchreplylist':
+        elif function == 'fetchreceivelist':
             await self.fetch_reply_list(json_info)
 
 
