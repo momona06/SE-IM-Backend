@@ -108,7 +108,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
         elif function == 'apply':
-            await self.apply_friend()
+            await self.apply_friend(text_data)
 
         elif function == 'confirm':
             await self.confirm_friend(username, json_info)
@@ -385,7 +385,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         username = None
 
-        
+        if chatroom.master_name != username:
+            await self.send(text_data=json.dumps({
+                'function': 'delete_group',
+                'message': 'You are not the group master'
+            }))
 
 
 
