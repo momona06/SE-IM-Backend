@@ -153,7 +153,7 @@ class FriendConsumer(WebsocketConsumer):
         if user_token != token:
             self.close()
 
-    def connect(self, message):
+    def websocket_connect(self, message):
         """
         客户端浏览器发来连接请求之后触发，对应ws.onopen()
         """
@@ -168,7 +168,7 @@ class FriendConsumer(WebsocketConsumer):
         self.accept()
         # USER_NAME_LIST.append(username)
 
-    def receive(self, message):
+    def websocket_receive(self, message):
         """
         客户端浏览器向服务端发送消息，对应ws.send()
         """
@@ -334,7 +334,7 @@ class FriendConsumer(WebsocketConsumer):
 
 
 
-    def disconnect(self, message):
+    def websocket_disconnect(self, message):
         """
         客户端浏览器主动断开连接，对应ws.onclose()
         """
