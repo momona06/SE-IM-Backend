@@ -48,13 +48,23 @@ def search_ensure_false_request_index(other_username, add_list, mode=0):
 # channel: the specific user
 # group: a group of channels (users)
 
-def member_list_to_id_list(member_list):
+def username_list_to_id_list(username_list):
     res_list = []
 
-    for i in member_list:
+    for i in username_list:
         user = User.objects.filter(username=i).first()
         if not user is None:
             res_list.append(user.id)
+
+    return res_list
+
+def id_list_to_username_list(id_list):
+    res_list = []
+
+    for i in id_list:
+        user = User.objects.filter(id=i).first()
+        if not user is None:
+            res_list.append(user.username)
 
     return res_list
 
@@ -149,7 +159,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.delete_group(json_info)
 
         elif function == 'appoint_manage':
-            await self.appoint_manage()
+            await self.appoint_manage(json_info)
 
         elif function == 'transfer_master':
             await self.transfer_master()
@@ -387,7 +397,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         member_list = json_info['member_list']
         username = None
 
-        chat_room = create_chatroom(room_name, member_list_to_id_list(member_list), username)
+        chat_room = create_chatroom(room_name, username_list_to_id_list(member_list), username)
         chat_time_line = create_chat_timeline()
         chat_room.timeline_id = chat_time_line.timeline_id
         chat_time_line.chatroom_id = chat_room.chatroom_id
@@ -443,6 +453,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
             if await self.check_chatroom_master_with_username(function_name, chatroom, username):
                 manage_list = chatroom.manager_list
+
 
         pass
 
