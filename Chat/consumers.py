@@ -1,12 +1,11 @@
 from channels.exceptions import StopConsumer
-from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
-from pprint import *
+from channels.generic.websocket import  AsyncWebsocketConsumer
 import json
 
-from UserManage.models import IMUser, TokenPoll
+from UserManage.models import IMUser
 from FriendRelation.models import FriendList, Friend, AddList
 from django.contrib.auth.models import User
-from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth import get_user_model
 from Chat.models import *
 
 # 定义一个列表，用于存放当前在线的用户
@@ -134,26 +133,23 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         # original function zone
 
-        username = json_info['username']
-
         if function == 'heartbeat':
             await self.heat_beat()
-
 
         elif function == 'apply':
             await self.apply_friend(text_data)
 
         elif function == 'confirm':
-            await self.confirm_friend(username, json_info)
+            await self.confirm_friend(json_info)
 
         elif function == 'decline':
             await self.decline_friend(json_info)
 
         elif function == 'fetchapplylist':
-            await self.fetch_apply_list(username)
+            await self.fetch_apply_list(json_info)
 
         elif function == 'fetchreplylist':
-            await self.fetch_reply_list(username)
+            await self.fetch_reply_list(json_info)
 
 
 
@@ -186,7 +182,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             }
         )
         )
-        pass
 
     async def apply_friend(self, text_data):
         json_info = json.loads(text_data)
@@ -238,9 +233,9 @@ class UserConsumer(AsyncWebsocketConsumer):
                         }
                     )
                     )
-        pass
 
-    async def confirm_friend(self, username, json_info):
+    async def confirm_friend(self, json_info):
+        username = json_info['username']
         # 修改数据库
         apply_from = json_info['from']
         apply_to = json_info['to']
@@ -282,10 +277,12 @@ class UserConsumer(AsyncWebsocketConsumer):
         return_field = {"function": "decline"}
         await self.send(text_data=json.dumps(return_field))
 
-    async def fetch_apply_list(self, username):
+    async def fetch_apply_list(self, json_info):
+        username = json_info['username']
         await self.fetch_addlist_attribute(username, 'applylist')
 
-    async def fetch_reply_list(self, username):
+    async def fetch_reply_list(self, json_info):
+        username = json_info['username']
         await self.fetch_addlist_attribute(username, 'receivelist')
 
     async def fetch_addlist_attribute(self, username, attribute_name):
