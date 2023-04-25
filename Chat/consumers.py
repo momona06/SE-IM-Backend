@@ -163,10 +163,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.appoint_manager(json_info)
 
         elif function == 'transfer_master':
-            await self.transfer_master()
+            await self.transfer_master(json_info)
 
         elif function == 'remove_group_member':
-            await self.remove_group_member()
+            await self.remove_group_member(json_info)
 
     async def heat_beat(self):
         await self.send(text_data=json.dumps(
@@ -367,7 +367,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 }
             )
 
-    async def find_chatroom_with_chatroom_id(self, function_name, chatroom_id):
+    async def find_chatroom(self, function_name, chatroom_id):
         chatroom = ChatRoom.objects.filter(chatroom_id=chatroom_id).first()
 
         if chatroom is None:
@@ -378,7 +378,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         return chatroom
 
-    async def check_chatroom_master_with_username(self, function_name, chatroom, username):
+    async def check_chatroom_master(self, function_name, chatroom, username):
         if chatroom.master_name != username:
             await self.send(text_data=json.dumps({
                 'function': function_name,
@@ -387,17 +387,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return False
         return True
 
-    async def check_user_exist_with_username(self, function_name, username):
+    async def check_user_exist(self, function_name, username, message='User not found'):
         manager_user = User.objects.filter(username=username).first()
 
         if manager_user is None:
             await self.send(text_data=json.dumps({
                 'function': function_name,
-                'message': 'User not found'
+                'message': message
             }))
         return manager_user
 
-    async def check_user_in_chatroom_with_username(self, function_name, chatroom, username):
+    async def check_user_in_chatroom(self, function_name, chatroom, username):
         user_id = User.objects.get(username=username).id
         if user_id in chatroom.mem_list:
             return True
@@ -440,12 +440,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         function_name = 'delete_group'
 
         chatroom_id = json_info['chatroom_id']
-        chatroom = await self.find_chatroom_with_chatroom_id(function_name, chatroom_id)
+        chatroom = await self.find_chatroom(function_name, chatroom_id)
 
         if not chatroom is None:
             username = None
 
-            if await self.check_chatroom_master_with_username(function_name, chatroom, username):
+            if await self.check_chatroom_master(function_name, chatroom, username):
                 chat_timeline = ChatTimeLine.objects.get(chatroom.timeline_id)
                 chatroom.delete()
                 chat_timeline.delete()
@@ -466,17 +466,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         function_name = 'appoint_manager'
 
         chatroom_id = json_info['chatroom_id']
-        chatroom = await self.find_chatroom_with_chatroom_id(function_name, chatroom_id)
+        chatroom = await self.find_chatroom(function_name, chatroom_id)
 
         if not chatroom is None:
             username = None
             manager_name = json_info['manager_name']
 
-            if await self.check_chatroom_master_with_username(function_name, chatroom, username):
-                manager_user = await self.check_user_exist_with_username(function_name, manager_name)
+            if await self.check_chatroom_master(function_name, chatroom, username):
+                manager_user = await self.check_user_exist(function_name, manager_name)
 
                 if not manager_user is None and \
-                        await self.check_user_in_chatroom_with_username(function_name, chatroom, manager_name):
+                        await self.check_user_in_chatroom(function_name, chatroom, manager_name):
                     manager_user_id = manager_user.id
                     if manager_user_id in chatroom.manager_list:
                         await self.send(text_data=json.dumps({
@@ -500,17 +500,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         function_name = 'transfer_master'
 
         chatroom_id = json_info['chatroom_id']
-        chatroom = await self.find_chatroom_with_chatroom_id(function_name, chatroom_id)
+        chatroom = await self.find_chatroom(function_name, chatroom_id)
 
         if not chatroom is None:
             username = None
 
-            if await self.check_chatroom_master_with_username(function_name, chatroom, username):
+            if await self.check_chatroom_master(function_name, chatroom, username):
                 new_master_name = json_info['new_master_name']
 
-                new_master = self.check_user_exist_with_username(function_name, new_master_name)
+                new_master = await self.check_user_exist(function_name, new_master_name)
                 if not new_master is None and \
-                        await self.check_user_in_chatroom_with_username(function_name,chatroom,new_master_name):
+                        await self.check_user_in_chatroom(function_name, chatroom, new_master_name):
                     chatroom.master_name = new_master_name
                     await self.send(text_data=json.dumps({
                         'function': function_name,
@@ -520,8 +520,29 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def release_notice(self):
         pass
 
-    async def remove_group_member(self):
-        pass
+    async def remove_group_member(self, json_info):
+        """json_info =
+        {
+            'chatroom_id': 114514,
+            'member_name': 'ashitemaru'
+        }
+        """
+        function_name = 'remove_group_member'
+
+        chatroom_id = json_info['chatroom_id']
+        chatroom = await self.find_chatroom(function_name, chatroom_id)
+
+        if not chatroom is None:
+            username = None
+            member_name = json_info['member_name']
+
+            user = await self.check_user_exist(function_name, username)
+            member = await self.check_user_exist(function_name, member_name, message='Member not found')
+
+
+
+
+
 
     async def withdraw_message(self):
         pass
