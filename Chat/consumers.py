@@ -395,6 +395,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             return False
         return True
 
+
     async def check_user_exist(self, function_name, username, message='User not found'):
         manager_user = User.objects.filter(username=username).first()
 
