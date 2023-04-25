@@ -386,6 +386,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return False
         return True
 
+    async def check_user_exist_with_username(self, function_name,username):
+        manager_user = User.objects.filter(username=username).first()
+
+        if manager_user is None:
+            await self.send(text_data=json.dumps({
+                'function': function_name,
+                'message': 'User not found'
+            }))
+
     async def create_group(self, json_info):
         """json_info =
         {
@@ -443,7 +452,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }
         """
 
-        function_name = 'appoint_manage'
+        function_name = 'appoint_manager'
 
         chatroom_id = json_info['chatroom_id']
         chatroom = await self.find_chatroom_with_chatroom_id(function_name,chatroom_id)
@@ -464,7 +473,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     if manager_user_id in chatroom.manager_list:
                         await self.send(text_data=json.dumps({
                             'function': function_name,
-                            'message': 'User is aleady an manager'
+                            'message': 'User is already an manager'
                         }))
                     else:
                         chatroom.manager_list.append(manager_user_id)
@@ -474,14 +483,24 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         }))
 
 
+    async def transfer_master(self,json_info):
+        """json_info =
+        {
+            'chatroom_id': 114514,
+            'new_master_name': 'ashitemaru'
+        }
+        """
+        function_name = 'transfer_master'
+
+        chatroom_id = json_info['chatroom_id']
+        chatroom = await self.find_chatroom_with_chatroom_id(function_name,chatroom_id)
+
+        if not chatroom is None:
+            username = None
+
+            if await self.check_chatroom_master_with_username(function_name,chatroom,username):
 
 
-
-        pass
-
-
-    async def transfer_master(self):
-        pass
 
 
     async def release_notice(self):
