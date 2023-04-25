@@ -10,7 +10,6 @@ from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model, authenticate
 
 
-
 # 定义一个列表，用于存放当前在线的用户
 CONSUMER_OBJECT_LIST = []
 CONSUMER2_OBJECT_LIST = []
@@ -18,7 +17,7 @@ USER_NAME_LIST = []
 
 
 
-# channel: a specific user
+# channel: the specific user
 # group: a group of channels (users)
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -26,12 +25,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
         print('kwargs =', self.scope['url_route']['kwargs'])
         kw = self.scope['url_route']['kwargs']
         print('channel_name=', self.channel_name)
-        if 'room_name' in kw.keys():
-            self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
-            self.room_group_name = "chat_%s" % self.room_name
-            await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-            print('room_name = ', self.room_name)
-            print('room_group_name = ', self.room_group_name)
+        # kwargs = {'room_name': 'lobby'}
+        # kwargs = {'friend_name': 'lobby'}
+
+        # channel_name= specific.3f537!273029f6116a45e191c37bcd8afb37c0
+
+        if 'group_name' in kw.keys():
+            self.group_name = self.scope["url_route"]["kwargs"]["group_name"]
+            self.chat_group_name = "chat_%s" % self.group_name
+
+            await self.channel_layer.group_add(self.chat_group_name, self.channel_name)
+
+            print('group_name = ', self.group_name)
+            print('chat_group_name = ', self.chat_group_name)
+
         elif 'friend_name' in kw.keys():
             self.friend_name = self.scope["url_route"]["kwargs"]["friend_name"]
             CONSUMER_OBJECT_LIST.append(self)
@@ -40,70 +47,54 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         await self.accept()
 
-    # Receive message from WebSocket
-    async def receive(self, text_data):
-        json_data = json.loads(text_data)
-        message = json_data["message"]
-        print('json_data =', json_data)
-        # Send message to room group
 
+    async def receive(self, text_data):
+
+        # Data
+        # 1) self: self.scope/self.channel_name...
+        # 2) text_data: original data from frontend
+
+
+        json_info = json.loads(text_data)
+        # json_data = {'message': 'res', 'friend_name': 'sw'}
+
+        # fetch and init data
+        message = json_info["message"]
+        function = json_info["function"]
         kw = self.scope['url_route']['kwargs']
 
-        if 'room_name' in kw.keys():
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    "type": "chat_message",
-                    "message": message
-                }
-            )
-        elif 'friend_name' in kw.keys():
-            # channel_layer = get_channel_layer()
-            # await channel_layer.send(
-            #     "channel_name",
-            #     {
-            #         "type": "channel_message",
-            #         "text": "Hello there!"
-            #     }
-            # )
+        # function zone
+        if function == 'send_message':
+            await self.send_message(kw, json_info, message)
 
-            friend_name = json_data['friend_name']
-            for obj in CONSUMER_OBJECT_LIST:
-                if obj.friend_name == friend_name:
-                    self.send(text_data=json.dumps(
-                        {
-                        'message': message,
-                        }
-                        )
-                    )
+        elif function == 'withdraw_message':
+            await self.withdraw_message()
+
+        elif function == 'create_group':
+            await self.create_group()
+
+        elif function == 'delete_group':
+            await self.delete_group()
+
+        elif function == 'appoint_manage':
+            await self.appoint_manage()
+
+        elif function == 'transfer_master':
+            await self.transfer_master()
+
+        elif function == 'remove_group_member':
+            await self.remove_group_member()
 
 
-
-    async def chat_message(self, event):
-        # Handles the "chat_message" event when it's sent to us
-        message = event["message"]
-        print('event =', event)
-        # Send message to WebSocket
-        await self.send(text_data=json.dumps({
-            "message": message
-        }))
-
-    async def channel_message(self, event):
-
-        message = event["message"]
-        print('event =', event)
-        await self.send(text_data=json.dumps({
-            "message": message
-        }))
 
 
     async def disconnect(self, message):
         # Leave room group
         kw = self.scope['url_route']['kwargs']
 
-        if 'room_name' in kw.keys():
+        if 'group_name' in kw.keys():
             await self.channel_layer.group_discard(
-                self.room_group_name,
+                self.chat_group_name,
                 self.channel_name
             )
         elif 'friend_name' in kw.keys():
@@ -113,8 +104,80 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Clients.objects.filter(channel_name=self.channel_name).delete()
 
 
-    async def chat1_message(self, event):
-        await self.send(text_data=event["text"])
+    async def private_diffuse(self, event):
+        message = event["message"]
+
+        print('event in private_msg =', event)
+
+        await self.send(text_data=json.dumps({
+            "message": message
+        }))
+
+    async def public_diffuse(self, event):
+        # Handles the "chat_message" event when it's sent to us
+        message = event["message"]
+
+        print('event in public_msg =', event)
+        # event = {'type': 'chat_message', 'message': 'res'}
+
+        await self.send(text_data=json.dumps({
+            "message": message
+        }))
+
+
+    async def send_message(self, kw, json_info, message):
+
+
+        if 'group_name' in kw.keys():
+
+            print('json_data in <group> =', json_info)
+
+            await self.channel_layer.group_send(
+                self.chat_group_name,
+                {
+                    "type": "public_diffuse",
+                    "message": message,
+                }
+            )
+
+        elif 'friend_name' in kw.keys():
+
+            print('json_data in <friend> =', json_info)
+
+            await self.channel_layer.group_send(
+                self.chat_group_name,
+                {
+                    "type": "private_diffuse",
+                    "message": message,
+                }
+            )
+
+
+    async def create_group(self, event):
+        pass
+
+    async def delete_group(self, event):
+        pass
+
+    async def appoint_manage(self):
+        pass
+
+    async def transfer_master(self):
+        pass
+
+    async def release_notice(self):
+        pass
+
+    async def remove_group_member(self):
+        pass
+
+    async def withdraw_message(self):
+        pass
+
+
+
+
+
 
 
 

@@ -12,7 +12,7 @@ from Chat.consumers import ChatConsumer, FriendConsumer
 from django.urls import path
 
 websocket_urlpatterns = [
-    path('chat/room/<room_name>', ChatConsumer.as_asgi()),
+    path('chat/group/<group_name>', ChatConsumer.as_asgi()),
     path('chat/friend/<friend_name>', ChatConsumer.as_asgi()),
     path('wsconnect', FriendConsumer.as_asgi())
 ]
