@@ -1,7 +1,6 @@
 from channels.exceptions import StopConsumer
 from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
-from channels.layers import get_channel_layer
-from pprint import pprint
+from pprint import *
 import json
 
 from UserManage.models import IMUser, TokenPoll
@@ -166,13 +165,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
     async def create_group(self, json_info):
-        '''json_info =
+        """json_info =
         {
             'selection':'list_create',
             'member_list':['A', 'B'],
             'room_name': 'lob',
         }
-        '''
+        """
         room_name = json_info['room_name']
         member_list = json_info['member_list']
         selection = json_info['selection']
@@ -283,6 +282,8 @@ class FriendConsumer(WebsocketConsumer):
         """
         客户端浏览器向服务端发送消息，对应ws.send()
         """
+
+
         print(type(message))
         print(type(message['text']))
         print(message['text'])
@@ -292,17 +293,6 @@ class FriendConsumer(WebsocketConsumer):
         function = message['function']
 
         if message['function'] == 'heartbeat':
-            # add_list = AddList.objects.get(user_name=username)
-            # return_field = []
-            # flen = len(add_list.reply_list)
-            # for li in range(flen):
-            #     return_field.append(
-            #         {
-            #             "username": add_list.reply_list[li],
-            #             "is_confirmed": add_list.reply_answer[li],
-            #             "make_sure": add_list.reply_ensure[li]
-            #         }
-            #     )
             self.send(text_data=json.dumps(
                 {
                     'function': 'heartbeatconfirm'
@@ -449,8 +439,30 @@ class FriendConsumer(WebsocketConsumer):
                 )
                 # 发送list到client
 
+            elif function == 'fetchreceivelist':
+                add_list = AddList.objects.get(user_name=username)
+                return_field = []
+                flen = len(add_list.reply_list)
+                for li in range(flen):
+                    return_field.append(
+                        {
+                            "username": add_list.reply_list[li],
+                            "is_confirmed": add_list.reply_answer[li],
+                            "make_sure": add_list.reply_ensure[li]
+                        }
+                    )
+                self.send(text_data=json.dumps(
+                    {
+                        'function': 'receivelist',
+                        'receivelist': return_field
+                    }
+                )
+                )
+                # 发送list到client
+
             else:
                 self.send(text_data=function + "Unknown Function")
+
 
 
 def websocket_disconnect(self, message):
