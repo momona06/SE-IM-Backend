@@ -147,9 +147,66 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.remove_group_member()
 
     async def heat_beat(self):
+        self.send(text_data=json.dumps(
+            {
+                'function': 'heartbeatconfirm'
+            }
+        )
+        )
         pass
 
-    async def apply_friend(self):
+    async def apply_friend(self,text_data):
+        json_info = json.loads(text_data)
+        function = json_info['function']
+        username = json_info['username']
+        function = json_info['function']
+        user_model = get_user_model()
+        user = user_model.objects.get(username=username)
+        im_user = IMUser.objects.get(user=user)
+        apply_from = json_info['from']
+        apply_to = json_info['to']
+        applyer_add_list = AddList.objects.get(user_name=apply_from)
+        receiver_add_list = AddList.objects.get(user_name=apply_to)
+
+        if not search_ensure_false_request_index(apply_to, applyer_add_list, mode=1) == -1:
+            # 确保被回复前不能重复发送
+            # mode=1意为在applyer_add_list.applylist中寻找apply_to
+            self.send(text_data="Has Been Sent")
+        elif apply_to in FriendList.objects.get(user_name=apply_from).friend_list:
+            self.send(text_data="Is Already a Friend")
+        else:
+            applyer_add_list.apply_list.append(apply_to)
+            applyer_add_list.apply_answer.append(False)
+            applyer_add_list.apply_ensure.append(False)
+            applyer_add_list.save()
+
+            receiver_add_list.reply_list.append(apply_from)
+            receiver_add_list.reply_answer.append(False)
+            receiver_add_list.reply_ensure.append(False)
+            receiver_add_list.save()
+
+            # 若receiver在线申请发送到receiver
+
+            add_list = AddList.objects.get(user_name=username)
+            return_field = []
+            flen = len(add_list.apply_list)
+            for li in range(flen):
+                return_field.append(
+                    {
+                        "username": add_list.apply_list[li],
+                        "is_confirmed": add_list.apply_answer[li],
+                        "make_sure": add_list.apply_ensure[li]
+                    }
+                )
+            for user in CONSUMER_OBJECT_LIST:
+                if user.curuser == apply_to:
+                    user.send(text_data=json.dumps(
+                        {
+                            'function': 'applylist',
+                            'applylist': return_field
+                        }
+                    )
+                    )
         pass
 
     async def confirm_friend(self, username, json_info):
