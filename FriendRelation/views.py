@@ -9,7 +9,7 @@ from utils.utils_request import template_request, BAD_METHOD
 from utils.utils_token import token_check_http
 
 from django.contrib.auth.models import User
-from UserManage.models import IMUser, TokenPoll, CreateIMUser
+from UserManage.models import IMUser, TokenPoll, create_im_user
 from FriendRelation.models import FriendList, Friend, AddList
 
 

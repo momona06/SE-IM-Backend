@@ -290,7 +290,7 @@ def send_email(request:HttpRequest):
     if request.method == 'POST':
         try:
             body = json.loads(request.body.decode("utf-8"))
-            send_list = [] 
+            send_list = []
             send_list.append(str(body['email']))
             sms_code = '%06d' % random.randint(0, 999999)
             cur_email = EmailCode(email=str(body['email']), code=sms_code)
@@ -299,7 +299,7 @@ def send_email(request:HttpRequest):
                 subject = '邮箱验证',
                 message = '您的验证码为：{0}'.format(sms_code),
                 from_email = '2840206224@qq.com',
-                recipient_list = send_list   
+                recipient_list = send_list
             )
             return JsonResponse({
                 "code" : 0,
@@ -314,7 +314,7 @@ def send_email(request:HttpRequest):
 def bind_email(request):
     if request.method == 'GET':
         return HttpResponse('bind_email')
-    if request.method == 'POST':    
+    if request.method == 'POST':
         try:
             body = json.loads(request.body.decode("utf-8"))
             cur_email = str(body["email"])
@@ -328,7 +328,7 @@ def bind_email(request):
                 return JsonResponse({
                     "code": 0,
                     "info":"绑定成功"
-                })                
+                })
         except Exception as e:
             print(e)
             return JsonResponse({

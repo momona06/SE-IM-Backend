@@ -3,9 +3,10 @@ from django.contrib.postgres.fields import ArrayField
 
 # friend of a imuser
 class Friend(models.Model):
+    # owner of the friend
     user_name = models.CharField(
         max_length=100
-    ) # owner of the friend
+    )
     friend_name = models.CharField(
         max_length=100
     )
@@ -26,8 +27,9 @@ class FriendList(models.Model):
 
 
     friend_list = ArrayField(
-        models.CharField(max_length=100) # friend_name
+        models.CharField(max_length=100)
     )
+
 
 class AddList(models.Model):
     user_name = models.CharField(
