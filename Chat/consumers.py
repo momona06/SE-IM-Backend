@@ -1,5 +1,5 @@
 from channels.exceptions import StopConsumer
-from channels.generic.websocket import WebsocketConsumer
+from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
 from pprint import *
 import json
 
@@ -165,15 +165,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
     async def create_group(self, json_info):
-        '''json_info =
+        """json_info =
         {
             'selection':'list_create',
             'member_list':['A', 'B'],
             'room_name': 'lob',
         }
-        '''
+        """
         room_name = json_info['room_name']
         member_list = json_info['member_list']
+        selection = json_info['selection']
+
         if selection == 'list_create':
 
             chat_room = create_chatroom()
@@ -351,7 +353,7 @@ class FriendConsumer(WebsocketConsumer):
                                 "make_sure": add_list.apply_ensure[li]
                             }
                         )
-                    for user in CONSUMER2_OBJECT_LIST:
+                    for user in CONSUMER_OBJECT_LIST:
                         if user.curuser == apply_to:
                             user.send(text_data=json.dumps(
                                 {
@@ -455,5 +457,5 @@ def websocket_disconnect(self, message):
 
     # USER_NAME_LIST.remove(username)
 
-    CONSUMER2_OBJECT_LIST.remove(self)
+    CONSUMER_OBJECT_LIST.remove(self)
     raise StopConsumer()
