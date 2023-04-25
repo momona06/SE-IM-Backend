@@ -130,7 +130,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def send_message(self, kw, json_info):
         message = json_info['message']
 
-        //username = json_info['username']
+        # username = json_info['username']
 
 
         if 'group_name' in kw.keys():
