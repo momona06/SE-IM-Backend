@@ -15,9 +15,6 @@ CONSUMER_OBJECT_LIST = []
 USER_NAME_LIST = []
 
 
-
-
-
 def modify_add_request_list_with_username(other_username, add_list, answer, mode=0):
     """
     mode = 0 : add_list.reply
@@ -48,20 +45,18 @@ def search_ensure_false_request_index(other_username, add_list, mode=0):
     return -1
 
 
-
 # channel: the specific user
 # group: a group of channels (users)
 
 class ChatConsumer(AsyncWebsocketConsumer):
 
-
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
-        self.curuser = None
+        self.cur_user = None
+        self.chat_group_name = None
+
     ### COPY
     async def connect(self):
-
-
 
         # Chat Ver
 
@@ -88,19 +83,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
         #     self.friend_name = self.scope["url_route"]["kwargs"]["friend_name"]
         #     CHAT_OBJECT_LIST.append(self)
 
-
         CONSUMER_OBJECT_LIST.append(self)
-        self.curuser = self.scope['user'].username
+        self.cur_user = self.scope['user'].username
         await self.accept()
 
-
-
-    async def receive(self, text_data):
+    async def receive(self, text_data=None, bytes_data=None):
 
         # Data
         # 1) self: self.scope/self.channel_name...
         # 2) text_data: original data from frontend
-
 
         json_info = json.loads(text_data)
 
@@ -110,6 +101,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # original function zone
 
+        username = json_info['username']
+
         if function == 'heartbeat':
             await self.heat_beat()
 
@@ -118,16 +111,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.apply_friend()
 
         elif function == 'confirm':
-            await self.confirm_friend()
+            await self.confirm_friend(username,json_info)
 
         elif function == 'decline':
-            await self.decline_friend()
+            await self.decline_friend(json_info)
 
         elif function == 'fetchapplylist':
-            await self.fetch_apply_list()
+            await self.fetch_apply_list(username)
 
         elif function == 'fetchreplylist':
-            await self.fetch_reply_list()
+            await self.fetch_reply_list(username)
 
 
 
@@ -153,29 +146,87 @@ class ChatConsumer(AsyncWebsocketConsumer):
         elif function == 'remove_group_member':
             await self.remove_group_member()
 
-
-
     async def heat_beat(self):
         pass
 
     async def apply_friend(self):
         pass
 
-    async def confirm_friend(self):
-        pass
+    async def confirm_friend(self, username, json_info):
+        # 修改数据库
+        apply_from = json_info['from']
+        apply_to = json_info['to']
+        receiver_add_list = AddList.objects.get(user_name=apply_to)
+        applyer_add_list = AddList.objects.get(user_name=apply_from)
 
+        modify_add_request_list_with_username(apply_from, receiver_add_list, True)
+        modify_add_request_list_with_username(apply_to, applyer_add_list, True, mode=1)
 
-    async def decline_friend(self):
-        pass
+        friend_list1 = FriendList.objects.get(user_name=username)
+        friend_list1.friend_list.append(apply_from)
+        friend_list1.save()
+        friend_list2 = FriendList.objects.get(user_name=apply_from)
+        friend_list2.friend_list.append(username)
+        friend_list2.save()
 
-    async def fetch_apply_list(self):
-        pass
+        friend1 = Friend(user_name=username,
+                         friend_name=apply_from,
+                         group_name=friend_list1.group_list[0])
+        friend2 = Friend(user_name=apply_from,
+                         friend_name=username,
+                         group_name=friend_list2.group_list[0])
+        friend1.save()
+        friend2.save()
+        # 若applyer在线结果发送到applyer
+        return_field = {"function": "confirm"}
+        await self.send(text_data=json.dumps(return_field))
 
-    async def fetch_reply_list(self):
-        pass
+    async def decline_friend(self, json_info):
+        # 修改数据库
+        apply_from = json_info['from']
+        apply_to = json_info['to']
+        receiver_add_list = AddList.objects.get(user_name=apply_to)
+        applyer_add_list = AddList.objects.get(user_name=apply_from)
 
+        modify_add_request_list_with_username(apply_from, receiver_add_list, False)
+        modify_add_request_list_with_username(apply_to, applyer_add_list, False, mode=1)
 
-    async def disconnect(self):
+        return_field = {"function": "decline"}
+        await self.send(text_data=json.dumps(return_field))
+
+    async def fetch_apply_list(self, username):
+        await self.fetch_addlist_attribute(username, 'applylist')
+
+    async def fetch_reply_list(self, username):
+        await self.fetch_addlist_attribute(username, 'receivelist')
+
+    async def fetch_addlist_attribute(self, username, attribute_name):
+        add_list = AddList.objects.get(user_name=username)
+        return_field = []
+
+        if attribute_name == 'applylist':
+            current_list = add_list.apply_list
+            answer = add_list.apply_answer
+            ensure = add_list.apply_ensure
+        else:
+            current_list = add_list.reply_list
+            answer = add_list.reply_answer
+            ensure = add_list.reply_ensure
+
+        for li in range(len(current_list)):
+            return_field.append(
+                {
+                    "username": current_list[li],
+                    "is_confirmed": answer[li],
+                    "make_sure": ensure[li]
+                }
+            )
+        await self.send(text_data=json.dumps({
+            'function': attribute_name,
+            attribute_name: return_field
+        }))
+
+    async def disconnect(self, code):
         # Leave room group
         kw = self.scope['url_route']['kwargs']
 
@@ -189,9 +240,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         raise StopConsumer()
 
         # Clients.objects.filter(channel_name=self.channel_name).delete()
-
-
-
 
     async def private_diffuse(self, event):
         message = event["message"]
@@ -213,12 +261,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "message": message
         }))
 
-
     async def send_message(self, kw, json_info):
         message = json_info['message']
 
         # username = json_info['username']
-
 
         if 'group_name' in kw.keys():
 
@@ -244,7 +290,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 }
             )
 
-
     async def create_group(self, json_info):
         """json_info =
         {
@@ -268,7 +313,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         elif selection == 'based_create':
             pass
 
-
     async def delete_group(self, json_info):
         pass
 
@@ -288,37 +332,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         pass
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 '''
 NOT WORK
 '''
+
 
 class FriendConsumer(WebsocketConsumer):
     # self看作当前触发事件的客户端
@@ -413,14 +430,14 @@ class FriendConsumer(WebsocketConsumer):
                             }
                         )
                     for user in CONSUMER_OBJECT_LIST:
-                        if user.curuser == apply_to:
+                        if user.cur_user == apply_to:
                             user.send(text_data=json.dumps(
                                 {
                                     'function': 'applylist',
                                     'applylist': return_field
                                 }
                             )
-                        )
+                            )
 
             elif function == 'confirm':
                 # 修改数据库
@@ -440,11 +457,11 @@ class FriendConsumer(WebsocketConsumer):
                 friend_list2.save()
 
                 friend1 = Friend(user_name=username,
-                                friend_name=apply_from,
-                                group_name=friend_list1.group_list[0])
+                                 friend_name=apply_from,
+                                 group_name=friend_list1.group_list[0])
                 friend2 = Friend(user_name=apply_from,
-                                friend_name=username,
-                                group_name=friend_list2.group_list[0])
+                                 friend_name=username,
+                                 group_name=friend_list2.group_list[0])
                 friend1.save()
                 friend2.save()
                 # 若applyer在线结果发送到applyer
