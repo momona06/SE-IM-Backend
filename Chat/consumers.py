@@ -111,7 +111,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.apply_friend()
 
         elif function == 'confirm':
-            await self.confirm_friend(username,json_info)
+            await self.confirm_friend(username, json_info)
 
         elif function == 'decline':
             await self.decline_friend(json_info)
@@ -155,11 +155,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
         pass
 
-    async def apply_friend(self,text_data):
+    async def apply_friend(self, text_data):
         json_info = json.loads(text_data)
-        function = json_info['function']
         username = json_info['username']
-        function = json_info['function']
         user_model = get_user_model()
         user = user_model.objects.get(username=username)
         im_user = IMUser.objects.get(user=user)
@@ -350,7 +348,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def create_group(self, json_info):
         """json_info =
         {
-            'selection':'list_create',
             'member_list':['A', 'B'],
             'room_name': 'lob',
             'username': 'Ashitemaru'
@@ -358,32 +355,34 @@ class ChatConsumer(AsyncWebsocketConsumer):
         """
         room_name = json_info['room_name']
         member_list = json_info['member_list']
-        selection = json_info['selection']
-        if selection == 'list_create':
-            chat_room = create_chatroom()
-            chat_time_line = create_chat_timeline()
-            chat_room.timeline_id = chat_time_line.timeline_id
-            chat_time_line.chatroom_id = chat_room.chatroom_id
-            chat_room.save()
-            chat_time_line.save()
+        username = json_info['username']
+        chat_room = create_chatroom()
+        chat_time_line = create_chat_timeline()
+        chat_room.timeline_id = chat_time_line.timeline_id
+        chat_time_line.chatroom_id = chat_room.chatroom_id
+        chat_room.save()
+        chat_time_line.save()
 
-        elif selection == 'based_create':
-            pass
 
     async def delete_group(self, json_info):
         pass
 
+
     async def appoint_manage(self):
         pass
+
 
     async def transfer_master(self):
         pass
 
+
     async def release_notice(self):
         pass
 
+
     async def remove_group_member(self):
         pass
+
 
     async def withdraw_message(self):
         pass

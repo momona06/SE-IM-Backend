@@ -84,7 +84,7 @@ class UserManageTest(TestCase):
 
         self.user_cancel(USERNAME,PASSWORD)
         res_reg = self.user_register(USERNAME, PASSWORD)
-        res_lin = self.userLogin(USERNAME, PASSWORD)
+        res_lin = self.user_login(USERNAME, PASSWORD)
         self.assertEqual(res_reg.json()["code"], 0)
         self.assertEqual(res_lin.json()["code"], 0)
         user_model = get_user_model()
@@ -105,7 +105,7 @@ class UserManageTest(TestCase):
         input_password = PASSWORD
 
         res_reg = self.user_register(USERNAME, PASSWORD)
-        res_lin = self.userLogin(USERNAME, PASSWORD)
+        res_lin = self.user_login(USERNAME, PASSWORD)
         self.assertEqual(res_lin.json()["code"], 0)
 
         user_model = get_user_model()
@@ -124,7 +124,7 @@ class UserManageTest(TestCase):
 
         input_password = PASSWORD
         res_reg = self.user_register(USERNAME, PASSWORD)
-        res_lin = self.userLogin(USERNAME, PASSWORD)
+        res_lin = self.user_login(USERNAME, PASSWORD)
         self.assertEqual(res_reg.json()["code"], 0)
         self.assertEqual(res_lin.json()["code"], 0)
 
