@@ -364,6 +364,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         await self.send(text_data=json.dumps({
             'function': 'create_group',
+            'chatroom_id': chat_room.chatroom_id
         }))
 
 
@@ -379,12 +380,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if chatroom is None:
             await self.send(text_data=json.dumps({
             'function': 'delete_group',
-            'result': 'Group not found'
+            'message': 'Group not found'
         }))
 
         username = None
 
-
+        
 
 
 
