@@ -589,6 +589,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         return_list = []
         flist_len = len(flist.group_list)
 
+
         for i in range(flist_len):
             return_list.append({
                 "groupname": flist.group_list[i],
