@@ -333,7 +333,7 @@ def check_user(request):
             except User.DoesNotExist:
                 return JsonResponse({
                     "code": -20,
-                    "info": "Check User not found"
+                    "info": check_name
                 })
 
             im_user = IMUser.objects.filter(user=my_user).first()
