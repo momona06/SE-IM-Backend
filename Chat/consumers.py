@@ -183,6 +183,11 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == 'remove_group_member':
             await self.remove_group_member(json_info)
 
+        elif function == "fetchroom":
+            await self.fetch_room(json_info)
+
+        elif function == "fetchmessage":
+            await self.fetch_message(json_info)
     async def heat_beat(self):
         await self.send(text_data=json.dumps(
             {
