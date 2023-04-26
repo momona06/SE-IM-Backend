@@ -579,13 +579,12 @@ class UserConsumer(AsyncWebsocketConsumer):
     async def withdraw_message(self):
         pass
 
-    @sync_to_async
-    def fetch_friend_list(self, json_info):
+    async def fetch_friend_list(self, json_info):
         attribute_name = 'friendlist'
 
         username = json_info["username"]
 
-        flist = FriendList.objects.get(user_name=username)
+        flist = await sync_to_async(FriendList.objects.get)(user_name=username)
 
         return_list = []
         flist_len = len(flist.group_list)
@@ -596,11 +595,12 @@ class UserConsumer(AsyncWebsocketConsumer):
                 "username": []
             })
             for friend_name in flist.friend_list:
-                friend = Friend.objects.filter(friend_name=friend_name, user_name=username).first()
+                friend_list_tem = await sync_to_async(Friend.objects.filter)(friend_name=friend_name, user_name=username)
+                friend = await sync_to_async(friend_list_tem.first)()
                 if flist.group_list[i] == friend.group_name:
                     return_list[i]['username'].append(friend_name)
 
-        self.send(text_data=json.dumps({
+        await self.send(text_data=json.dumps({
             'function': attribute_name,
             attribute_name: return_list,
         }))
