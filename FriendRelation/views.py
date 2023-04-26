@@ -240,21 +240,24 @@ def add_friend_group(req: HttpRequest):
                     'info': "Token Error",
                 })
 
-            friend = Friend.objects.filter(user_name=username, friend_name=friend_name).first()
+            # friend = Friend.objects.filter(user_name=username, friend_name=friend_name).first()
             flist = FriendList.objects.filter(user_name=username).first()
 
+            '''
             lis = 0
             for li, group in enumerate(flist.group_list):
                 if group == fgroup_name:
                     lis = li
+            '''
     
             # flist.friend_list[lis].append(friend_name)
             for friend_name in flist.friend_list:
                 friend = Friend.objects.filter(friend_name=friend_name,user_name=username).first()
                 if friend.friend_name == friend_name:
                     friend.group_name = fgroup_name
+                    friend.save()
                     break
-            flist.save()
+
             return JsonResponse({
                 "code": 0,
                 "info": "AddGroup Succeed"
