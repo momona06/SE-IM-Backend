@@ -57,7 +57,7 @@ def delete_friend(req: HttpRequest):
             print(e)
             return JsonResponse({
                 "code": -5,
-                "info": "Unexpected Error"
+                "info": e
             })
 
 
@@ -120,7 +120,7 @@ def delete_friend_group(req: HttpRequest):
             print(e)
             return JsonResponse({
                 "code": -5,
-                "info": "Unexpected Error"
+                "info": e
             })
 
     else:
@@ -164,7 +164,7 @@ def create_friend_group(req: HttpRequest):
             print(e)
             return JsonResponse({
                 "code": -5,
-                "info": "Unexpected Error"
+                "info": e
             })
 
     else:
@@ -240,14 +240,16 @@ def add_friend_group(req: HttpRequest):
                     'info': "Token Error",
                 })
 
-            friend = Friend.objects.filter(user_name=username, friend_name=friend_name).first()
+            # friend = Friend.objects.filter(user_name=username, friend_name=friend_name).first()
             flist = FriendList.objects.filter(user_name=username).first()
 
+            '''
             lis = 0
             for li, group in enumerate(flist.group_list):
                 if group == fgroup_name:
                     lis = li
-    
+            '''
+
             # flist.friend_list[lis].append(friend_name)
             for friend_name in flist.friend_list:
                 friend = Friend.objects.filter(friend_name=friend_name,user_name=username).first()
@@ -256,7 +258,6 @@ def add_friend_group(req: HttpRequest):
                     friend.save()
                     break
 
-            #flist.save()
             return JsonResponse({
                 "code": 0,
                 "info": "AddGroup Succeed"
@@ -265,7 +266,7 @@ def add_friend_group(req: HttpRequest):
             print(e)
             return JsonResponse({
                 "code": -5,
-                "info": "Unexpected Error"
+                "info": e
             })
 
     else:
@@ -294,7 +295,7 @@ def search_user(request):
             print(e)
             return JsonResponse({
                 "code": -1,
-                "info": "Unexpected error"
+                "info": e
             })
     else:
         return BAD_METHOD
@@ -335,7 +336,7 @@ def check_user(request):
             except User.DoesNotExist:
                 return JsonResponse({
                     "code": -20,
-                    "info": "Check User not found"
+                    "info": check_name
                 })
 
             im_user = IMUser.objects.filter(user=my_user).first()
@@ -358,7 +359,7 @@ def check_user(request):
             print(e)
             return JsonResponse({
                 "code": -1,
-                "info": "Unexpected error"
+                "info": e
             })
     else:
         return BAD_METHOD
