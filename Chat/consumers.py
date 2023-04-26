@@ -20,7 +20,7 @@ async def modify_add_request_list_with_username(other_username, add_list, answer
     mode = 0 : add_list.reply
     mode = 1 : add_list.apply
     """
-    index = search_ensure_false_request_index(other_username, add_list, mode=mode)
+    index = await search_ensure_false_request_index(other_username, add_list, mode=mode)
     if index == -1:
         return False
     if mode == 0:
