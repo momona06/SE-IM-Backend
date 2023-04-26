@@ -273,9 +273,11 @@ class UserConsumer(AsyncWebsocketConsumer):
                          group_name=friend_list2.group_list[0])
         await sync_to_async(friend1.save)()
         await sync_to_async(friend2.save)()
-        new_room = ChatRoom(mem_list=[])
+        new_room = ChatRoom(mem_list=[],not_read=[])
         new_room.mem_list.append(username)
+        new_room.not_read.append(0)
         new_room.mem_list.append(apply_from)
+        new_room.not_read.append(0)
         await sync_to_async(new_room.save)()
         # 若applyer在线结果发送到applyer
         return_field = {"function": "confirm"}
