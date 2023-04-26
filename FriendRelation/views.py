@@ -43,7 +43,7 @@ def delete_friend(req: HttpRequest):
                 if not friend is None:
                     flist = FriendList.objects.get(user_name=name_list[i])
                     for name in flist.friend_list:
-                        if friend.name_list[1-i] == name:
+                        if friend.friend_name == name:
                             flist.friend_list.remove(name)
                             break
                     flist.save()

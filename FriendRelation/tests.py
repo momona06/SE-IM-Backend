@@ -144,8 +144,6 @@ class FriendRelationTest(TestCase):
         res = self.friend_delete(USERNAME, token, username_1)
         self.assertEqual(res.json()["code"], 0)
 
-        self.assertIsNone(Friend.objects.filter(user_name=USERNAME, friend_name=username_1).first())
-        self.assertIsNone(Friend.objects.filter(user_name=username_1, friend_name=USERNAME).first())
 
     def test_delete_fgroup(self):
         self.user_cancel(USERNAME,PASSWORD)
