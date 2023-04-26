@@ -606,44 +606,44 @@ class UserConsumer(AsyncWebsocketConsumer):
             attribute_name: return_list,
         }))
 
-    async def fetch_room(self,json_info):
-        username = json_info('username')
-        total_room = ChatRoom.objects.all()
-        return_field = []
-        for room in total_room:
-            for li,user in enumerate(room.mem_list):
-                if user == username:
-                    return_field.append({
-                        "roomid":room.chatroom_id,
-                        "roomname":room.room_name,
-                        "unreadcnt":room.not_read[li]
-                    })
-                    room.save()
-                    break
-        await self.send(text_data=json.dumps({
-            "function":"fetchroom",
-            "roomlist":return_field
-        }))
+    # async def fetch_room(self,json_info):
+    #     username = json_info('username')
+    #     total_room = ChatRoom.objects.all()
+    #     return_field = []
+    #     for room in total_room:
+    #         for li,user in enumerate(room.mem_list):
+    #             if user == username:
+    #                 return_field.append({
+    #                     "roomid":room.chatroom_id,
+    #                     "roomname":room.room_name,
+    #                     "unreadcnt":room.not_read[li]
+    #                 })
+    #                 room.save()
+    #                 break
+    #     await self.send(text_data=json.dumps({
+    #         "function":"fetchroom",
+    #         "roomlist":return_field
+    #     }))
 
-    async def fetch_message(self,json_info):
-        chatroom_id = json_info('chatroom_id')
-        username = json_info('username')
-        room = ChatRoom.objects.filter(chatroom_id==chatroom_id).first()
-        return_field = []
-        for li,user in enumerate(room.mem_list):
-            if user == username:
-                room.not_read[li] = 0
-                room.save()
-                break
-        for message in room.mes_list:
-            return_field.append({
-                "body":room.mes_list.body,
-                "id":room.mes_list.msg_id,
-                "time":room.mes_list.time,
-                "sender":room.mes_list.sender
-            })
-
-        await self.send(text_data=json.dumps({
-            "function":"fetchmessage",
-            "messagelist":return_field
-        }))
+    # async def fetch_message(self,json_info):
+    #     chatroom_id = json_info('chatroom_id')
+    #     username = json_info('username')
+    #     room = ChatRoom.objects.filter(chatroom_id==chatroom_id).first()
+    #     return_field = []
+    #     for li,user in enumerate(room.mem_list):
+    #         if user == username:
+    #             room.not_read[li] = 0
+    #             room.save()
+    #             break
+    #     for message in room.mes_list:
+    #         return_field.append({
+    #             "body":room.mes_list.body,
+    #             "id":room.mes_list.msg_id,
+    #             "time":room.mes_list.time,
+    #             "sender":room.mes_list.sender
+    #         })
+    #
+    #     await self.send(text_data=json.dumps({
+    #         "function":"fetchmessage",
+    #         "messagelist":return_field
+    #     }))

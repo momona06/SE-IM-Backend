@@ -253,8 +253,10 @@ def add_friend_group(req: HttpRequest):
                 friend = Friend.objects.filter(friend_name=friend_name,user_name=username).first()
                 if friend.friend_name == friend_name:
                     friend.group_name = fgroup_name
+                    friend.save()
                     break
-            flist.save()
+
+            #flist.save()
             return JsonResponse({
                 "code": 0,
                 "info": "AddGroup Succeed"
