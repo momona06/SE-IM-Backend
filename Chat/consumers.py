@@ -158,7 +158,8 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == 'fetchreceivelist':
             await self.fetch_reply_list(json_info)
 
-
+        elif function == 'fetchfriendlist':
+            await self.fetch_friend_list(json_info)
 
         # function zone
         elif function == 'send_message':
@@ -579,4 +580,30 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     async def withdraw_message(self):
         pass
+
+    async def fetch_friend_list(self, json_info):
+        attribute_name = 'friendlist'
+
+        username = json_info["username"]
+
+        flist = await sync_to_async(FriendList.objects.get)(user_name=username)
+
+        return_list = []
+        flist_len = len(flist.group_list)
+
+        for i in range(flist_len):
+            return_list.append({
+                "groupname": flist.group_list[i],
+                "username": []
+            })
+            for friend_name in flist.friend_list:
+                friend = (await sync_to_async(Friend.objects.filter)(friend_name=friend_name, user_name=username))\
+                                .first()
+                if flist.group_list[i] == friend.group_name:
+                    return_list[i]['username'].append(friend_name)
+
+        await self.send(text_data=json.dumps({
+            'function': attribute_name,
+            attribute_name: return_list,
+        }))
 

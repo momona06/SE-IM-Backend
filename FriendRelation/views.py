@@ -170,7 +170,7 @@ def create_friend_group(req: HttpRequest):
     else:
         return BAD_METHOD
 
-
+'''
 def get_friend_list(req: HttpRequest):
     if req.method == "POST":
         try:
@@ -218,6 +218,7 @@ def get_friend_list(req: HttpRequest):
 
     else:
         return BAD_METHOD
+        '''
 
 
 def add_friend_group(req: HttpRequest):
