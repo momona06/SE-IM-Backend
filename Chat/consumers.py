@@ -117,8 +117,14 @@ class UserConsumer(AsyncWebsocketConsumer):
         #     CHAT_OBJECT_LIST.append(self)
 
         CONSUMER_OBJECT_LIST.append(self)
-        self.cur_user = self.scope['user'].username
+        self.cur_user = await self.get_cur_username()
         await self.accept()
+
+    async def get_cur_username(self):
+        if self.cur_user is None:
+            return self.scope['user'].username
+        else:
+            return self.cur_user
 
     async def receive(self, text_data=None, bytes_data=None):
 
@@ -427,7 +433,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
         room_name = json_info['room_name']
         member_list = json_info['member_list']
-        username = None
+        username = await self.get_cur_username()
 
         chat_room = create_chatroom(room_name, await username_list_to_id_list(member_list), username)
         chat_time_line = create_chat_timeline()
@@ -453,7 +459,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
         if not chatroom is None:
-            username = None
+            username = await self.get_cur_username()
 
             if await self.check_chatroom_master(function_name, chatroom, username):
                 chat_timeline = await sync_to_async(ChatTimeLine.objects.get)(chatroom.timeline_id)
@@ -479,7 +485,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
         if not chatroom is None:
-            username = None
+            username = await self.get_cur_username()
             manager_name = json_info['manager_name']
 
             if await self.check_chatroom_master(function_name, chatroom, username):
@@ -513,7 +519,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
         if not chatroom is None:
-            username = None
+            username = await self.get_cur_username()
 
             if await self.check_chatroom_master(function_name, chatroom, username):
                 new_master_name = json_info['new_master_name']
@@ -543,7 +549,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
         if not chatroom is None:
-            username = None
+            username = await self.get_cur_username()
             member_name = json_info['member_name']
 
             user = await self.check_user_exist(function_name, username)
