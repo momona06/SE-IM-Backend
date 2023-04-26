@@ -615,7 +615,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         }))
 
     async def fetch_room(self,json_info):
-        username = json_info('username')
+        username = json_info['username']
         total_room = await sync_to_async(ChatRoom.objects.all)()
         return_field = []
         for room in total_room:
@@ -633,8 +633,8 @@ class UserConsumer(AsyncWebsocketConsumer):
         }))
 
     async def fetch_message(self,json_info):
-        chatroom_id = json_info('chatroom_id')
-        username = json_info('username')
+        chatroom_id = json_info['chatroom_id']
+        username = json_info['username']
         room1 = await sync_to_async(ChatRoom.objects.filter)(chatroom_id==chatroom_id)
         room = await sync_to_async(room1.first)()
         return_field = []
