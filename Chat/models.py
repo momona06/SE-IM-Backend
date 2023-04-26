@@ -1,3 +1,4 @@
+from asgiref.sync import sync_to_async
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
@@ -53,13 +54,13 @@ class ChatTimeLine(models.Model):
 #     im_user2 = models.CharField(max_length=100)
 
 
-def create_chatroom(room_name, mem_list, master_name, is_private=False, is_notice=True, is_top=False):
+async def create_chatroom(room_name, mem_list, master_name, is_private=False, is_notice=True, is_top=False):
     new_chatroom = ChatRoom(is_private=is_private, room_name=room_name,
                             mem_count=len(mem_list), mem_list=mem_list,
                             is_notice=is_notice, is_top=is_top,
                             master_name=master_name, manager_list=[],
                             notice_id=0, notice_list=[])
-    new_chatroom.save()
+    await sync_to_async(new_chatroom.save)()
     return new_chatroom
 
 
