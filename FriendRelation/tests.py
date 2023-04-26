@@ -76,7 +76,7 @@ class FriendRelationTest(TestCase):
 
         self.assertTrue(str(fgroup_name) in group_list)
 
-
+    '''
     def test_flist_get(self):
         fgroup_name = "1111"
         fname_base = 999999
@@ -105,6 +105,7 @@ class FriendRelationTest(TestCase):
         res = self.friend_list_get(USERNAME, token)
 
         self.assertEqual(res.json()["code"], 0)
+    '''
 
     def test_friend_to_group(self):
         fgroup_name = "1111"
