@@ -52,7 +52,7 @@ async def username_list_to_id_list(username_list):
     res_list = []
 
     for i in username_list:
-        user = (await sync_to_async(User.objects.filter)(username=i)).first()
+        user = await sync_to_async(await sync_to_async(User.objects.filter)(username=i).first)()
         if not user is None:
             res_list.append(user.id)
 
@@ -63,7 +63,7 @@ async def id_list_to_username_list(id_list):
     res_list = []
 
     for i in id_list:
-        user = (await sync_to_async(User.objects.filter)(id=i)).first()
+        user = await sync_to_async(await sync_to_async(User.objects.filter)(id=i).first)()
         if not user is None:
             res_list.append(user.username)
 
@@ -384,7 +384,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             )
 
     async def find_chatroom(self, function_name, chatroom_id):
-        chatroom = (await sync_to_async(ChatRoom.objects.filter)(chatroom_id=chatroom_id)).first()
+        chatroom = await sync_to_async(await sync_to_async(ChatRoom.objects.filter)(chatroom_id=chatroom_id).first)()
 
         if chatroom is None:
             await self.send(text_data=json.dumps({
@@ -404,7 +404,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         return True
 
     async def check_user_exist(self, function_name, username, message='User not found'):
-        manager_user = (await sync_to_async(User.objects.filter)(username=username)).first()
+        manager_user = await sync_to_async((await sync_to_async(User.objects.filter)(username=username)).first)()
 
         if manager_user is None:
             await self.send(text_data=json.dumps({
@@ -589,14 +589,14 @@ class UserConsumer(AsyncWebsocketConsumer):
         return_list = []
         flist_len = len(flist.group_list)
 
-
         for i in range(flist_len):
             return_list.append({
                 "groupname": flist.group_list[i],
                 "username": []
             })
             for friend_name in flist.friend_list:
-                friend = await sync_to_async(Friend.objects.get)(friend_name=friend_name, user_name=username)
+                friend = await sync_to_async(
+                    await sync_to_async(Friend.objects.filter)(friend_name=friend_name, user_name=username).first)()
                 if flist.group_list[i] == friend.group_name:
                     return_list[i]['username'].append(friend_name)
 
