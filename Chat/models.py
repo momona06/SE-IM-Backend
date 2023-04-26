@@ -126,7 +126,7 @@ class ChatRoom(models.Model):
         models.CharField(max_length=100)
     )
     mes_list = ArrayField(
-         models.BigAutoField(default=0)
+         models.BigIntegerField(default=0)
     )
     notice_id = models.BigIntegerField(default=0)
 
