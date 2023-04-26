@@ -625,7 +625,8 @@ class UserConsumer(AsyncWebsocketConsumer):
                     return_field.append({
                         "roomid":room.chatroom_id,
                         "roomname":room.room_name,
-                        "unreadnum":room.not_read[li]
+                        "unreadnum":room.not_read[li],
+                        "is_private":room.is_private
                     })
                     break
         await self.send(text_data=json.dumps({
