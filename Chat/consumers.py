@@ -273,7 +273,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                          group_name=friend_list2.group_list[0])
         await sync_to_async(friend1.save)()
         await sync_to_async(friend2.save)()
-        new_room = ChatRoom()
+        new_room = ChatRoom(mem_list=[])
         new_room.mem_list.append(username)
         new_room.mem_list.append(apply_from)
         await sync_to_async(new_room.save)()
