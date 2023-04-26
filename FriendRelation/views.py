@@ -57,7 +57,7 @@ def delete_friend(req: HttpRequest):
             print(e)
             return JsonResponse({
                 "code": -5,
-                "info": "Unexpected Error"
+                "info": e
             })
 
 
@@ -120,7 +120,7 @@ def delete_friend_group(req: HttpRequest):
             print(e)
             return JsonResponse({
                 "code": -5,
-                "info": "Unexpected Error"
+                "info": e
             })
 
     else:
@@ -164,7 +164,7 @@ def create_friend_group(req: HttpRequest):
             print(e)
             return JsonResponse({
                 "code": -5,
-                "info": "Unexpected Error"
+                "info": e
             })
 
     else:
@@ -266,7 +266,7 @@ def add_friend_group(req: HttpRequest):
             print(e)
             return JsonResponse({
                 "code": -5,
-                "info": "Unexpected Error"
+                "info": e
             })
 
     else:
@@ -295,7 +295,7 @@ def search_user(request):
             print(e)
             return JsonResponse({
                 "code": -1,
-                "info": "Unexpected error"
+                "info": e
             })
     else:
         return BAD_METHOD
@@ -359,7 +359,7 @@ def check_user(request):
             print(e)
             return JsonResponse({
                 "code": -1,
-                "info": "Unexpected error"
+                "info": e
             })
     else:
         return BAD_METHOD
