@@ -596,8 +596,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                 "username": []
             })
             for friend_name in flist.friend_list:
-                friend = (
-                    await sync_to_async(Friend.objects.filter)(friend_name=friend_name, user_name=username)).first()
+                friend = await sync_to_async(Friend.objects.get)(friend_name=friend_name, user_name=username)
                 if flist.group_list[i] == friend.group_name:
                     return_list[i]['username'].append(friend_name)
 
