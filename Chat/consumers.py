@@ -621,7 +621,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                         "roomname":room.room_name,
                         "unreadnum":room.not_read[li]
                     })
-                    room.save()
                     break
         await self.send(text_data=json.dumps({
             "function":"fetchroom",
@@ -640,7 +639,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                 room.save()
                 break
         for msg in room.mes_list:
-            cur_message1 = await sync_to_async(Message.objects.filter(msg_id=msg))
+            cur_message1 = await sync_to_async(Message.objects.filter)(msg_id=msg)
             cur_message = await sync_to_async(cur_message1.first)()
             return_field.append({
                 "body":cur_message.body,
