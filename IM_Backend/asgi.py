@@ -8,7 +8,7 @@ from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 
-from Chat.consumers import UserConsumer, FriendConsumer
+from Chat.consumers import UserConsumer
 from django.urls import path
 
 # websocket_urlpatterns = [
@@ -19,7 +19,7 @@ from django.urls import path
 
 websocket_urlpatterns = [
     path('wsconnect', UserConsumer.as_asgi()),
-    ]
+]
 
 application = ProtocolTypeRouter(
     {

@@ -12,7 +12,7 @@ from Chat.models import *
 
 
 from channels.db import database_sync_to_async
-
+from asgiref.sync import sync_to_async # TODO: Check
 
 CONSUMER_OBJECT_LIST = []
 USER_NAME_LIST = []
@@ -111,7 +111,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             await self.send_message(json_info)
 
         elif function == 'ack_message':
-            await self.ack_message(json_info)
+            await self.acknowledge_message(json_info)
 
         elif function == 'withdraw_message':
             await self.withdraw_message(json_info)
@@ -217,12 +217,12 @@ class UserConsumer(AsyncWebsocketConsumer):
         is_private = json_info['is_private']
 
         new_onliner = await OnlineUser(user_name=user_name, channel_name=self.channel_name, chatroom_id=room_id)
-        new_onliner.save()
+        await new_onliner.save()
 
         chat_room = await database_sync_to_async(ChatRoom.objects.filter)(chatroom_id=room_id).first()
         if chat_room is None:
-            self.send(text_data="chatroom not exists")
-            self.close()
+            await self.send(text_data="chatroom not exists")
+            await self.close()
 
         self.group_name = json_info['room_name']
         self.chat_group_name = "chat_" + self.group_name + room_id
@@ -271,31 +271,31 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         onliner = await database_sync_to_async(OnlineUser.objects.filter)(user_name=user_name).first()
         if onliner is None:
-            self.send('you are not in the chatroom')
-            self.close()
+            await self.send('you are not in the chatroom')
+            await self.close()
 
         room_id = onliner.chatroom_id
 
-        chatroom = ChatRoom.objects.filter(chatroom_id=room_id).first()
+        chatroom = await database_sync_to_async(ChatRoom.objects.filter)(chatroom_id=room_id).first()
         if chatroom is None:
-            self.send('chatroom not exists')
-            self.close()
+            await self.send('chatroom not exists')
+            await self.close()
 
 
-        timeline = ChatTimeLine.objects.get(chatroom_id=room_id)
+        timeline = await database_sync_to_async(ChatTimeLine.objects.get)(chatroom_id=room_id)
 
         msg_type = json_info['msg_type']
         msg_body = json_info['msg_body']
 
         # ref_id = json_info['ref_id']
-        msg_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-        message = create_message(msg_type, msg_body, msg_time, user_name)
+        msg_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
+        message = await database_sync_to_async(create_message)(msg_type, msg_body, msg_time, user_name)
 
         msg_id = message.msg_id
 
-        timeline.msg_line.append(message.msg_id)
+        await sync_to_async(timeline.msg_line.append)(message.msg_id)
 
-
+        #
         await self.channel_layer.group_send(
             self.chat_group_name,
             {
@@ -305,7 +305,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             }
         )
 
-
+        #
         await self.send(
             text_data=json.dumps(
             {
@@ -320,7 +320,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         #     if online_member is None:
 
 
-    async def ack_message(self, json_info):
+    async def acknowledge_message(self, json_info):
         '''
         json_info: {
             'msg_id': 16,
@@ -335,33 +335,38 @@ class UserConsumer(AsyncWebsocketConsumer):
         # move the cursor
 
 
-        # user_name = self.curuser
-        user_name = 'user'
+        user_name = self.curuser
+        # user_name = 'user'
 
         msg_id = json_info['msg_id']
         sender = json_info['sender']
 
         message = await database_sync_to_async(Message.objects.filter)(msg_id=msg_id).first()
         if message is None:
-            self.send('message not exists')
-            self.close()
+            await self.send('message not exists')
+            await self.close()
 
         if message.sender != sender:
-            self.send('sender not match')
-            self.close()
+            await self.send('sender not match')
+            await self.close()
 
-        chatroom = ChatRoom.objects.filter(chatroom_id=room_id).first()
+        room_id = message.chatroom_id
+
+        chatroom = await database_sync_to_async(ChatRoom.objects.filter)(chatroom_id=room_id).first()
         if chatroom is None:
-            self.send('chatroom not exists')
-            self.close()
+            await self.send('chatroom not exists')
+            await self.close()
 
-        timeline = ChatTimeLine.objects.get(chatroom_id=room_id)
+        timeline = await database_sync_to_async(ChatTimeLine.objects.filter)(chatroom_id=room_id).first()
 
         lis = 0
-        for li in chatroom.mem_list:
-            if li == user_name:
+        for li, mem_name in enumerate(chatroom.mem_list):
+            if mem_name == user_name:
+                lis = li
                 break
-            lis += 1
+
+        timeline.cursor_list[lis] += 1
+
 
         await self.send(
             text_data=json.dumps(
@@ -435,7 +440,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 NOT WORK
 '''
 
-
+'''
 class FriendConsumer(WebsocketConsumer):
     # self看作当前触发事件的客户端
 
@@ -634,3 +639,4 @@ def disconnect(self):
 
     CONSUMER_OBJECT_LIST.remove(self)
     raise StopConsumer()
+'''
