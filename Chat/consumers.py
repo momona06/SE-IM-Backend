@@ -1,13 +1,13 @@
-from asgiref.sync import sync_to_async
-from channels.exceptions import StopConsumer
-from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 
-from UserManage.models import IMUser
-from FriendRelation.models import FriendList, Friend, AddList
-from django.contrib.auth.models import User
+from channels.exceptions import StopConsumer
+from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
+
 from Chat.models import *
+from FriendRelation.models import FriendList, Friend, AddList
+from UserManage.models import IMUser
 
 # 定义一个列表，用于存放当前在线的用户
 CHAT_OBJECT_LIST = []
@@ -52,7 +52,8 @@ async def username_list_to_id_list(username_list):
     res_list = []
 
     for i in username_list:
-        user = await sync_to_async(await sync_to_async(User.objects.filter)(username=i).first)()
+        user_list_tem = await sync_to_async(User.objects.filter)(username=i)
+        user = await sync_to_async(user_list_tem.first)()
         if not user is None:
             res_list.append(user.id)
 
@@ -63,7 +64,8 @@ async def id_list_to_username_list(id_list):
     res_list = []
 
     for i in id_list:
-        user = await sync_to_async(await sync_to_async(User.objects.filter)(id=i).first)()
+        user_list_tem = await sync_to_async(User.objects.filter)(id=i)
+        user = await sync_to_async(user_list_tem.first)()
         if not user is None:
             res_list.append(user.username)
 
@@ -384,7 +386,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             )
 
     async def find_chatroom(self, function_name, chatroom_id):
-        chatroom = await sync_to_async(await sync_to_async(ChatRoom.objects.filter)(chatroom_id=chatroom_id).first)()
+        chatroom_list_tem = await sync_to_async(ChatRoom.objects.filter)(chatroom_id=chatroom_id)
+        chatroom = await sync_to_async(chatroom_list_tem.first)()
 
         if chatroom is None:
             await self.send(text_data=json.dumps({
@@ -435,8 +438,8 @@ class UserConsumer(AsyncWebsocketConsumer):
         member_list = json_info['member_list']
         username = await self.get_cur_username()
 
-        chat_room = create_chatroom(room_name, await username_list_to_id_list(member_list), username)
-        chat_time_line = create_chat_timeline()
+        chat_room = await create_chatroom(room_name, await username_list_to_id_list(member_list), username)
+        chat_time_line = await create_chat_timeline()
         chat_room.timeline_id = chat_time_line.timeline_id
         chat_time_line.chatroom_id = chat_room.chatroom_id
         await sync_to_async(chat_room.save)()

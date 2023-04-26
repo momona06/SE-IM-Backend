@@ -3,13 +3,13 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
 
-def create_chat_timeline():
+async def create_chat_timeline():
     new_timeline = ChatTimeLine()
-    new_timeline.save()
+    await sync_to_async(new_timeline.save)()
     return new_timeline
 
 
-def delete_chat_timeline():
+async def delete_chat_timeline():
     pass
 
 
@@ -64,7 +64,7 @@ async def create_chatroom(room_name, mem_list, master_name, is_private=False, is
     return new_chatroom
 
 
-def delete_chatroom():
+async def delete_chatroom():
     # ondel_chatroom = ChatRoom.objects.filter()
     pass
 
