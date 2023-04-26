@@ -167,7 +167,7 @@ def user_register(request: HttpRequest):
                 tem_im_user = create_im_user(tem_user, get_new_token())
                 tem_im_user.save()
 
-                group = ['default']
+                group = ['我的好友']
                 friend_list = FriendList(user_name=username, group_list=group, friend_list=list())
                 friend_list.save()
 

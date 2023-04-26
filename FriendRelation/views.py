@@ -75,6 +75,9 @@ def delete_friend_group(req: HttpRequest):
             user_model = get_user_model()
             user = user_model.objects.filter(username=username).first()
             im_user = IMUser.objects.filter(user=user).first()
+
+
+
             if im_user.token != token:
                 return JsonResponse({
                     'code': -2,
@@ -82,6 +85,13 @@ def delete_friend_group(req: HttpRequest):
                 })
 
             flist = FriendList.objects.filter(user_name=username).first()
+
+            if fgroup_name == flist.group_list[0]:
+                return JsonResponse({
+                    'code': -6,
+                    'info': "You cannot delete this",
+                })
+
             group_exist = False
             lis = 0
             for li, gname in enumerate(flist.group_list):
@@ -98,7 +108,7 @@ def delete_friend_group(req: HttpRequest):
             empty = True
             for friend_name in flist.friend_list:
                 friend = Friend.objects.filter(friend_name=friend_name,user_name=username).first()
-                if friend is None :
+                if friend is None:
                     break
                 if friend.group_name == fgroup_name:
                     empty = False
