@@ -125,9 +125,9 @@ class ChatRoom(models.Model):
     manager_list = ArrayField(
         models.CharField(max_length=100)
     )
-    # mes_list = ArrayField(
-    #     models.
-    # )
+    mes_list = ArrayField(
+         models.BigAutoField(default=0)
+    )
     notice_id = models.BigIntegerField(default=0)
 
     notice_list = ArrayField(
