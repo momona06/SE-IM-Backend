@@ -28,7 +28,7 @@ def delete_friend(req: HttpRequest):
                     'info': "Token Error",
                 })
 
-            friend = Friend.objects.filter( user_name=username, friend_name=friend_name).first()
+            friend = Friend.objects.filter(user_name=username, friend_name=friend_name).first()
 
             if friend is None:
                 return JsonResponse({
