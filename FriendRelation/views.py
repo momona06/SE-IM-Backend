@@ -28,7 +28,7 @@ def delete_friend(req: HttpRequest):
                     'info': "Token Error",
                 })
 
-            friend = Friend.objects.filter(friend_name=friend_name, user_name=username).first()
+            friend = Friend.objects.filter( user_name=username, friend_name=friend_name).first()
 
             if friend is None:
                 return JsonResponse({
@@ -36,13 +36,18 @@ def delete_friend(req: HttpRequest):
                     'info': 'Friend Not Exists'
                 })
 
-            flist = FriendList.objects.get(user_name=username)
-            for name in flist.friend_list:
-                if friend.friend_name == name:
-                    flist.friend_list.remove(name)
-                    break
-            flist.save()
-            friend.delete()
+            for i in [0,1]:
+                name_list = [username, friend_name]
+                friend = Friend.objects.filter(user_name=name_list[i], friend_name=name_list[1-i]).first()
+
+                flist = FriendList.objects.get(user_name=name_list[i])
+                for name in flist.friend_list:
+                    if friend.name_list[1-i] == name:
+                        flist.friend_list.remove(name)
+                        break
+                flist.save()
+                friend.delete()
+
             return JsonResponse({
                 'code': 0,
                 'info': "Delete Friend Succeed"
