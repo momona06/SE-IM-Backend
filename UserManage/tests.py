@@ -84,7 +84,7 @@ class UserManageTest(TestCase):
 
         self.user_cancel(USERNAME,PASSWORD)
         res_reg = self.user_register(USERNAME, PASSWORD)
-        res_lin = self.userLogin(USERNAME, PASSWORD)
+        res_lin = self.user_login(USERNAME, PASSWORD)
         self.assertEqual(res_reg.json()["code"], 0)
         self.assertEqual(res_lin.json()["code"], 0)
         user_model = get_user_model()
@@ -94,7 +94,7 @@ class UserManageTest(TestCase):
         im_user = IMUser.objects.filter(user=user).first()
 
         token = res_lin.json()["token"]
-        res_lout = self.userLogout(USERNAME, token)
+        res_lout = self.user_logout(USERNAME, token)
         im_user = IMUser.objects.filter(user=user).first()
         self.assertEqual(res_lout.json()["code"], 0)
 
@@ -105,7 +105,7 @@ class UserManageTest(TestCase):
         input_password = PASSWORD
 
         res_reg = self.user_register(USERNAME, PASSWORD)
-        res_lin = self.userLogin(USERNAME, PASSWORD)
+        res_lin = self.user_login(USERNAME, PASSWORD)
         self.assertEqual(res_lin.json()["code"], 0)
 
         user_model = get_user_model()
@@ -124,7 +124,7 @@ class UserManageTest(TestCase):
 
         input_password = PASSWORD
         res_reg = self.user_register(USERNAME, PASSWORD)
-        res_lin = self.userLogin(USERNAME, PASSWORD)
+        res_lin = self.user_login(USERNAME, PASSWORD)
         self.assertEqual(res_reg.json()["code"], 0)
         self.assertEqual(res_lin.json()["code"], 0)
 
@@ -139,13 +139,13 @@ class UserManageTest(TestCase):
         revise_field_list = ["username", "password"]
         revise_content_list = ["test01", "1234567"]
         #for field, content in zip(revise_field_list, revise_content_list):
-        res_rev = self.userRevise(revise_field_list[1], revise_content_list[1], USERNAME, input_password, token)
+        res_rev = self.user_revise(revise_field_list[1], revise_content_list[1], USERNAME, input_password, token)
         self.assertEqual(res_rev.json()["code"], 0)
             #self.assertEqual(res_rev.json()["info"],"dd")
 
-        self.userRevise(revise_field_list[1], input_password, USERNAME, revise_content_list[1], token)
+        self.user_revise(revise_field_list[1], input_password, USERNAME, revise_content_list[1], token)
         token = res_lin.json()["token"]
-        res_lout = self.userLogout(USERNAME, token)
+        res_lout = self.user_logout(USERNAME, token)
 
     def testEmail(self):
         username = random.randint(100_000_000_000, 999_999_999_999)

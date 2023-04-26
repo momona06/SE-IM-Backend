@@ -2,17 +2,14 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
 
-
-
-
 def create_chat_timeline():
     new_timeline = ChatTimeLine()
     new_timeline.save()
     return new_timeline
 
+
 def delete_chat_timeline():
     pass
-
 
 
 # Design philosophy: remove info about the chatroom and only reserve the necessary info
@@ -32,7 +29,6 @@ class ChatTimeLine(models.Model):
     cursor_list = ArrayField(
         models.BigIntegerField(default=0)
     )
-
 
 
 # timeline for sync owned by a specific user
@@ -57,18 +53,15 @@ class ChatTimeLine(models.Model):
 #     im_user2 = models.CharField(max_length=100)
 
 
-
-
-def create_chatroom(room_name, is_private, mem_count, mem_list, is_notice, is_top, master_name, manager_list):
-    # TODO: DEL DUP
-    # chatroom_list = ChatRoom.objects.filter(room_name = room_name)
-    new_chatroom = ChatRoom(is_private = is_private, room_name = room_name,
-                            mem_count = len(mem_list), mem_list = mem_list,
-                            is_notice = is_notice, is_top = is_top,
-                            master_name = master_name, manager_list = [],
-                            notice_id = 0, notice_list = [])
+def create_chatroom(room_name, mem_list, master_name, is_private=False, is_notice=True, is_top=False):
+    new_chatroom = ChatRoom(is_private=is_private, room_name=room_name,
+                            mem_count=len(mem_list), mem_list=mem_list,
+                            is_notice=is_notice, is_top=is_top,
+                            master_name=master_name, manager_list=[],
+                            notice_id=0, notice_list=[])
     new_chatroom.save()
     return new_chatroom
+
 
 def delete_chatroom():
     # ondel_chatroom = ChatRoom.objects.filter()
@@ -132,9 +125,9 @@ class ChatRoom(models.Model):
     manager_list = ArrayField(
         models.CharField(max_length=100)
     )
-    mes_list = ArrayField(
-        Message()
-    )
+    # mes_list = ArrayField(
+    #     models.
+    # )
     notice_id = models.BigIntegerField(default=0)
 
     notice_list = ArrayField(
@@ -147,11 +140,6 @@ class ChatRoom(models.Model):
 #     memlist_id = models.BigAutoField(primary_key=True)
 #     pcr_id = models.BigIntegerField(default=0)
 #     is_private = models.BooleanField(default=False)
-
-
-
-
-
 
 
 

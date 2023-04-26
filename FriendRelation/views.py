@@ -6,7 +6,6 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.contrib.auth import authenticate, get_user_model
 
 from utils.utils_request import template_request, BAD_METHOD
-from utils.utils_token import token_check_http
 
 from django.contrib.auth.models import User
 from UserManage.models import IMUser, TokenPoll, create_im_user
@@ -29,7 +28,7 @@ def delete_friend(req: HttpRequest):
                     'info': "Token Error",
                 })
 
-            friend = Friend.objects.filter(friend_name=friend_name, user_name=username).first()
+            friend = Friend.objects.filter(user_name=username, friend_name=friend_name).first()
 
             if friend is None:
                 return JsonResponse({
@@ -37,13 +36,19 @@ def delete_friend(req: HttpRequest):
                     'info': 'Friend Not Exists'
                 })
 
-            flist = FriendList.objects.get(user_name=username)
-            for friend_name in flist.friend_list:
-                if friend.friend_name == friend_name:
-                    friend_name.remove()
-                    break
-            flist.save()
-            friend.delete()
+            for i in [0,1]:
+                name_list = [username, friend_name]
+                friend = Friend.objects.filter(user_name=name_list[i], friend_name=name_list[1-i]).first()
+
+                if not friend is None:
+                    flist = FriendList.objects.get(user_name=name_list[i])
+                    for name in flist.friend_list:
+                        if friend.friend_name == name:
+                            flist.friend_list.remove(name)
+                            break
+                    flist.save()
+                    friend.delete()
+
             return JsonResponse({
                 'code': 0,
                 'info': "Delete Friend Succeed"
@@ -165,7 +170,7 @@ def create_friend_group(req: HttpRequest):
     else:
         return BAD_METHOD
 
-
+'''
 def get_friend_list(req: HttpRequest):
     if req.method == "POST":
         try:
@@ -213,6 +218,7 @@ def get_friend_list(req: HttpRequest):
 
     else:
         return BAD_METHOD
+        '''
 
 
 def add_friend_group(req: HttpRequest):
