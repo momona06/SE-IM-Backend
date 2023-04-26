@@ -109,11 +109,11 @@ class ChatRoom(models.Model):
 def create_chatroom(room_name, is_private, mem_count, mem_list, is_notice, is_top, master_name, manager_list):
     # TODO: DEL DUP
     # chatroom_list = ChatRoom.objects.filter(room_name = room_name)
-    new_chatroom = ChatRoom(is_private = is_private, room_name = room_name,
-                            mem_count = len(mem_list), mem_list = mem_list,
-                            is_notice = is_notice, is_top = is_top,
-                            master_name = master_name, manager_list = [],
-                            notice_id = 0, notice_list = [])
+    new_chatroom = ChatRoom(is_private=is_private, room_name=room_name,
+                            mem_count=len(mem_list), mem_list=mem_list,
+                            is_notice=is_notice, is_top=is_top,
+                            master_name=master_name, manager_list=[],
+                            notice_id=0, notice_list=[])
     new_chatroom.save()
     return new_chatroom
 
@@ -122,6 +122,9 @@ def delete_chatroom():
     pass
 
 
+def user_directory_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
+    return "user_{0}/{1}".format(instance.user.id)
 
 
 # Design philosophy: all info about the message itself should be put here
@@ -133,22 +136,17 @@ class Message(models.Model):
     # room_id = models.BigIntegerField(default=0)
     # timeline_id = models.BigIntegerField(default=0)
 
+    # type = {image, text, audio, video, emoji, file}
     type = models.CharField(max_length=20)
     body = models.CharField(max_length=500)
     time = models.CharField(max_length=100)
     sender = models.CharField(max_length=100)
+    # src = models.FileField(upload_to=user_directory_path, null=True, blank=True)
+
 
     is_reply = models.BooleanField(default=False)
     rel_id = models.BigIntegerField(default=0)
-
-
-
-
-# members owned by a specific chatroom
-# class ChatRoomMemberList(models.Model):
-#     memlist_id = models.BigAutoField(primary_key=True)
-#     pcr_id = models.BigIntegerField(default=0)
-#     is_private = models.BooleanField(default=False)
+    # time = time.strftime('%Y-%m-%d&%H:%M:%S', time.localtime())
 
 
 
@@ -163,15 +161,7 @@ class OnlineUser(models.Model):
     channel_name = models.CharField(max_length=1000)
     chatroom_id = models.BigIntegerField(default=0)
 
-def create_onlineuser(user_name, channel_name, room_id):
+async def create_onlineuser(user_name, channel_name, room_id):
     new_onliner = await database_sync_to_async(OnlineUser)(user_name=user_name, channel_name=channel_name, chatroom_id=room_id)
     new_onliner.save()
     return new_onliner
-
-
-
-
-
-
-
-

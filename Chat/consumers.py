@@ -1,10 +1,10 @@
 from channels.exceptions import StopConsumer
 from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
-from pprint import *
+from pprint import pprint
 import json
 import time
 
-from UserManage.models import IMUser, TokenPoll
+from UserManage.models import IMUser
 from FriendRelation.models import FriendList, Friend, AddList
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model, authenticate
@@ -12,7 +12,7 @@ from Chat.models import *
 
 
 from channels.db import database_sync_to_async
-from asgiref.sync import sync_to_async # TODO: Check
+from asgiref.sync import sync_to_async# TODO: Check
 
 CONSUMER_OBJECT_LIST = []
 USER_NAME_LIST = []
@@ -206,8 +206,8 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
         '''
 
-        # user_name = self.curuser
-        user_name = 'user'
+        user_name = self.curuser
+        # user_name = 'user'
 
         user = await database_sync_to_async(User.objects.get)(username=user_name)
         im_user = await database_sync_to_async(IMUser.objects.get)(user=user)
@@ -237,8 +237,8 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
         '''
 
-        user_name = 'user'
-        # user_name = self.curuser
+        # user_name = 'user'
+        user_name = self.curuser
 
         onliner = await database_sync_to_async(OnlineUser.objects.filter)(user_name=user_name).first()
         if onliner is None:
@@ -246,6 +246,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             self.close()
 
         await database_sync_to_async(onliner.delete)()
+        await database_sync_to_async(onliner.save)()
 
         await self.channel_layer.group_discard(self.chat_group_name, self.channel_name)
 
