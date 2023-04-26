@@ -1,6 +1,6 @@
 from asgiref.sync import sync_to_async
 from channels.exceptions import StopConsumer
-from channels.generic.websocket import  AsyncWebsocketConsumer
+from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 
 from UserManage.models import IMUser
@@ -403,7 +403,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             return False
         return True
 
-
     async def check_user_exist(self, function_name, username, message='User not found'):
         manager_user = (await sync_to_async(User.objects.filter)(username=username)).first()
 
@@ -557,9 +556,9 @@ class UserConsumer(AsyncWebsocketConsumer):
             member = await self.check_user_exist(function_name, member_name, message='Member not found')
 
             if not user is None and not member is None and \
-                await self.check_user_in_chatroom(function_name,chatroom,username) and \
-                await self.check_user_in_chatroom(function_name,chatroom,member_name,
-                                                  message='Member is not in the group'):
+                    await self.check_user_in_chatroom(function_name, chatroom, username) and \
+                    await self.check_user_in_chatroom(function_name, chatroom, member_name,
+                                                      message='Member is not in the group'):
 
                 user_power = await get_power(chatroom, username)
                 member_power = await get_power(chatroom, member_name)
@@ -576,7 +575,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                         'function': function_name,
                         'message': 'Success'
                     }))
-
 
     async def withdraw_message(self):
         pass
@@ -597,8 +595,8 @@ class UserConsumer(AsyncWebsocketConsumer):
                 "username": []
             })
             for friend_name in flist.friend_list:
-                friend = (await sync_to_async(Friend.objects.filter)(friend_name=friend_name, user_name=username))\
-                                .first()
+                friend = (
+                    await sync_to_async(Friend.objects.filter)(friend_name=friend_name, user_name=username)).first()
                 if flist.group_list[i] == friend.group_name:
                     return_list[i]['username'].append(friend_name)
 
@@ -606,4 +604,3 @@ class UserConsumer(AsyncWebsocketConsumer):
             'function': attribute_name,
             attribute_name: return_list,
         }))
-
