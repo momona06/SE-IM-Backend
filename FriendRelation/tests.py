@@ -20,12 +20,14 @@ class FriendRelationTest(TestCase):
         }
         return self.client.post("/friend/createfgroup", data=payload, content_type="application/json")
 
+    '''
     def friend_list_get(self, username, token):
         payload = {
             "username": username,
             "token": token,
         }
         return self.client.post("/friend/getfriendlist", data=payload, content_type="application/json")
+    '''
 
     def friend_to_group_add(self, username, token, friend_name, fgroup_name):
         payload = {
