@@ -295,6 +295,7 @@ def search_user(request):
             }
 
             return JsonResponse(response_data, safe=False)
+
         except Exception as e:
             print(e)
             return JsonResponse({

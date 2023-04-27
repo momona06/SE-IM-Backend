@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
+from channels.db import database_sync_to_async
+
 
 def create_chat_timeline():
     new_timeline = ChatTimeLine()
@@ -142,5 +144,27 @@ class ChatRoom(models.Model):
 #     is_private = models.BooleanField(default=False)
 
 
+def user_directory_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
+    return "user_{0}/{1}".format(instance.user.id)
 
 
+# Design philosophy: all info about the message itself should be put here
+
+# a specific message
+
+def create_message(type, body, time, sender, is_reply = False, rel_id = 0):
+    new_message = Message(type = type, body = body, time = time, sender = sender,is_reply = is_reply, rel_id = rel_id)
+    new_message.save()
+    return new_message
+
+
+class OnlineUser(models.Model):
+    user_name = models.CharField(max_length=100)
+    channel_name = models.CharField(max_length=1000)
+    chatroom_id = models.BigIntegerField(default=0)
+
+async def create_onlineuser(user_name, channel_name, room_id):
+    new_onliner = await database_sync_to_async(OnlineUser)(user_name=user_name, channel_name=channel_name, chatroom_id=room_id)
+    new_onliner.save()
+    return new_onliner
