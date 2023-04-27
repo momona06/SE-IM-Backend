@@ -428,7 +428,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
         '''
 
-        user_name = self.curuser
+        user_name = self.cur_user
         # user_name = 'user'
 
         user = await database_sync_to_async(User.objects.get)(username=user_name)
@@ -460,7 +460,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         '''
 
         # user_name = 'user'
-        user_name = self.curuser
+        user_name = self.cur_user
 
         onliner = await database_sync_to_async(OnlineUser.objects.filter)(user_name=user_name).first()
         if onliner is None:
@@ -490,7 +490,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         # append the timeline
 
-        user_name = self.curuser
+        user_name = self.cur_user
 
         onliner = await database_sync_to_async(OnlineUser.objects.filter)(user_name=user_name).first()
         if onliner is None:
