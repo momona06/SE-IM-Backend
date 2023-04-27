@@ -103,12 +103,55 @@ def get_friendlist(username):
     return FriendList.objects.get(user_name=username)
 
 @database_sync_to_async
-def get_timeline_with_room_id(chatroom_id):
-    return ChatTimeLine.objects.get(chatroom_id=chatroom_id)
+def get_timeline(chatroom_id=None,timeline_id=None):
+    """
+    只填一个即可
+    """
+    if chatroom_id is None:
+        if timeline_id is None:
+            return None
+        else:
+            return ChatTimeLine.objects.get(timeline_id=timeline_id)
+    else:
+        return ChatTimeLine.objects.get(chatroom_id=chatroom_id)
 
 @database_sync_to_async
-def get_timeline_with_timeline_id(timeline_id):
-    return ChatTimeLine.objects.get(timeline_id=timeline_id)
+def filter_first_addlist(username):
+    return AddList.objects.filter(user_name=username).first()
+
+@database_sync_to_async
+def filter_first_chatroom(chatroom_id=None,timeline_id=None):
+    """
+    只填一个即可
+    """
+    if chatroom_id is None:
+        if timeline_id is None:
+            return None
+        else:
+            return ChatRoom.objects.filter(chatroom_id=chatroom_id).first()
+    else:
+        return ChatRoom.objects.filter(timeline_id=timeline_id).first()
+
+@database_sync_to_async
+def filter_first_timeline(chatroom_id=None,timeline_id=None):
+    """
+    只填一个即可
+    """
+    if chatroom_id is None:
+        if timeline_id is None:
+            return None
+        else:
+            return ChatTimeLine.objects.filter(chatroom_id=chatroom_id).first()
+    else:
+        return ChatTimeLine.objects.filter(timeline_id=timeline_id).first()
+
+@database_sync_to_async
+def filter_first_onlineuser(username):
+    return OnlineUser.objects.filter(user_name=username).first()
+
+@database_sync_to_async
+def filter_first_message(msg_id):
+    return Message.objects.filter(msg_id=msg_id).first()
 
 
 class UserConsumer(AsyncWebsocketConsumer):
@@ -240,13 +283,10 @@ class UserConsumer(AsyncWebsocketConsumer):
     async def apply_friend(self, text_data):
         json_info = json.loads(text_data)
         username = json_info['username']
-        user_model = get_user_model()
         apply_from = json_info['from']
         apply_to = json_info['to']
-        applyer_add_list1 = await sync_to_async(AddList.objects.filter)(user_name=apply_from)
-        applyer_add_list = await sync_to_async(applyer_add_list1.first)()
-        receiver_add_list1 = await sync_to_async(AddList.objects.filter)(user_name=apply_to)
-        receiver_add_list = await sync_to_async(receiver_add_list1.first)()
+        applyer_add_list = await filter_first_addlist(apply_from)
+        receiver_add_list = await filter_first_addlist(apply_to)
 
         if not await search_ensure_false_request_index(apply_to, applyer_add_list, mode=1) == -1:
             # 确保被回复前不能重复发送
@@ -459,7 +499,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         new_onliner = OnlineUser(user_name=user_name, channel_name=self.channel_name, chatroom_id=room_id)
         await new_onliner.save()
 
-        chat_room = await database_sync_to_async(ChatRoom.objects.filter)(chatroom_id=room_id).first()
+        chat_room = await filter_first_chatroom(chatroom_id=room_id)
         if chat_room is None:
             await self.send(text_data="chatroom not exists")
             await self.close()
@@ -478,10 +518,10 @@ class UserConsumer(AsyncWebsocketConsumer):
         # user_name = 'user'
         user_name = self.cur_user
 
-        onliner = await database_sync_to_async(OnlineUser.objects.filter)(user_name=user_name).first()
+        onliner = await filter_first_onlineuser(user_name)
         if onliner is None:
-            self.send(text_data="you are not online")
-            self.close()
+            await self.send(text_data="you are not online")
+            await self.close()
 
         await database_sync_to_async(onliner.delete)()
         await database_sync_to_async(onliner.save)()
@@ -506,19 +546,19 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         user_name = self.cur_user
 
-        onliner = await database_sync_to_async(OnlineUser.objects.filter)(user_name=user_name).first()
+        onliner = await filter_first_onlineuser(user_name)
         if onliner is None:
             await self.send('you are not in the chatroom')
             await self.close()
 
         room_id = onliner.chatroom_id
 
-        chatroom = await database_sync_to_async(ChatRoom.objects.filter)(chatroom_id=room_id).first()
+        chatroom = await filter_first_chatroom(chatroom_id=room_id)
         if chatroom is None:
             await self.send('chatroom not exists')
             await self.close()
 
-        timeline = await get_timeline_with_room_id(room_id)
+        timeline = await get_timeline(chatroom_id=room_id)
 
         msg_type = json_info['msg_type']
         msg_body = json_info['msg_body']
@@ -575,7 +615,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         msg_id = json_info['msg_id']
         sender = json_info['sender']
 
-        message = await database_sync_to_async(Message.objects.filter)(msg_id=msg_id).first()
+        message = await filter_first_message(msg_id)
         if message is None:
             await self.send('message not exists')
             await self.close()
@@ -586,12 +626,12 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         room_id = message.chatroom_id
 
-        chatroom = await database_sync_to_async(ChatRoom.objects.filter)(chatroom_id=room_id).first()
+        chatroom = await filter_first_chatroom(chatroom_id=room_id)
         if chatroom is None:
             await self.send('chatroom not exists')
             await self.close()
 
-        timeline = await database_sync_to_async(ChatTimeLine.objects.filter)(chatroom_id=room_id).first()
+        timeline = await filter_first_timeline(chatroom_id=room_id)
 
         lis = 0
         for li, mem_name in enumerate(chatroom.mem_list):
@@ -693,7 +733,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             username = await self.get_cur_username()
 
             if await self.check_chatroom_master(function_name, chatroom, username):
-                chat_timeline = await get_timeline_with_timeline_id(chatroom.timeline_id)
+                chat_timeline = await get_timeline(timeline_id=chatroom.timeline_id)
                 chatroom.delete()
                 chat_timeline.delete()
 
