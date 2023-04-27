@@ -301,11 +301,11 @@ class UserConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(return_field))
         for user in CONSUMER_OBJECT_LIST:
             if user.cur_user == apply_to:
-                await user.fetch_room(json.dumps({"username": user.cur_user}))
+                #await user.fetch_room(json.dumps({"username": user.cur_user}))
                 await user.fetch_friend_list(json.dumps({"username": user.cur_user}))
                 break
 
-        await self.fetch_room(json.dumps({"username": username}))
+        #await self.fetch_room(json.dumps({"username": username}))
         await self.fetch_friend_list(json.dumps({"username": username}))
 
     async def decline_friend(self, json_info):
