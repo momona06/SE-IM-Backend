@@ -227,6 +227,8 @@ class UserConsumer(AsyncWebsocketConsumer):
         self.group_name = json_info['room_name']
         self.chat_group_name = "chat_" + self.group_name + room_id
 
+
+    ########################################
         await self.channel_layer.group_add(self.chat_group_name, self.channel_name)
 
 
