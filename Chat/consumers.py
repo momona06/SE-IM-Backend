@@ -239,13 +239,17 @@ class UserConsumer(AsyncWebsocketConsumer):
                 )
             for user in CONSUMER_OBJECT_LIST:
                 if user.cur_user == apply_to:
-                    user.send(text_data=json.dumps(
+                    await user.send(text_data=json.dumps(
                         {
                             'function': 'applylist',
                             'applylist': return_field
                         }
                     )
                     )
+                    await user.fetch_room(json.dumps({"username":user.cur_user}))
+                    await user.fetch_friend_list(json.dumps({"username": user.cur_user}))
+            await self.fetch_room(json.dumps({"username":username}))
+            await self.fetch_friend_list(json.dumps({"username": username}))
 
     async def confirm_friend(self, json_info):
         username = json_info['username']
