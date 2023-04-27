@@ -12,7 +12,6 @@ from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
 from Chat.models import *
 
-
 from channels.db import database_sync_to_async
 from asgiref.sync import sync_to_async
 
