@@ -91,7 +91,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
-        self.curuser = None
+        self.cur_user = None
         self.chat_group_name = None
 
     ### COPY
@@ -123,14 +123,14 @@ class UserConsumer(AsyncWebsocketConsumer):
         #     CHAT_OBJECT_LIST.append(self)
 
         CONSUMER_OBJECT_LIST.append(self)
-        self.curuser = await self.get_cur_username()
+        self.cur_user = await self.get_cur_username()
         await self.accept()
 
     async def get_cur_username(self):
-        if self.curuser is None:
+        if self.cur_user is None:
             return self.scope['user'].username
         else:
-            return self.curuser
+            return self.cur_user
 
     async def receive(self, text_data=None, bytes_data=None):
 
@@ -220,8 +220,10 @@ class UserConsumer(AsyncWebsocketConsumer):
         im_user = await sync_to_async(IMUser.objects.get)(user=user)
         apply_from = json_info['from']
         apply_to = json_info['to']
-        applyer_add_list = await sync_to_async(AddList.objects.get)(user_name=apply_from)
-        receiver_add_list = await sync_to_async(AddList.objects.get)(user_name=apply_to)
+        applyer_add_list1 = await sync_to_async(AddList.objects.get)(user_name=apply_from)
+        applyer_add_list = await sync_to_async(applyer_add_list1.first)()
+        receiver_add_list1 = await sync_to_async(AddList.objects.filter)(user_name=apply_to)
+        receiver_add_list = await sync_to_async(receiver_add_list1.first)()
 
         if not await search_ensure_false_request_index(apply_to, applyer_add_list, mode=1) == -1:
             # 确保被回复前不能重复发送
@@ -254,7 +256,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                     }
                 )
             for user in CONSUMER_OBJECT_LIST:
-                if user.curuser == apply_to:
+                if user.cur_user == apply_to:
                     await user.send(text_data=json.dumps(
                         {
                             'function': 'applylist',
@@ -262,10 +264,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                         }
                     )
                     )
-                    await user.fetch_room(json.dumps({"username":user.curuser}))
-                    await user.fetch_friend_list(json.dumps({"username": user.curuser}))
-            await self.fetch_room(json.dumps({"username":username}))
-            await self.fetch_friend_list(json.dumps({"username": username}))
+
 
     async def confirm_friend(self, json_info):
         username = json_info['username']
@@ -302,6 +301,14 @@ class UserConsumer(AsyncWebsocketConsumer):
         # 若applyer在线结果发送到applyer
         return_field = {"function": "confirm"}
         await self.send(text_data=json.dumps(return_field))
+        for user in CONSUMER_OBJECT_LIST:
+            if user.cur_user == apply_to:
+                await user.fetch_room(json.dumps({"username": user.cur_user}))
+                await user.fetch_friend_list(json.dumps({"username": user.cur_user}))
+                break
+
+        await self.fetch_room(json.dumps({"username": username}))
+        await self.fetch_friend_list(json.dumps({"username": username}))
 
     async def decline_friend(self, json_info):
         # 修改数据库
@@ -551,7 +558,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         # move the cursor
 
 
-        user_name = self.curuser
+        user_name = self.cur_user
         # user_name = 'user'
 
         msg_id = json_info['msg_id']
