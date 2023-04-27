@@ -790,7 +790,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                         'message': 'Success'
                     }))
 
-    async def withdraw_message(self):
+    async def withdraw_message(self, json_info):
         pass
 
     async def fetch_friend_list(self, json_info):
