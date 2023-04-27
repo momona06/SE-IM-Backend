@@ -220,7 +220,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         im_user = await sync_to_async(IMUser.objects.get)(user=user)
         apply_from = json_info['from']
         apply_to = json_info['to']
-        applyer_add_list1 = await sync_to_async(AddList.objects.get)(user_name=apply_from)
+        applyer_add_list1 = await sync_to_async(AddList.objects.filter)(user_name=apply_from)
         applyer_add_list = await sync_to_async(applyer_add_list1.first)()
         receiver_add_list1 = await sync_to_async(AddList.objects.filter)(user_name=apply_to)
         receiver_add_list = await sync_to_async(receiver_add_list1.first)()
