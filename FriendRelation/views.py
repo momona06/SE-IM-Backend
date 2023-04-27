@@ -10,7 +10,7 @@ from utils.utils_request import template_request, BAD_METHOD
 from django.contrib.auth.models import User
 from UserManage.models import IMUser, TokenPoll, create_im_user
 from FriendRelation.models import FriendList, Friend, AddList
-
+from Chat.models import ChatRoom
 
 def delete_friend(req: HttpRequest):
     if req.method == "DELETE":
@@ -48,6 +48,10 @@ def delete_friend(req: HttpRequest):
                             break
                     flist.save()
                     friend.delete()
+            for room in ChatRoom.objects.all():
+                if room.is_private==True and (username in room.mem_list) and (friend_name in room.mem_list):
+                    room.delete()
+                    break
 
             return JsonResponse({
                 'code': 0,
@@ -259,7 +263,7 @@ def add_friend_group(req: HttpRequest):
                 if group == fgroup_name:
                     lis = li
             '''
-    
+
             # flist.friend_list[lis].append(friend_name)
             for friend_name in flist.friend_list:
                 friend = Friend.objects.filter(friend_name=friend_name,user_name=username).first()
@@ -301,6 +305,7 @@ def search_user(request):
             }
 
             return JsonResponse(response_data, safe=False)
+
         except Exception as e:
             print(e)
             return JsonResponse({

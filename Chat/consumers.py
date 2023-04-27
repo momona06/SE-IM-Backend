@@ -1,16 +1,20 @@
-import json
-
+from asgiref.sync import sync_to_async
 from channels.exceptions import StopConsumer
+from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
+from pprint import pprint
 from channels.generic.websocket import AsyncWebsocketConsumer
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
+import json
+import time
 
-from Chat.models import *
-from FriendRelation.models import FriendList, Friend, AddList
 from UserManage.models import IMUser
+from FriendRelation.models import FriendList, Friend, AddList
+from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+from Chat.models import *
 
-# 定义一个列表，用于存放当前在线的用户
-CHAT_OBJECT_LIST = []
+from channels.db import database_sync_to_async
+from asgiref.sync import sync_to_async
+
 CONSUMER_OBJECT_LIST = []
 USER_NAME_LIST = []
 
@@ -87,7 +91,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
-        self.cur_user = None
+        self.curuser = None
         self.chat_group_name = None
 
     ### COPY
@@ -119,14 +123,14 @@ class UserConsumer(AsyncWebsocketConsumer):
         #     CHAT_OBJECT_LIST.append(self)
 
         CONSUMER_OBJECT_LIST.append(self)
-        self.cur_user = await self.get_cur_username()
+        self.curuser = await self.get_cur_username()
         await self.accept()
 
     async def get_cur_username(self):
-        if self.cur_user is None:
+        if self.curuser is None:
             return self.scope['user'].username
         else:
-            return self.cur_user
+            return self.curuser
 
     async def receive(self, text_data=None, bytes_data=None):
 
@@ -164,11 +168,21 @@ class UserConsumer(AsyncWebsocketConsumer):
             await self.fetch_friend_list(json_info)
 
         # function zone
+
+        elif function == 'add_chat':
+            await self.add_chat(json_info)
+
+        elif function == 'leave_chat':
+            await self.leave_chat(json_info)
+
         elif function == 'send_message':
-            await self.send_message(kw, json_info)
+            await self.send_message(json_info)
+
+        elif function == 'ack_message':
+            await self.acknowledge_message(json_info)
 
         elif function == 'withdraw_message':
-            await self.withdraw_message()
+            await self.withdraw_message(json_info)
 
         elif function == 'create_group':
             await self.create_group(json_info)
@@ -185,6 +199,11 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == 'remove_group_member':
             await self.remove_group_member(json_info)
 
+        elif function == "fetchroom":
+            await self.fetch_room(json_info)
+
+        elif function == "fetchmessage":
+            await self.fetch_message(json_info)
     async def heat_beat(self):
         await self.send(text_data=json.dumps(
             {
@@ -235,14 +254,18 @@ class UserConsumer(AsyncWebsocketConsumer):
                     }
                 )
             for user in CONSUMER_OBJECT_LIST:
-                if user.cur_user == apply_to:
-                    user.send(text_data=json.dumps(
+                if user.curuser == apply_to:
+                    await user.send(text_data=json.dumps(
                         {
                             'function': 'applylist',
                             'applylist': return_field
                         }
                     )
                     )
+                    await user.fetch_room(json.dumps({"username":user.curuser}))
+                    await user.fetch_friend_list(json.dumps({"username": user.curuser}))
+            await self.fetch_room(json.dumps({"username":username}))
+            await self.fetch_friend_list(json.dumps({"username": username}))
 
     async def confirm_friend(self, json_info):
         username = json_info['username']
@@ -270,6 +293,12 @@ class UserConsumer(AsyncWebsocketConsumer):
                          group_name=friend_list2.group_list[0])
         await sync_to_async(friend1.save)()
         await sync_to_async(friend2.save)()
+        new_room = ChatRoom(mem_list=[],not_read=[],is_notice=[],is_top=[],manager_list=[],mes_list=[],notice_list=[])
+        new_room.mem_list.append(username)
+        new_room.not_read.append(0)
+        new_room.mem_list.append(apply_from)
+        new_room.not_read.append(0)
+        await sync_to_async(new_room.save)()
         # 若applyer在线结果发送到applyer
         return_field = {"function": "confirm"}
         await self.send(text_data=json.dumps(return_field))
@@ -341,49 +370,228 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         print('event in private_msg =', event)
 
+    # async def private_diffuse(self, event):
+    #     message = event["message"]
+    #
+    #     print('event in private_msg =', event)
+    #
+    #     await self.send(text_data=json.dumps({
+    #         "message": message
+    #     }))
+
+    async def message_diffuse(self, event):
+        msg_body = event["msg_body"]
+        msg_id = event["msg_id"]
+        print('event in public_msg =', event)
+        # event = {'type': 'chat_message', 'message': 'res'}
+
         await self.send(text_data=json.dumps({
-            "message": message
+            'type': 'Msg',
+            'msg_id': msg_id,
+            "msg_body": msg_body
         }))
 
-    async def public_diffuse(self, event):
-        # Handles the "chat_message" event when it's sent to us
-        message = event["message"]
+    async def acknowledge_diffuse(self, event):
+
+        msg_id = event["msg_id"]
 
         print('event in public_msg =', event)
         # event = {'type': 'chat_message', 'message': 'res'}
 
         await self.send(text_data=json.dumps({
-            "message": message
+            'type': 'Ack',
+            'msg_id': msg_id,
+
         }))
 
-    async def send_message(self, kw, json_info):
-        message = json_info['message']
 
-        # username = json_info['username']
 
-        if 'group_name' in kw.keys():
+    async def add_chat(self, json_info):
+        '''
+        json_info: {
+            'chatroom_id': '5',
+            'room_name': 'default',
+            'is_private': True
+        }
 
-            print('json_data in <group> =', json_info)
+        json_info: {
+            'chatroom_id': '8',
+            'room_name': 'lobby',
+            'is_private': False
+        }
+        '''
 
-            await self.channel_layer.group_send(
-                self.chat_group_name,
-                {
-                    "type": "public_diffuse",
-                    "message": message,
-                }
+        user_name = self.curuser
+        # user_name = 'user'
+
+        user = await database_sync_to_async(User.objects.get)(username=user_name)
+        im_user = await database_sync_to_async(IMUser.objects.get)(user=user)
+
+        room_name = json_info['room_name']
+        room_id = json_info['chatroom_id']
+        is_private = json_info['is_private']
+
+        new_onliner = await OnlineUser(user_name=user_name, channel_name=self.channel_name, chatroom_id=room_id)
+        await new_onliner.save()
+
+        chat_room = await database_sync_to_async(ChatRoom.objects.filter)(chatroom_id=room_id).first()
+        if chat_room is None:
+            await self.send(text_data="chatroom not exists")
+            await self.close()
+
+        self.group_name = json_info['room_name']
+        self.chat_group_name = "chat_" + self.group_name + room_id
+
+        await self.channel_layer.group_add(self.chat_group_name, self.channel_name)
+
+
+
+    async def leave_chat(self, json_info):
+        '''
+        json_info: {
+        }
+        '''
+
+        # user_name = 'user'
+        user_name = self.curuser
+
+        onliner = await database_sync_to_async(OnlineUser.objects.filter)(user_name=user_name).first()
+        if onliner is None:
+            self.send(text_data="you are not online")
+            self.close()
+
+        await database_sync_to_async(onliner.delete)()
+        await database_sync_to_async(onliner.save)()
+
+        await self.channel_layer.group_discard(self.chat_group_name, self.channel_name)
+
+
+
+    async def send_message(self, json_info):
+        '''
+        json_info: {
+            'msg_type': 'text',
+            'msg_body': 'hello',
+            'ref_id': 16,
+        }
+        '''
+
+        # Inspiration & Target
+        # striked by Msg R1
+        # send Ack 2(Msg 2) to cli A
+        # send Msg R3 to cli B
+
+        # append the timeline
+
+        user_name = self.curuser
+
+        onliner = await database_sync_to_async(OnlineUser.objects.filter)(user_name=user_name).first()
+        if onliner is None:
+            await self.send('you are not in the chatroom')
+            await self.close()
+
+        room_id = onliner.chatroom_id
+
+        chatroom = await database_sync_to_async(ChatRoom.objects.filter)(chatroom_id=room_id).first()
+        if chatroom is None:
+            await self.send('chatroom not exists')
+            await self.close()
+
+
+        timeline = await database_sync_to_async(ChatTimeLine.objects.get)(chatroom_id=room_id)
+
+        msg_type = json_info['msg_type']
+        msg_body = json_info['msg_body']
+
+        # ref_id = json_info['ref_id']
+        msg_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
+        message = await database_sync_to_async(create_message)(msg_type, msg_body, msg_time, user_name)
+
+        msg_id = message.msg_id
+
+        await sync_to_async(timeline.msg_line.append)(message.msg_id)
+
+        #
+        await self.channel_layer.group_send(
+            self.chat_group_name,
+            {
+                "type": "message_diffuse",
+                'msg_id': msg_id,
+                'msg_body': msg_body,
+            }
+        )
+
+        #
+        await self.send(
+            text_data=json.dumps(
+            {
+                "type": "acknowledge_diffuse",
+                'msg_id': msg_id,
+            }
             )
+        )
 
-        elif 'friend_name' in kw.keys():
+        # for member in chatroom.mem_list:
+        #     online_member = await database_sync_to_async(OnlineUser.objects.filter)(user_name=member).first()
+        #     if online_member is None:
 
-            print('json_data in <friend> =', json_info)
 
-            await self.channel_layer.group_send(
-                self.chat_group_name,
-                {
-                    "type": "private_diffuse",
-                    "message": message,
-                }
+    async def acknowledge_message(self, json_info):
+        '''
+        json_info: {
+            'msg_id': 16,
+        }
+        '''
+
+        # Inspiration & Target
+        # striked by Ack 4
+        # send Ack 5 to cli B
+        ### delete:[send Ack 6 to cli A]
+
+        # move the cursor
+
+
+        user_name = self.curuser
+        # user_name = 'user'
+
+        msg_id = json_info['msg_id']
+        sender = json_info['sender']
+
+        message = await database_sync_to_async(Message.objects.filter)(msg_id=msg_id).first()
+        if message is None:
+            await self.send('message not exists')
+            await self.close()
+
+        if message.sender != sender:
+            await self.send('sender not match')
+            await self.close()
+
+        room_id = message.chatroom_id
+
+        chatroom = await database_sync_to_async(ChatRoom.objects.filter)(chatroom_id=room_id).first()
+        if chatroom is None:
+            await self.send('chatroom not exists')
+            await self.close()
+
+        timeline = await database_sync_to_async(ChatTimeLine.objects.filter)(chatroom_id=room_id).first()
+
+        lis = 0
+        for li, mem_name in enumerate(chatroom.mem_list):
+            if mem_name == user_name:
+                lis = li
+                break
+
+        timeline.cursor_list[lis] += 1
+
+
+        await self.send(
+            text_data=json.dumps(
+            {
+                "type": "acknowledge_diffuse",
+                'msg_id': msg_id,
+            }
             )
+        )
 
     async def find_chatroom(self, function_name, chatroom_id):
         chatroom_list_tem = await sync_to_async(ChatRoom.objects.filter)(chatroom_id=chatroom_id)
@@ -428,8 +636,11 @@ class UserConsumer(AsyncWebsocketConsumer):
             return False
 
     async def create_group(self, json_info):
-        """json_info =
+        """
+        json_info =
         {
+            'selection': 'list_create',
+            'member_list': ['A', 'B'],
             'member_list':['A', 'B'],
             'room_name': 'lob',
         }
@@ -606,4 +817,48 @@ class UserConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'function': attribute_name,
             attribute_name: return_list,
+        }))
+
+    async def fetch_room(self,json_info):
+        username = json_info['username']
+        return_field = []
+        async for room in ChatRoom.objects.all():
+            for li,user in enumerate(room.mem_list):
+                if user == username:
+                    return_field.append({
+                        "roomid":room.chatroom_id,
+                        "roomname":room.room_name,
+                        "unreadnum":room.not_read[li],
+                        "is_private":room.is_private
+                    })
+                    break
+        await self.send(text_data=json.dumps({
+            "function":"fetchroom",
+            "roomlist":return_field
+        }))
+
+    async def fetch_message(self,json_info):
+        chatroom_id = json_info['chatroom_id']
+        username = json_info['username']
+        room1 = await sync_to_async(ChatRoom.objects.filter)(chatroom_id=chatroom_id)
+        room = await sync_to_async(room1.first)()
+        return_field = []
+        for li,user in enumerate(room.mem_list):
+            if user == username:
+                room.not_read[li] = 0
+                await sync_to_async(room.save)()
+                break
+        for msg in room.mes_list:
+            cur_message1 = await sync_to_async(Message.objects.filter)(msg_id=msg)
+            cur_message = await sync_to_async(cur_message1.first)()
+            return_field.append({
+                "body":cur_message.body,
+                "id":cur_message.msg_id,
+                "time":cur_message.time,
+                "sender":cur_message.sender
+            })
+
+        await self.send(text_data=json.dumps({
+            "function":"fetchmessage",
+            "messagelist":return_field
         }))

@@ -2,6 +2,8 @@ from asgiref.sync import sync_to_async
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
+from channels.db import database_sync_to_async
+
 
 async def create_chat_timeline():
     new_timeline = ChatTimeLine()
@@ -68,7 +70,25 @@ async def delete_chatroom():
     # ondel_chatroom = ChatRoom.objects.filter()
     pass
 
+# Design philosophy: all info about the message itself should be put here
 
+# a specific message
+class Message(models.Model):
+    msg_id = models.BigAutoField(primary_key=True)
+
+    # room_id = models.BigIntegerField(default=0)
+    # timeline_id = models.BigIntegerField(default=0)
+
+    type = models.CharField(max_length=20)
+    body = models.CharField(max_length=500)
+    time = models.CharField(max_length=100)
+    sender = models.CharField(max_length=100)
+    is_reply = models.BooleanField(default=False)
+    rel_id = models.BigIntegerField(default=0)
+
+    is_read = ArrayField(
+        models.BooleanField(default=False)
+    )
 # Design philosophy: all the info about the room should be put here
 # Pay attention: Public and Private Chatroom classified by the field 'is_private'
 
@@ -76,7 +96,7 @@ async def delete_chatroom():
 class ChatRoom(models.Model):
     chatroom_id = models.BigAutoField(primary_key=True)
 
-    timeline_id = models.BigIntegerField(default=0)
+    #timeline_id = models.BigIntegerField(default=0)
 
     # mark the same room_name case
     # dup_id = models.BigIntegerField(default=0)
@@ -90,6 +110,9 @@ class ChatRoom(models.Model):
 
     mem_list = ArrayField(
         models.CharField(max_length=100)
+    )
+    not_read = ArrayField(
+        models.IntegerField(default=0)
     )
 
     is_notice = ArrayField(
@@ -105,7 +128,9 @@ class ChatRoom(models.Model):
     manager_list = ArrayField(
         models.CharField(max_length=100)
     )
-
+    mes_list = ArrayField(
+         models.BigIntegerField(default=0)
+    )
     notice_id = models.BigIntegerField(default=0)
 
     notice_list = ArrayField(
@@ -120,22 +145,27 @@ class ChatRoom(models.Model):
 #     is_private = models.BooleanField(default=False)
 
 
+def user_directory_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
+    return "user_{0}/{1}".format(instance.user.id)
+
+
 # Design philosophy: all info about the message itself should be put here
 
 # a specific message
-class Message(models.Model):
-    msg_id = models.BigAutoField(primary_key=True)
 
-    # room_id = models.BigIntegerField(default=0)
-    # timeline_id = models.BigIntegerField(default=0)
+def create_message(type, body, time, sender, is_reply = False, rel_id = 0):
+    new_message = Message(type = type, body = body, time = time, sender = sender,is_reply = is_reply, rel_id = rel_id)
+    new_message.save()
+    return new_message
 
-    type = models.CharField(max_length=20)
-    body = models.CharField(max_length=500)
-    time = models.CharField(max_length=100)
 
-    is_reply = models.BooleanField(default=False)
-    rel_id = models.BigIntegerField(default=0)
+class OnlineUser(models.Model):
+    user_name = models.CharField(max_length=100)
+    channel_name = models.CharField(max_length=1000)
+    chatroom_id = models.BigIntegerField(default=0)
 
-    is_read = ArrayField(
-        models.BooleanField(default=False)
-    )
+async def create_onlineuser(user_name, channel_name, room_id):
+    new_onliner = await database_sync_to_async(OnlineUser)(user_name=user_name, channel_name=channel_name, chatroom_id=room_id)
+    new_onliner.save()
+    return new_onliner
