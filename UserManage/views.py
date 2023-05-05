@@ -141,7 +141,7 @@ def cancel(req: HttpRequest):
             1 2
             0 1
             '''
-            user_add_list = AddList.objects.filter(user_name=username)
+            user_add_list = AddList.objects.filter(user_name=username).first()
 
             user_list = []
 
