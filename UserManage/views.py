@@ -123,9 +123,41 @@ def cancel(req: HttpRequest):
                 if i is not None:
                     i.delete()
 
-            # 注销后将其他用户的之前申请过的加好友申请用户名改为已停用 Account_suspended
+            # 本账户的apply: 全部删除
+            # 本账户的reply: 全部删除
+            # (废弃)其他账户的apply, reply: ensure为真, answer为假, 用户名改为已停用 AccountSuspended
 
+            # 以上三条废弃, 包含此用户名的信息全删
 
+            '''
+            a=[1,2,3,4,5]
+            for i, k in enumerate(a[::-1]):
+            l = len(a)
+            print(str(l-i-1) + " " + str(k))
+            
+            4 5
+            3 4
+            2 3
+            1 2
+            0 1
+            '''
+            user_add_list = AddList.objects.filter(user_name=username)
+
+            user_list = []
+
+            for reply_name in user_add_list.reply_list:
+                if not reply_name in user_list:
+                    user_list.append(reply_name)
+
+                    delete_user_in_other_add_list(reply_name, username)
+
+            for apply_name in user_add_list.apply_list:
+                if not apply_name in user_list:
+                    user_list.append(apply_name)
+
+                    delete_user_in_other_add_list(apply_name, username)
+
+            user_add_list.delete()
 
             return JsonResponse({
                 "code": 0,
@@ -140,6 +172,22 @@ def cancel(req: HttpRequest):
 
     else:
         return BAD_METHOD
+
+
+def delete_user_in_other_add_list(reply_name, username):
+    other_add_list = AddList.objects.filter(user_name=reply_name).first()
+    for i, other_name in other_add_list.reply_list[::-1]:
+        if other_name == username:
+            index = len(other_add_list.reply_list) - i - 1
+            del other_add_list.reply_list[index]
+            del other_add_list.reply_ensure[index]
+            del other_add_list.reply_answer[index]
+    for i, other_name in other_add_list.apply_list[::-1]:
+        if other_name == username:
+            index = len(other_add_list.apply_list) - i - 1
+            del other_add_list.apply_list[index]
+            del other_add_list.apply_ensure[index]
+            del other_add_list.apply_answer[index]
 
 
 '''
