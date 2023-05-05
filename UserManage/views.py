@@ -4,7 +4,7 @@ import random
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 
-from FriendRelation.models import FriendList, AddList
+from FriendRelation.models import FriendList, AddList, Friend
 from utils.utils_request import BAD_METHOD
 from django.contrib.auth import authenticate, get_user_model
 
@@ -107,6 +107,25 @@ def cancel(req: HttpRequest):
             user_model = get_user_model()
             user = user_model.objects.get(username=username)
             user.delete()
+
+
+            friend_list = FriendList.objects.filter(user_name=username).first()
+            if friend_list is not None:
+                friend_list.delete()
+
+            friend_user_list = Friend.objects.filter(user_name=username)
+            for i in friend_user_list:
+                if i is not None:
+                    i.delete()
+
+            friend_other_list = Friend.objects.filter(friend_name=username)
+            for i in friend_other_list:
+                if i is not None:
+                    i.delete()
+
+            # 注销后将其他用户的之前申请过的加好友申请用户名改为已停用 Account_suspended
+
+
 
             return JsonResponse({
                 "code": 0,
