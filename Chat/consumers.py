@@ -386,7 +386,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     async def add_chat(self, json_info):
         """
-        json_info: {
+        json_info = {
             'chatroom_id': '5',
             'room_name': 'default',
             'is_private': True
@@ -410,6 +410,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         self.chatroom_name = "chat_" + room_name + room_id
         await self.channel_layer.group_add(self.chatroom_name, self.channel_name)
 
+        # Fix: Unify
         # 发送历史信息
         # Msg R3 for back case
         # self.fetch_message(json_info)
@@ -538,7 +539,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         # msg_id = json_info['msg_id']
 
         if is_back:
-
             # 获取onliner，群聊和Timeline
             onliner = await filter_first_onlineuser(user_name)
             if onliner is None:
@@ -559,7 +559,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             timeline.cursor_list[lis] += count
 
         else:
-
             # 获取onliner，群聊和Timeline
             onliner = await filter_first_onlineuser(user_name)
             if onliner is None:
@@ -627,8 +626,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     async def create_group(self, json_info):
         """
-        json_info =
-        {
+        json_info = {
             'selection': 'list_create',
             'member_list': ['A', 'B'],
             'member_list':['A', 'B'],
@@ -653,8 +651,8 @@ class UserConsumer(AsyncWebsocketConsumer):
         }))
 
     async def delete_group(self, json_info):
-        """json_info =
-        {
+        """
+        json_info = {
             'chatroom_id': 114514,
         }
         """
@@ -677,8 +675,8 @@ class UserConsumer(AsyncWebsocketConsumer):
                 }))
 
     async def appoint_manager(self, json_info):
-        """json_info =
-        {
+        """
+        json_info = {
             'chatroom_id': 114514,
             'manager_name': 'ashitemaru'
         }
@@ -713,8 +711,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     async def transfer_master(self, json_info):
         """
-        json_info =
-        {
+        json_info = {
             'chatroom_id': 114514,
             'new_master_name': 'ashitemaru'
         }
@@ -744,8 +741,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     async def remove_group_member(self, json_info):
         """
-        json_info =
-        {
+        json_info = {
             'chatroom_id': 114514,
             'member_name': 'ashitemaru'
         }
@@ -775,6 +771,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                         'function': function_name,
                         'message': 'Permission denied'
                     }))
+
                 else:
                     chatroom.manager_list.remove(member.id)
                     await sync_to_async(chatroom.save)()
@@ -784,9 +781,19 @@ class UserConsumer(AsyncWebsocketConsumer):
                     }))
 
     async def withdraw_message(self, json_info):
+        '''
+        json_info = {
+
+        }
+        '''
         pass
 
     async def fetch_friend_list(self, json_info):
+        '''
+        json_info = {
+
+        }
+        '''
         attribute_name = 'friendlist'
 
         username = json_info["username"]
@@ -802,8 +809,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                 "username": []
             })
             for friend_name in flist.friend_list:
-                friend_list_tem = await sync_to_async(Friend.objects.filter)(friend_name=friend_name,
-                                                                             user_name=username)
+                friend_list_tem = await sync_to_async(Friend.objects.filter)(friend_name=friend_name, user_name=username)
                 friend = await sync_to_async(friend_list_tem.first)()
                 if flist.group_list[i] == friend.group_name:
                     return_list[i]['username'].append(friend_name)
@@ -814,6 +820,11 @@ class UserConsumer(AsyncWebsocketConsumer):
         }))
 
     async def fetch_room(self, json_info):
+        '''
+        json_info = {
+
+        }
+        '''
         username = json_info['username']
         return_field = []
         async for room in ChatRoom.objects.all():
@@ -831,7 +842,14 @@ class UserConsumer(AsyncWebsocketConsumer):
             "roomlist": return_field
         }))
 
+
+
     async def fetch_message(self, json_info):
+        '''
+        json_info = {
+
+        }
+        '''
         chatroom_id = json_info['chatroom_id']
         username = json_info['username']
         room1 = await sync_to_async(ChatRoom.objects.filter)(chatroom_id=chatroom_id)
