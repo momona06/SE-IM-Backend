@@ -47,15 +47,6 @@ class ChatTimeLine(models.Model):
 #     )
 
 
-# a specific private chatroom example
-# class PrivateChatRoom(models.Model):
-#     pcr_id = models.BigAutoField(primary_key=True)
-#     room_name = models.CharField(max_length=30)
-#
-#     im_user1 = models.CharField(max_length=100)
-#     im_user2 = models.CharField(max_length=100)
-
-
 async def create_chatroom(room_name, mem_list, master_name, is_private=False, is_notice=True, is_top=False):
     new_chatroom = ChatRoom(is_private=is_private, room_name=room_name,
                             mem_count=len(mem_list), mem_list=mem_list,
@@ -69,6 +60,7 @@ async def create_chatroom(room_name, mem_list, master_name, is_private=False, is
 async def delete_chatroom():
     # ondel_chatroom = ChatRoom.objects.filter()
     pass
+
 
 # Design philosophy: all info about the message itself should be put here
 
@@ -89,6 +81,8 @@ class Message(models.Model):
     is_read = ArrayField(
         models.BooleanField(default=False)
     )
+
+
 # Design philosophy: all the info about the room should be put here
 # Pay attention: Public and Private Chatroom classified by the field 'is_private'
 
@@ -96,7 +90,7 @@ class Message(models.Model):
 class ChatRoom(models.Model):
     chatroom_id = models.BigAutoField(primary_key=True)
 
-    #timeline_id = models.BigIntegerField(default=0)
+    # timeline_id = models.BigIntegerField(default=0)
 
     # mark the same room_name case
     # dup_id = models.BigIntegerField(default=0)
@@ -129,20 +123,13 @@ class ChatRoom(models.Model):
         models.CharField(max_length=100)
     )
     mes_list = ArrayField(
-         models.BigIntegerField(default=0)
+        models.BigIntegerField(default=0)
     )
     notice_id = models.BigIntegerField(default=0)
 
     notice_list = ArrayField(
         models.BigIntegerField(default=0)
     )
-
-
-# members owned by a specific chatroom
-# class ChatRoomMemberList(models.Model):
-#     memlist_id = models.BigAutoField(primary_key=True)
-#     pcr_id = models.BigIntegerField(default=0)
-#     is_private = models.BooleanField(default=False)
 
 
 def user_directory_path(instance, filename):
@@ -154,8 +141,8 @@ def user_directory_path(instance, filename):
 
 # a specific message
 
-def create_message(type, body, time, sender, is_reply = False, rel_id = 0):
-    new_message = Message(type = type, body = body, time = time, sender = sender,is_reply = is_reply, rel_id = rel_id)
+def create_message(type, body, time, sender, is_reply=False, rel_id=0):
+    new_message = Message(type=type, body=body, time=time, sender=sender, is_reply=is_reply, rel_id=rel_id)
     new_message.save()
     return new_message
 
@@ -165,7 +152,9 @@ class OnlineUser(models.Model):
     channel_name = models.CharField(max_length=1000)
     chatroom_id = models.BigIntegerField(default=0)
 
+
 async def create_onlineuser(user_name, channel_name, room_id):
-    new_onliner = await database_sync_to_async(OnlineUser)(user_name=user_name, channel_name=channel_name, chatroom_id=room_id)
+    new_onliner = await database_sync_to_async(OnlineUser)(user_name=user_name, channel_name=channel_name,
+                                                           chatroom_id=room_id)
     new_onliner.save()
     return new_onliner

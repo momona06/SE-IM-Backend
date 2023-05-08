@@ -50,8 +50,6 @@ async def search_ensure_false_request_index(other_username, add_list, mode=0):
     return -1
 
 
-# channel: the specific user
-# group: a group of channels (users)
 
 async def username_list_to_id_list(username_list):
     res_list = []
@@ -88,6 +86,10 @@ async def get_power(chatroom, username):
         return 0
 
 
+
+# channel: the specific user
+# group: a group of channels (users)
+
 class UserConsumer(AsyncWebsocketConsumer):
 
     def __init__(self, *args, **kwargs):
@@ -95,7 +97,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         self.cur_user = None
         self.chat_group_name = None
 
-    ### COPY
     async def connect(self):
 
         # Chat Ver
@@ -140,18 +141,14 @@ class UserConsumer(AsyncWebsocketConsumer):
         # 2) text_data: original data from frontend
 
         json_info = json.loads(text_data)
-
-        # fetch and init data
         function = json_info["function"]
-        kw = self.scope['url_route']['kwargs']
 
-        # original function zone
-
+        # friendlist zone
         if function == 'heartbeat':
             await self.heat_beat()
 
         elif function == 'apply':
-            await self.apply_friend(text_data)
+            await self.apply_friend(json_info)
 
         elif function == 'confirm':
             await self.confirm_friend(json_info)
@@ -169,7 +166,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             await self.fetch_friend_list(json_info)
 
         # function zone
-
         elif function == 'add_chat':
             await self.add_chat(json_info)
 
@@ -214,8 +210,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         )
         )
 
-    async def apply_friend(self, text_data):
-        json_info = json.loads(text_data)
+    async def apply_friend(self, json_info):
         username = json_info['username']
         apply_from = json_info['from']
         apply_to = json_info['to']
@@ -226,8 +221,10 @@ class UserConsumer(AsyncWebsocketConsumer):
             # 确保被回复前不能重复发送
             # mode=1意为在applyer_add_list.applylist中寻找apply_to
             await self.send(text_data="Has Been Sent")
+
         elif apply_to in (await sync_to_async(FriendList.objects.get)(user_name=apply_from)).friend_list:
             await self.send(text_data="Is Already a Friend")
+
         else:
             applyer_add_list.apply_list.append(apply_to)
             applyer_add_list.apply_answer.append(False)
@@ -441,8 +438,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         self.group_name = json_info['room_name']
         self.chat_group_name = "chat_" + self.group_name + room_id
 
-
-    ########################################
         await self.channel_layer.group_add(self.chat_group_name, self.channel_name)
 
     async def leave_chat(self, json_info):
