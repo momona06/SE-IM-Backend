@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
+
 # friend of a imuser
 class Friend(models.Model):
     # owner of the friend
@@ -14,6 +15,7 @@ class Friend(models.Model):
         max_length=100
     )
 
+
 # friendlist of a imuser
 class FriendList(models.Model):
     user_name = models.CharField(
@@ -24,7 +26,6 @@ class FriendList(models.Model):
     group_list = ArrayField(
         models.CharField(max_length=100)
     )
-
 
     friend_list = ArrayField(
         models.CharField(max_length=100)
@@ -62,5 +63,3 @@ class AddList(models.Model):
     apply_ensure = ArrayField(
         models.BooleanField(default=False)
     )
-
-

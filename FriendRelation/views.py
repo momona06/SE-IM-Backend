@@ -1,15 +1,13 @@
 import json
-import re
-import random
 
-from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.contrib.auth import authenticate, get_user_model
+from django.http import HttpRequest, JsonResponse
+from django.contrib.auth import get_user_model
 
-from utils.utils_request import template_request, BAD_METHOD
+from utils.utils_request import BAD_METHOD
 
 from django.contrib.auth.models import User
-from UserManage.models import IMUser, TokenPoll, create_im_user
-from FriendRelation.models import FriendList, Friend, AddList
+from UserManage.models import IMUser
+from FriendRelation.models import FriendList, Friend
 from Chat.models import ChatRoom
 
 def delete_friend(req: HttpRequest):

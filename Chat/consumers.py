@@ -352,33 +352,12 @@ class UserConsumer(AsyncWebsocketConsumer):
         }))
 
     async def disconnect(self, code):
-        # Leave room group
-        kw = self.scope['url_route']['kwargs']
-
-        # if 'group_name' in kw.keys():
-        #     await self.channel_layer.group_discard(self.chat_group_name, self.channel_name)
-        # elif 'friend_name' in kw.keys():
-        #     CHAT_OBJECT_LIST.remove(self)
-        #     raise StopConsumer()
 
         CONSUMER_OBJECT_LIST.remove(self)
         raise StopConsumer()
 
         # Clients.objects.filter(channel_name=self.channel_name).delete()
 
-    async def private_diffuse(self, event):
-        message = event["message"]
-
-        print('event in private_msg =', event)
-
-    # async def private_diffuse(self, event):
-    #     message = event["message"]
-    #
-    #     print('event in private_msg =', event)
-    #
-    #     await self.send(text_data=json.dumps({
-    #         "message": message
-    #     }))
 
     async def message_diffuse(self, event):
         msg_body = event["msg_body"]
@@ -402,7 +381,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'type': 'Ack',
             'msg_id': msg_id,
-
         }))
 
     async def add_chat(self, json_info):
@@ -421,16 +399,16 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
 
         user_name = self.cur_user
-        # user_name = 'user'
 
         room_name = json_info['room_name']
         room_id = json_info['chatroom_id']
         is_private = json_info['is_private']
 
-        new_onliner = OnlineUser(user_name=user_name, channel_name=self.channel_name, chatroom_id=room_id)
-        await new_onliner.save()
+
+        new_onliner = await sync_to_async(create_onlineuser)(user_name, self.channel_name, room_id)
 
         chat_room = await filter_first_chatroom(chatroom_id=room_id)
+
         if chat_room is None:
             await self.send(text_data="chatroom not exists")
             await self.close()
