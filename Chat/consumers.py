@@ -412,7 +412,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         # 发送历史信息
         # Msg R3 for back case
-
+        # self.fetch_message(json_info)
 
 
 
@@ -424,9 +424,15 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         # 初始化
         user_name = self.cur_user
+        onliner = await filter_first_onlineuser(user_name)
+
+        # 改动Timeline的cursor
+        chatroom = await filter_first_chatroom(chatroom_id=onliner.chatroom_id)
+        timeline = await filter_first_timeline(timeline_id=chatroom.timeline_id)
+        lis = chatroom.mem_list.index(user_name)
+        timeline.cursor_list[lis] = 0
 
         # 离开在线用户列表
-        onliner = await filter_first_onlineuser(user_name)
         if onliner is None:
             await self.send(text_data="you are not online")
             await self.close()
@@ -437,7 +443,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         self.chatroom_name = None
         await self.channel_layer.group_discard(self.chatroom_name, self.channel_name)
 
-        # 改动Timeline的cursor
+
 
 
 
@@ -572,6 +578,10 @@ class UserConsumer(AsyncWebsocketConsumer):
             lis = chatroom.mem_list.index(user_name)
 
             timeline.cursor_list[lis] += 1
+
+
+
+
 
     async def find_chatroom(self, function_name, chatroom_id):
         chatroom_list_tem = await sync_to_async(ChatRoom.objects.filter)(chatroom_id=chatroom_id)

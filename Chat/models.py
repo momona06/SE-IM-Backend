@@ -6,8 +6,7 @@ from channels.db import database_sync_to_async
 
 
 # Design philosophy: remove info about the chatroom and only reserve the necessary info
-
-# timeline for storage owned by a specific chatroom
+# Timeline for storage owned by a specific chatroom
 # Viewed As Storage Database
 class ChatTimeLine(models.Model):
     timeline_id = models.BigAutoField(primary_key=True)
@@ -32,7 +31,7 @@ async def delete_chat_timeline():
     pass
 
 
-# timeline for sync owned by a specific user
+# Timeline for sync owned by a specific user
 # Viewed As Sync Database
 # class UserTimeLine(models.Model):
 #     utl_id = models.BigAutoField(primary_key=True)
@@ -53,9 +52,6 @@ async def delete_chat_timeline():
 
 
 # Design philosophy: all the info about the room should be put here
-# Pay attention: Public and Private Chatroom classified by the field 'is_private'
-
-# a specific chatroom
 class ChatRoom(models.Model):
     chatroom_id = models.BigAutoField(primary_key=True)
 
@@ -120,8 +116,6 @@ async def delete_chatroom():
 
 
 # Design philosophy: all info about the message itself should be put here
-
-# a specific message
 class Message(models.Model):
     msg_id = models.BigAutoField(primary_key=True)
     type = models.CharField(max_length=20)
@@ -155,7 +149,7 @@ async def delete_message():
 
 
 
-# Users who are in chatroom
+# Users in chatrooms
 class OnlineUser(models.Model):
     user_name = models.CharField(max_length=100)
     channel_name = models.CharField(max_length=1000)
