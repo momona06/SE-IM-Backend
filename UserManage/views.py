@@ -4,7 +4,7 @@ import random
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 
-from FriendRelation.models import FriendList, AddList
+from FriendRelation.models import FriendList, AddList, Friend
 from utils.utils_request import BAD_METHOD
 from django.contrib.auth import authenticate, get_user_model
 
@@ -12,6 +12,7 @@ from django.contrib.auth.models import User
 from UserManage.models import IMUser, TokenPoll, create_im_user, EmailCode
 from django.core import mail
 
+from Chat.models import ChatRoom
 
 def revise(req: HttpRequest):
     if req.method == "PUT":
@@ -38,7 +39,14 @@ def revise(req: HttpRequest):
                 })
             else:
                 if revise_field == "username":
+                    chatroom_list = ChatRoom.objects.filter(master_name=username)
+
+                    for i in chatroom_list:
+                        i.master_name = revise_content
+
                     user_rev.username = revise_content
+
+
                 elif revise_field == "password":
                     user_rev.set_password(revise_content)
                 elif revise_field == "email":
@@ -100,6 +108,57 @@ def cancel(req: HttpRequest):
             user = user_model.objects.get(username=username)
             user.delete()
 
+
+            friend_list = FriendList.objects.filter(user_name=username).first()
+            if friend_list is not None:
+                friend_list.delete()
+
+            friend_user_list = Friend.objects.filter(user_name=username)
+            for i in friend_user_list:
+                if i is not None:
+                    i.delete()
+
+            friend_other_list = Friend.objects.filter(friend_name=username)
+            for i in friend_other_list:
+                if i is not None:
+                    i.delete()
+
+            # 本账户的apply: 全部删除
+            # 本账户的reply: 全部删除
+            # (废弃)其他账户的apply, reply: ensure为真, answer为假, 用户名改为已停用 AccountSuspended
+
+            # 以上三条废弃, 包含此用户名的信息全删
+
+            '''
+            a=[1,2,3,4,5]
+            for i, k in enumerate(a[::-1]):
+            l = len(a)
+            print(str(l-i-1) + " " + str(k))
+            
+            4 5
+            3 4
+            2 3
+            1 2
+            0 1
+            '''
+            user_add_list = AddList.objects.filter(user_name=username).first()
+
+            user_list = []
+
+            for reply_name in user_add_list.reply_list:
+                if not reply_name in user_list:
+                    user_list.append(reply_name)
+
+                    delete_user_in_other_add_list(reply_name, username)
+
+            for apply_name in user_add_list.apply_list:
+                if not apply_name in user_list:
+                    user_list.append(apply_name)
+
+                    delete_user_in_other_add_list(apply_name, username)
+
+            user_add_list.delete()
+
             return JsonResponse({
                 "code": 0,
                 "info": "User Canceled"
@@ -113,6 +172,22 @@ def cancel(req: HttpRequest):
 
     else:
         return BAD_METHOD
+
+
+def delete_user_in_other_add_list(reply_name, username):
+    other_add_list = AddList.objects.filter(user_name=reply_name).first()
+    for i, other_name in other_add_list.reply_list[::-1]:
+        if other_name == username:
+            index = len(other_add_list.reply_list) - i - 1
+            del other_add_list.reply_list[index]
+            del other_add_list.reply_ensure[index]
+            del other_add_list.reply_answer[index]
+    for i, other_name in other_add_list.apply_list[::-1]:
+        if other_name == username:
+            index = len(other_add_list.apply_list) - i - 1
+            del other_add_list.apply_list[index]
+            del other_add_list.apply_ensure[index]
+            del other_add_list.apply_answer[index]
 
 
 '''
@@ -159,7 +234,7 @@ def user_register(request: HttpRequest):
                 tem_im_user = create_im_user(tem_user, get_new_token())
                 tem_im_user.save()
 
-                group = ['default']
+                group = ['我的好友']
                 friend_list = FriendList(user_name=username, group_list=group, friend_list=list())
                 friend_list.save()
 

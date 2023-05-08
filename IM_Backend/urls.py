@@ -19,5 +19,5 @@ from django.urls import path, include, re_path
 urlpatterns = [
     path('user/', include("UserManage.urls")),
     path('friend/', include("FriendRelation.urls")),
-    path('chat/', include("Chat.urls")),
+    #path('chat/', include("Chat.urls")),
 ]

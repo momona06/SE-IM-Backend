@@ -20,12 +20,14 @@ class FriendRelationTest(TestCase):
         }
         return self.client.post("/friend/createfgroup", data=payload, content_type="application/json")
 
+    '''
     def friend_list_get(self, username, token):
         payload = {
             "username": username,
             "token": token,
         }
         return self.client.post("/friend/getfriendlist", data=payload, content_type="application/json")
+    '''
 
     def friend_to_group_add(self, username, token, friend_name, fgroup_name):
         payload = {
@@ -76,7 +78,7 @@ class FriendRelationTest(TestCase):
 
         self.assertTrue(str(fgroup_name) in group_list)
 
-
+    '''
     def test_flist_get(self):
         fgroup_name = "1111"
         fname_base = 999999
@@ -105,6 +107,7 @@ class FriendRelationTest(TestCase):
         res = self.friend_list_get(USERNAME, token)
 
         self.assertEqual(res.json()["code"], 0)
+    '''
 
     def test_friend_to_group(self):
         fgroup_name = "1111"
@@ -128,9 +131,12 @@ class FriendRelationTest(TestCase):
 
         token = self.user_login(USERNAME, PASSWORD).json()["token"]
 
-        friend_list = FriendList.objects.get(user_name=USERNAME)
-        friend = Friend(user_name=USERNAME, friend_name=username_1, group_name=friend_list.group_list[0])
-        friend.save()
+        friend_list1 = FriendList.objects.get(user_name=USERNAME)
+        friend1 = Friend(user_name=USERNAME, friend_name=username_1, group_name=friend_list1.group_list[0])
+        friend1.save()
+        friend_list2 = FriendList.objects.get(user_name=username_1)
+        friend2 = Friend(user_name=username_1, friend_name=USERNAME, group_name=friend_list2.group_list[0])
+        friend2.save()
 
         res = self.friend_delete(USERNAME, 0, username_1)
         self.assertEqual(res.json()["code"], -2)
@@ -140,6 +146,7 @@ class FriendRelationTest(TestCase):
 
         res = self.friend_delete(USERNAME, token, username_1)
         self.assertEqual(res.json()["code"], 0)
+
 
     def test_delete_fgroup(self):
         self.user_cancel(USERNAME,PASSWORD)

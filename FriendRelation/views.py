@@ -6,12 +6,11 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.contrib.auth import authenticate, get_user_model
 
 from utils.utils_request import template_request, BAD_METHOD
-from utils.utils_token import token_check_http
 
 from django.contrib.auth.models import User
 from UserManage.models import IMUser, TokenPoll, create_im_user
 from FriendRelation.models import FriendList, Friend, AddList
-
+from Chat.models import ChatRoom
 
 def delete_friend(req: HttpRequest):
     if req.method == "DELETE":
@@ -29,7 +28,7 @@ def delete_friend(req: HttpRequest):
                     'info': "Token Error",
                 })
 
-            friend = Friend.objects.filter(friend_name=friend_name, user_name=username).first()
+            friend = Friend.objects.filter(user_name=username, friend_name=friend_name).first()
 
             if friend is None:
                 return JsonResponse({
@@ -37,13 +36,23 @@ def delete_friend(req: HttpRequest):
                     'info': 'Friend Not Exists'
                 })
 
-            flist = FriendList.objects.get(user_name=username)
-            for friend_name in flist.friend_list:
-                if friend.friend_name == friend_name:
-                    friend_name.remove()
+            for i in [0,1]:
+                name_list = [username, friend_name]
+                friend = Friend.objects.filter(user_name=name_list[i], friend_name=name_list[1-i]).first()
+
+                if not friend is None:
+                    flist = FriendList.objects.get(user_name=name_list[i])
+                    for name in flist.friend_list:
+                        if friend.friend_name == name:
+                            flist.friend_list.remove(name)
+                            break
+                    flist.save()
+                    friend.delete()
+            for room in ChatRoom.objects.all():
+                if room.is_private==True and (username in room.mem_list) and (friend_name in room.mem_list):
+                    room.delete()
                     break
-            flist.save()
-            friend.delete()
+
             return JsonResponse({
                 'code': 0,
                 'info': "Delete Friend Succeed"
@@ -52,7 +61,7 @@ def delete_friend(req: HttpRequest):
             print(e)
             return JsonResponse({
                 "code": -5,
-                "info": "Unexpected Error"
+                "info": e
             })
 
 
@@ -70,6 +79,9 @@ def delete_friend_group(req: HttpRequest):
             user_model = get_user_model()
             user = user_model.objects.filter(username=username).first()
             im_user = IMUser.objects.filter(user=user).first()
+
+
+
             if im_user.token != token:
                 return JsonResponse({
                     'code': -2,
@@ -77,6 +89,13 @@ def delete_friend_group(req: HttpRequest):
                 })
 
             flist = FriendList.objects.filter(user_name=username).first()
+
+            if fgroup_name == flist.group_list[0]:
+                return JsonResponse({
+                    'code': -6,
+                    'info': "You cannot delete this",
+                })
+
             group_exist = False
             lis = 0
             for li, gname in enumerate(flist.group_list):
@@ -93,7 +112,7 @@ def delete_friend_group(req: HttpRequest):
             empty = True
             for friend_name in flist.friend_list:
                 friend = Friend.objects.filter(friend_name=friend_name,user_name=username).first()
-                if friend is None :
+                if friend is None:
                     break
                 if friend.group_name == fgroup_name:
                     empty = False
@@ -115,7 +134,7 @@ def delete_friend_group(req: HttpRequest):
             print(e)
             return JsonResponse({
                 "code": -5,
-                "info": "Unexpected Error"
+                "info": e
             })
 
     else:
@@ -159,13 +178,13 @@ def create_friend_group(req: HttpRequest):
             print(e)
             return JsonResponse({
                 "code": -5,
-                "info": "Unexpected Error"
+                "info": e
             })
 
     else:
         return BAD_METHOD
 
-
+'''
 def get_friend_list(req: HttpRequest):
     if req.method == "POST":
         try:
@@ -213,6 +232,7 @@ def get_friend_list(req: HttpRequest):
 
     else:
         return BAD_METHOD
+        '''
 
 
 def add_friend_group(req: HttpRequest):
@@ -234,21 +254,24 @@ def add_friend_group(req: HttpRequest):
                     'info': "Token Error",
                 })
 
-            friend = Friend.objects.filter(user_name=username, friend_name=friend_name).first()
+            # friend = Friend.objects.filter(user_name=username, friend_name=friend_name).first()
             flist = FriendList.objects.filter(user_name=username).first()
 
+            '''
             lis = 0
             for li, group in enumerate(flist.group_list):
                 if group == fgroup_name:
                     lis = li
-    
+            '''
+
             # flist.friend_list[lis].append(friend_name)
             for friend_name in flist.friend_list:
                 friend = Friend.objects.filter(friend_name=friend_name,user_name=username).first()
                 if friend.friend_name == friend_name:
                     friend.group_name = fgroup_name
+                    friend.save()
                     break
-            flist.save()
+
             return JsonResponse({
                 "code": 0,
                 "info": "AddGroup Succeed"
@@ -257,7 +280,7 @@ def add_friend_group(req: HttpRequest):
             print(e)
             return JsonResponse({
                 "code": -5,
-                "info": "Unexpected Error"
+                "info": e
             })
 
     else:
@@ -287,7 +310,7 @@ def search_user(request):
             print(e)
             return JsonResponse({
                 "code": -1,
-                "info": "Unexpected error"
+                "info": e
             })
     else:
         return BAD_METHOD
@@ -328,7 +351,7 @@ def check_user(request):
             except User.DoesNotExist:
                 return JsonResponse({
                     "code": -20,
-                    "info": "Check User not found"
+                    "info": check_name
                 })
 
             im_user = IMUser.objects.filter(user=my_user).first()
@@ -351,7 +374,7 @@ def check_user(request):
             print(e)
             return JsonResponse({
                 "code": -1,
-                "info": "Unexpected error"
+                "info": e
             })
     else:
         return BAD_METHOD
