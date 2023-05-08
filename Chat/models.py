@@ -11,14 +11,13 @@ from channels.db import database_sync_to_async
 # Viewed As Storage Database
 class ChatTimeLine(models.Model):
     timeline_id = models.BigAutoField(primary_key=True)
-
-    # is_private = models.BooleanField(default=False)
     chatroom_id = models.BigIntegerField(default=0)
 
     msg_line = ArrayField(
         models.BigIntegerField(default=0)
     )
 
+    # represent the message showed on the frontend of each user
     cursor_list = ArrayField(
         models.BigIntegerField(default=0)
     )
@@ -125,10 +124,6 @@ async def delete_chatroom():
 # a specific message
 class Message(models.Model):
     msg_id = models.BigAutoField(primary_key=True)
-
-    # room_id = models.BigIntegerField(default=0)
-    # timeline_id = models.BigIntegerField(default=0)
-
     type = models.CharField(max_length=20)
     body = models.CharField(max_length=500)
     time = models.CharField(max_length=100)
