@@ -389,6 +389,10 @@ class UserConsumer(AsyncWebsocketConsumer):
             'msg_id': msg_id,
         }))
 
+
+
+
+
     async def add_chat(self, json_info):
         """
         json_info = {
@@ -420,6 +424,10 @@ class UserConsumer(AsyncWebsocketConsumer):
         # Msg R3 for back case
         # self.fetch_message(json_info)
 
+
+
+
+
     async def leave_chat(self, json_info):
         '''
         json_info: {}
@@ -446,6 +454,10 @@ class UserConsumer(AsyncWebsocketConsumer):
         self.chatroom_name = None
         await self.channel_layer.group_discard(self.chatroom_name, self.channel_name)
 
+
+
+
+
     async def send_message(self, json_info):
         '''
         json_info = {
@@ -453,7 +465,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             'msg_body': 'hello',
             'reply_id': 16,
         }
-
         '''
 
         # Pipeline
@@ -897,11 +908,11 @@ class UserConsumer(AsyncWebsocketConsumer):
 
 
     async def fetch_friend_list(self, json_info):
-        '''
+        """
         json_info = {
 
         }
-        '''
+        """
         attribute_name = 'friendlist'
 
         username = json_info["username"]
@@ -918,7 +929,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             })
             for friend_name in flist.friend_list:
                 friend = await filter_first_friend(username,friend_name)
-                if (not friend is None) and flist.group_list[i] == friend.group_name:
+                if friend is not None and flist.group_list[i] == friend.group_name:
                     return_list[i]['username'].append(friend_name)
 
         await self.send(text_data=json.dumps({
@@ -929,7 +940,6 @@ class UserConsumer(AsyncWebsocketConsumer):
     async def fetch_room(self, json_info):
         '''
         json_info = {
-
 
         }
         '''
@@ -966,6 +976,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             notice_list.append(notice)
         master = room.master_name
         mem_count = room.mem_count
+
         await self.send(text_data=json.dumps({
             "mem_list": mem_list,
             "manager_list": manager_list,
@@ -978,7 +989,6 @@ class UserConsumer(AsyncWebsocketConsumer):
     async def fetch_message(self, json_info):
         '''
         json_info = {
-
 
         }
         '''

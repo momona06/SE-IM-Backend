@@ -167,4 +167,4 @@ async def create_onlineuser(user_name, channel_name, room_id):
     return new_onliner
 
 async def delete_onlineuser(user_name):
-    await sync_to_async(OnlineUser.objects.filter(user_name=user_name).delete)()
+    await database_sync_to_async(OnlineUser.objects.filter(user_name=user_name).delete)()
