@@ -79,3 +79,7 @@ def filter_first_onlineuser(username):
 @database_sync_to_async
 def filter_first_message(msg_id):
     return Message.objects.filter(msg_id=msg_id).first()
+
+@database_sync_to_async
+def filter_first_friend(user_name,friend_name):
+    return Friend.objects.filter(friend_name=friend_name,user_name=user_name).first()
