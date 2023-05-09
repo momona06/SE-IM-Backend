@@ -921,13 +921,19 @@ class UserConsumer(AsyncWebsocketConsumer):
                         }))
                     else:
                         username = await self.get_cur_username()
+                        user = await get_user(username)
                         if get_power(chatroom, username) != 0:
                             await self.send(text_data=json.dumps({
                                 'function': function_name,
                                 'message': 'Permission denied'
                             }))
                         else:
+                            await chatroom_add_member(chatroom_id, user.id)
 
+                            await self.send(text_data=json.dumps({
+                                'function': function_name,
+                                'message': 'Success'
+                            }))
 
 
 
