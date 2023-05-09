@@ -299,6 +299,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         # await self.fetch_room(json.dumps({"username": username}))
         await self.fetch_friend_list({"username": username})
+        await self.fetch_reply_list({"username": username})
 
     async def decline_friend(self, json_info):
         # 修改数据库
@@ -312,6 +313,8 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         return_field = {"function": "decline"}
         await self.send(text_data=json.dumps(return_field))
+        username = await self.get_cur_username()
+        await self.fetch_reply_list({"username": username})
 
     async def fetch_apply_list(self, json_info):
         username = json_info['username']

@@ -19,3 +19,5 @@ daphne
 psycopg2
 
 selenium
+
+pillow #图片处理组件
