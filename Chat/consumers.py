@@ -89,7 +89,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         self.room_name = None
         self.chatroom_name = None
         self.cur_user = None
-        self.chat_group_name = None
 
     async def connect(self):
         self.cur_user = await self.get_cur_username()
@@ -502,7 +501,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                 reply_id = json_info['reply_id']
                 # Msg R3 for online cas
                 await self.channel_layer.group_send(
-                    self.chatroom_name, {
+                    chatroom_name, {
                         "type": "message_diffuse",
                         'msg_id': message.msg_id,
                         'msg_type': msg_type,
@@ -515,7 +514,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             else:
                 # Msg R3 for online case
                 await self.channel_layer.group_send(
-                    self.chat_group_name, {
+                    chatroom_name, {
                         "type": "message_diffuse",
                         'msg_id': message.msg_id,
                         'msg_type': msg_type,
@@ -538,7 +537,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif msg_type == 'combine':
             # Msg R3 for online case
             await self.channel_layer.group_send(
-                self.chat_group_name, {
+                chatroom_name, {
                     "type": "message_diffuse",
                     'msg_id': message.msg_id,
                     'msg_type': msg_type,
@@ -560,7 +559,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif msg_type == 'invite':
             # Msg R3 for online case
             await self.channel_layer.group_send(
-                self.chat_group_name, {
+                chatroom_name, {
                     "type": "message_diffuse",
                     'msg_id': message.msg_id,
                     'msg_type': msg_type,
