@@ -5,7 +5,10 @@ import time
 from Chat.models import *
 from channels.db import database_sync_to_async
 from asgiref.sync import sync_to_async
+from django.contrib.auth.models import User
 
+from Chat.models import create_chatroom, create_onlineuser, create_message, ChatRoom, Message
+from FriendRelation.models import FriendList, Friend
 from utils.utils_database import *
 
 CONSUMER_OBJECT_LIST = []
@@ -193,6 +196,9 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == "fetch_room":
             await self.fetch_room(json_info)
 
+        elif function == "fetch_roominfo":
+            await self.fetch_roominfo(json_info)
+
         # 获取群消息列表
         elif function == "fetch_message":
             await self.fetch_message(json_info)
@@ -294,11 +300,14 @@ class UserConsumer(AsyncWebsocketConsumer):
         for user in CONSUMER_OBJECT_LIST:
             if user.cur_user == apply_to:
                 # await user.fetch_room(json.dumps({"username": user.cur_user}))
-                await user.fetch_friend_list(json.dumps({"username": user.cur_user}))
+                await user.fetch_friend_list({"username": user.cur_user})
                 break
 
+        # TODO
+
         # await self.fetch_room(json.dumps({"username": username}))
-        await self.fetch_friend_list(json.dumps({"username": username}))
+        await self.fetch_friend_list({"username": username})
+        await self.fetch_reply_list({"username": username})
 
     async def decline_friend(self, json_info):
         # 修改数据库
@@ -314,6 +323,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             "function": "decline"
         }
         await self.send(text_data=json.dumps(return_field))
+        username = await self.get_cur_username()
+        await self.fetch_reply_list({"username": username})
 
     async def fetch_apply_list(self, json_info):
         username = json_info['username']
@@ -701,9 +712,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         member_list = json_info['member_list']
 
         chat_room = await create_chatroom(room_name, await username_list_to_id_list(member_list), username)
-        chat_time_line = await create_chat_timeline()
-        chat_room.timeline_id = chat_time_line.timeline_id
-        chat_time_line.chatroom_id = chat_room.chatroom_id
         await sync_to_async(chat_room.save)()
 
         await self.send(text_data=json.dumps({
@@ -909,10 +917,8 @@ class UserConsumer(AsyncWebsocketConsumer):
                 "username": []
             })
             for friend_name in flist.friend_list:
-                friend_list_tem = await sync_to_async(Friend.objects.filter)(friend_name=friend_name,
-                                                                             user_name=username)
-                friend = await sync_to_async(friend_list_tem.first)()
-                if flist.group_list[i] == friend.group_name:
+                friend = await filter_first_friend(username,friend_name)
+                if (not friend is None) and flist.group_list[i] == friend.group_name:
                     return_list[i]['username'].append(friend_name)
 
         await self.send(text_data=json.dumps({
@@ -935,13 +941,39 @@ class UserConsumer(AsyncWebsocketConsumer):
                     return_field.append({
                         "roomid": room.chatroom_id,
                         "roomname": room.room_name,
-                        "is_private": room.is_private
+                        "is_notice": room.is_notice[li],
+                        "is_top": room.is_top[li]
+                        #"is_private": room.is_private
                     })
                     break
         await self.send(text_data=json.dumps({
             "function": "fetchroom",
             "roomlist": return_field
         }))
+
+    async def fetch_roominfo(self, json_info):
+        chatroom_id = json_info['roomid']
+        mem_list = []
+        manager_list = []
+        notice_list = []
+        rooms = await sync_to_async(ChatRoom.objects.filter)(chatroom_id=chatroom_id)
+        room = await sync_to_async(rooms.first)()
+        for user in room.mem_list:
+            mem_list.append(user)
+        for manager in room.manager:
+            manager_list.append(manager)
+        for notice in room.notice_list:
+            notice_list.append(notice)
+        master = room.master_name
+        mem_count = room.mem_count
+        await self.send(text_data=json.dumps({
+            "mem_list": mem_list,
+            "manager_list": manager_list,
+            "master": master,
+            "mem_count": mem_count,
+            "notice_list": notice_list
+        }))
+
 
     async def fetch_message(self, json_info):
         '''

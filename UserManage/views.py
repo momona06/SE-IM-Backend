@@ -164,7 +164,6 @@ def cancel(req: HttpRequest):
                 "info": "User Canceled"
             })
         else:
-
             return JsonResponse({
                 "code": -1,
                 "info": "User not Exists"
@@ -176,19 +175,18 @@ def cancel(req: HttpRequest):
 
 def delete_user_in_other_add_list(reply_name, username):
     other_add_list = AddList.objects.filter(user_name=reply_name).first()
-    for i, other_name in other_add_list.reply_list[::-1]:
+    for i, other_name in enumerate(other_add_list.reply_list[::-1]):
         if other_name == username:
             index = len(other_add_list.reply_list) - i - 1
             del other_add_list.reply_list[index]
             del other_add_list.reply_ensure[index]
             del other_add_list.reply_answer[index]
-    for i, other_name in other_add_list.apply_list[::-1]:
+    for i, other_name in enumerate(other_add_list.apply_list[::-1]):
         if other_name == username:
             index = len(other_add_list.apply_list) - i - 1
             del other_add_list.apply_list[index]
             del other_add_list.apply_ensure[index]
             del other_add_list.apply_answer[index]
-
 
 '''
 nzh code

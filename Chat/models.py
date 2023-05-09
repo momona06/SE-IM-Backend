@@ -1,10 +1,21 @@
 from asgiref.sync import sync_to_async
+from channels.db import database_sync_to_async
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
-from channels.db import database_sync_to_async
 
-from utils.utils_database import filter_first_chatroom
+@database_sync_to_async
+def filter_first_chatroom(chatroom_id=None, timeline_id=None):
+    """
+    只填一个即可
+    """
+    if chatroom_id is None:
+        if timeline_id is None:
+            return None
+        else:
+            return ChatRoom.objects.filter(timeline_id=chatroom_id).first()
+    else:
+        return ChatRoom.objects.filter(chatroom_id=timeline_id).first()
 
 
 # Design philosophy: remove info about the chatroom and only reserve the necessary info
@@ -24,16 +35,8 @@ class ChatTimeLine(models.Model):
         models.BigIntegerField(default=0)
     )
 
-async def create_chat_timeline(chatroom_id):
-    chatroom = await filter_first_chatroom(chatroom_id=chatroom_id)
-    mem_len = len(chatroom.mem_list)
 
-    new_timeline = await database_sync_to_async(ChatTimeLine)(chatroom_id=chatroom_id, msg_line=[], cursor_list=[], is_read=[])
-    for _ in range(mem_len):
-        new_timeline.cursor_list.append(0)
-    await sync_to_async(new_timeline.save)()
 
-    return new_timeline
 
 
 async def delete_chat_timeline():
@@ -78,20 +81,27 @@ class ChatRoom(models.Model):
         models.BigIntegerField(default=0)
     )
 
-async def create_chatroom(room_name, mem_list, master_name, is_private=False, is_notice=True, is_top=False):
+async def create_chatroom(room_name, mem_list, master_name, is_private=False):
     """
     参考：room_name='private_chat'
     """
+    mem_len = len(mem_list)
+    true_mem_len_list = [True for _ in range(mem_len)]
+    false_mem_len_list = [True for _ in range(mem_len)]
     new_chatroom = await database_sync_to_async(ChatRoom)(is_private=is_private, room_name=room_name,
-                            mem_count=len(mem_list), mem_list=mem_list,
-                            is_notice=is_notice, is_top=is_top,
-                            master_name=master_name, manager_list=[],
+                            mem_count=mem_len, mem_list=mem_list,
+                            master_name=master_name, manager_list=[],is_notice=true_mem_len_list,is_top=false_mem_len_list,
                             notice_id=0, notice_list=[])
-    timeline = await create_chat_timeline(new_chatroom.chatroom_id)
+    await database_sync_to_async(new_chatroom.save)()
+
+    timeline = await database_sync_to_async(ChatTimeLine)(chatroom_id=new_chatroom.chatroom_id, msg_line=[], cursor_list=[])
+    timeline.cursor_list = [0 for _ in range(mem_len)]
+    await database_sync_to_async(timeline.save)()
+
     new_chatroom.timeline_id = timeline.timeline_id
     timeline.chatroom_id = new_chatroom.chatroom_id
-    await sync_to_async(new_chatroom.save)()
-    await sync_to_async(timeline.save)()
+    await database_sync_to_async(new_chatroom.save)()
+    await database_sync_to_async(timeline.save)()
     return new_chatroom
 
 
