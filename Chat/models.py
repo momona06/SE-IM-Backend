@@ -21,8 +21,14 @@ class ChatTimeLine(models.Model):
         models.BigIntegerField(default=0)
     )
 
-async def create_chat_timeline():
-    new_timeline = await database_sync_to_async(ChatTimeLine)()
+    is_read = ArrayField(
+        ArrayField(
+            models.BooleanField(default=False)
+        )
+    )
+
+async def create_chat_timeline(chatroom_id):
+    new_timeline = await database_sync_to_async(ChatTimeLine)(chatroom_id = chatroom_id)
     await sync_to_async(new_timeline.save)()
     return new_timeline
 
@@ -57,41 +63,32 @@ class ChatRoom(models.Model):
 
     # timeline_id = models.BigIntegerField(default=0)
 
-    # mark the same room_name case
-    # dup_id = models.BigIntegerField(default=0)
-
-    # a chatroom must own a specified room_name
     room_name = models.CharField(max_length=30, default='private_chat')
-
     is_private = models.BooleanField(default=True)
 
     mem_count = models.BigIntegerField(default=2)
-
     mem_list = ArrayField(
         models.CharField(max_length=100)
     )
     not_read = ArrayField(
         models.IntegerField(default=0)
     )
-
     is_notice = ArrayField(
         models.BooleanField(default=True)
     )
-
     is_top = ArrayField(
         models.BooleanField(default=False)
     )
 
     master_name = models.CharField(max_length=100, default='master')
-
     manager_list = ArrayField(
         models.CharField(max_length=100)
     )
     mes_list = ArrayField(
         models.BigIntegerField(default=0)
     )
-    notice_id = models.BigIntegerField(default=0)
 
+    notice_id = models.BigIntegerField(default=0)
     notice_list = ArrayField(
         models.BigIntegerField(default=0)
     )
@@ -118,16 +115,21 @@ async def delete_chatroom():
 # Design philosophy: all info about the message itself should be put here
 class Message(models.Model):
     msg_id = models.BigAutoField(primary_key=True)
+
+    # type = {text, image, file, video, audio, combine, reply, invite}
     type = models.CharField(max_length=20)
+
+    # msg for {text, rel}
     body = models.CharField(max_length=500)
-    time = models.CharField(max_length=100)
-    sender = models.CharField(max_length=100)
-    is_reply = models.BooleanField(default=False)
+
+    # src for image, file, video, audio
+    # src = models.FileField(upload_to=user_directory_path, blank=True, null=True)
+
+    # related msg for {reply}
     rel_id = models.BigIntegerField(default=0)
 
-    is_read = ArrayField(
-        models.BooleanField(default=False)
-    )
+    time = models.CharField(max_length=100)
+    sender = models.CharField(max_length=100)
 
 
 def user_directory_path(instance, filename):

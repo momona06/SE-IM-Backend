@@ -99,31 +99,6 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
 
-        # Chat Ver
-
-        # print('kwargs =', self.scope['url_route']['kwargs'])
-        # kw = self.scope['url_route']['kwargs']
-        # print('channel_name=', self.channel_name)
-        # # kwargs = {'room_name': 'lobby'}
-        # # kwargs = {'friend_name': 'lobby'}
-        #
-        # # self.channel_name= specific.3f537!273029f6116a45e191c37bcd8afb37c0
-        #
-        # if 'group_name' in kw.keys():
-        #
-        #     # chat_room = ChatRoom.objects.filter(chatroom_id=)
-        #     self.group_name = self.scope["url_route"]["kwargs"]["group_name"]
-        #     self.chat_group_name = "chat_" + self.group_name
-        #
-        #     await self.channel_layer.group_add(self.chat_group_name, self.channel_name)
-        #
-        #     print('group_name = ', self.group_name)
-        #     print('chat_group_name = ', self.chat_group_name)
-        #
-        # elif 'friend_name' in kw.keys():
-        #     self.friend_name = self.scope["url_route"]["kwargs"]["friend_name"]
-        #     CHAT_OBJECT_LIST.append(self)
-
         CONSUMER_OBJECT_LIST.append(self)
         self.cur_user = await self.get_cur_username()
         await self.accept()
@@ -165,12 +140,22 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == 'fetchfriendlist':
             await self.fetch_friend_list(json_info)
 
-        # function zone
+        # chat zone
+
+        # 连接私聊/群聊
         elif function == 'add_chat':
             await self.add_chat(json_info)
 
+        # 断开私聊/群聊连接
         elif function == 'leave_chat':
             await self.leave_chat(json_info)
+
+        # 发送消息
+        # {text}: 直接处理
+
+        # {rel}: 添加
+
+        # {image, audio, file}: 采用下载链接处理
 
         elif function == 'send_message':
             await self.send_message(json_info)
@@ -178,14 +163,25 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == 'ack_message':
             await self.acknowledge_message(json_info)
 
+        # 撤回消息
         elif function == 'withdraw_message':
             await self.withdraw_message(json_info)
 
+        # 创建群聊
         elif function == 'create_group':
             await self.create_group(json_info)
 
+        # 删除群聊
         elif function == 'delete_group':
             await self.delete_group(json_info)
+
+        # 加入群聊
+        elif function == '':
+            await self.add_group(json_info)
+
+        # 退出群聊（自己自由退出群聊）
+        elif function == '':
+            await self.leave_group(json_info)
 
         elif function == 'appoint_manage':
             await self.appoint_manager(json_info)
@@ -193,6 +189,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == 'transfer_master':
             await self.transfer_master(json_info)
 
+        # 移除群成员（被管理员和群主移出群聊）
         elif function == 'remove_group_member':
             await self.remove_group_member(json_info)
 
@@ -201,6 +198,9 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         elif function == "fetchmessage":
             await self.fetch_message(json_info)
+
+        elif function == "releasenotice":
+            await self.release_notice(json_info)
 
     async def heat_beat(self):
         await self.send(text_data=json.dumps(
@@ -580,8 +580,6 @@ class UserConsumer(AsyncWebsocketConsumer):
 
 
 
-
-
     async def find_chatroom(self, function_name, chatroom_id):
         chatroom_list_tem = await sync_to_async(ChatRoom.objects.filter)(chatroom_id=chatroom_id)
         chatroom = await sync_to_async(chatroom_list_tem.first)()
@@ -629,7 +627,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         json_info = {
             'selection': 'list_create',
             'member_list': ['A', 'B'],
-            'member_list':['A', 'B'],
             'room_name': 'lob',
         }
         """
@@ -736,8 +733,15 @@ class UserConsumer(AsyncWebsocketConsumer):
                         'message': 'Success'
                     }))
 
-    async def release_notice(self):
+    async def release_notice(self, json_info):
+        '''
+        json_info = {
+
+        }
+        '''
         pass
+
+
 
     async def remove_group_member(self, json_info):
         """
@@ -842,11 +846,12 @@ class UserConsumer(AsyncWebsocketConsumer):
             "roomlist": return_field
         }))
 
-
+    async def
 
     async def fetch_message(self, json_info):
         '''
         json_info = {
+
 
         }
         '''

@@ -182,56 +182,6 @@ def create_friend_group(req: HttpRequest):
     else:
         return BAD_METHOD
 
-'''
-def get_friend_list(req: HttpRequest):
-    if req.method == "POST":
-        try:
-            body = json.loads(req.body.decode("utf-8"))
-            username = str(body["username"])
-            token = str(body["token"])
-
-            user_model = get_user_model()
-            user = user_model.objects.filter(username=username).first()
-            im_user = IMUser.objects.filter(user=user).first()
-
-            if im_user.token != token:
-                return JsonResponse({
-                    'code': -2,
-                    'info': "Token Error",
-                    'friendlist': []
-                })
-
-            flist = FriendList.objects.get(user_name=username)
-
-            return_list = []
-
-            flist_len = len(flist.group_list)
-
-            for i in range(flist_len):
-                return_list.append({
-                    "groupname":flist.group_list[i],
-                    "username":[]
-                })
-                for friend_name in flist.friend_list:
-                    friend = Friend.objects.filter(friend_name=friend_name, user_name=username).first()
-                    if flist.group_list[i] == friend.group_name:
-                        return_list[i]['username'].append(friend_name)
-            return JsonResponse({
-                "code": 0,
-                "info": "Friendlist Get",
-                "friendlist": return_list
-            })
-        except Exception as e:
-            print(e)
-            return JsonResponse({
-                "code": -5,
-                "info": "Unexpected Error"
-            })
-
-    else:
-        return BAD_METHOD
-        '''
-
 
 def add_friend_group(req: HttpRequest):
     if req.method == "PUT":
@@ -254,13 +204,6 @@ def add_friend_group(req: HttpRequest):
 
             # friend = Friend.objects.filter(user_name=username, friend_name=friend_name).first()
             flist = FriendList.objects.filter(user_name=username).first()
-
-            '''
-            lis = 0
-            for li, group in enumerate(flist.group_list):
-                if group == fgroup_name:
-                    lis = li
-            '''
 
             # flist.friend_list[lis].append(friend_name)
             for friend_name in flist.friend_list:
