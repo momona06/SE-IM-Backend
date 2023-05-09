@@ -195,6 +195,9 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == "fetch_room":
             await self.fetch_room(json_info)
 
+        elif function == "fetch_roominfo":
+            await self.fetch_roominfo(json_info)
+
         # 获取群消息列表
         elif function == "fetch_message":
             await self.fetch_message(json_info)
@@ -901,13 +904,39 @@ class UserConsumer(AsyncWebsocketConsumer):
                         "roomid": room.chatroom_id,
                         "roomname": room.room_name,
                         "unreadnum": room.not_read[li],
-                        "is_private": room.is_private
+                        "is_notice": room.is_notice[li],
+                        "is_top": room.is_top[li]
+                        #"is_private": room.is_private
                     })
                     break
         await self.send(text_data=json.dumps({
             "function": "fetchroom",
             "roomlist": return_field
         }))
+
+    async def fetch_roominfo(self, json_info):
+        chatroom_id = json_info['roomid']
+        mem_list = []
+        manager_list = []
+        notice_list = []
+        rooms = await sync_to_async(ChatRoom.objects.filter)(chatroom_id=chatroom_id)
+        room = await sync_to_async(rooms.first)()
+        for user in room.mem_list:
+            mem_list.append(user)
+        for manager in room.manager:
+            manager_list.append(manager)
+        for notice in room.notice_list:
+            notice_list.append(notice)
+        master = room.master_name
+        mem_count = room.mem_count
+        await self.send(text_data=json.dumps({
+            "mem_list": mem_list,
+            "manager_list": manager_list,
+            "master": master,
+            "mem_count": mem_count,
+            "notice_list": notice_list
+        }))
+
 
     async def fetch_message(self, json_info):
         '''
