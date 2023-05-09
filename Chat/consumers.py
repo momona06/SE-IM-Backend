@@ -448,9 +448,9 @@ class UserConsumer(AsyncWebsocketConsumer):
         chatroom_name = self.chatroom_name
 
         chatroom = await filter_first_chatroom(chatroom_id=room_id)
-        if chatroom is None:
-            await self.send('chatroom not exists')
-            await self.close()
+        # if chatroom is None:
+        #     await self.send('chatroom not exists')
+        #     await self.close()
         timeline = await get_timeline(chatroom_id=room_id)
 
         # 添加消息
@@ -562,12 +562,12 @@ class UserConsumer(AsyncWebsocketConsumer):
         # move the cursor of cli B
 
         # 初始化
-        user_name = self.cur_user
-        is_back = json_info['is_back']
-        count = json_info['count']
+        username = self.cur_user
         room_id = self.room_id
         room_name = self.room_name
         chatroom_name = self.chatroom_name
+        is_back = json_info['is_back']
+        count = json_info['count']
 
         if is_back:
             chatroom = await filter_first_chatroom(chatroom_id=room_id)
@@ -578,7 +578,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             timeline = await filter_first_timeline(chatroom_id=room_id)
 
             # 移动Timeline的cursor
-            lis = chatroom.mem_list.index(user_name)
+            lis = chatroom.mem_list.index(username)
             timeline.cursor_list[lis] += count
 
         else:
@@ -590,7 +590,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             timeline = await filter_first_timeline(chatroom_id=room_id)
 
             # 移动Timeline的cursor
-            lis = chatroom.mem_list.index(user_name)
+            lis = chatroom.mem_list.index(username)
 
             timeline.cursor_list[lis] += 1
 
