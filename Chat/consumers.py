@@ -405,7 +405,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         user_name = self.cur_user
         room_name = json_info['room_name']
         room_id = json_info['room_id']
-
+        print('self.cur_user = ', self.cur_user)
         # 加入在线用户列表
         await sync_to_async(create_onlineuser)(user_name, self.channel_name, room_id)
 
@@ -534,7 +534,6 @@ class UserConsumer(AsyncWebsocketConsumer):
 
 
         elif msg_type == 'combine':
-            # Fix
             msg_body = json_info['msg_body']
             msg_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
 
