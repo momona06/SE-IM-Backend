@@ -2,7 +2,7 @@ from channels.exceptions import StopConsumer
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 import time
-
+from Chat.models import *
 from channels.db import database_sync_to_async
 from asgiref.sync import sync_to_async
 
@@ -21,10 +21,10 @@ async def modify_add_request_list_with_username(other_username, add_list, answer
     if index == -1:
         return False
     if mode == 0:
-        add_list.reply_answer[index] = answer  #
+        add_list.reply_answer[index] = answer
         add_list.reply_ensure[index] = True
     elif mode == 1:
-        add_list.apply_answer[index] = answer  #
+        add_list.apply_answer[index] = answer
         add_list.apply_ensure[index] = True
     await sync_to_async(add_list.save)()
     return True
