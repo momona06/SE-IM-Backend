@@ -85,14 +85,31 @@ async def get_power(chatroom, username):
 class UserConsumer(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
+        self.room_id = None
+        self.room_name = None
         self.chatroom_name = None
         self.cur_user = None
         self.chat_group_name = None
 
     async def connect(self):
-        CONSUMER_OBJECT_LIST.append(self)
+
         self.cur_user = await self.get_cur_username()
+
+        async for chatroom in ChatRoom.objects.all():
+            if self.cur_user in chatroom.mem_list:
+                await self.channel_layer.group_add("chat_" + chatroom.room_name + str(chatroom.chatroom_id), self.channel_name)
+
+        CONSUMER_OBJECT_LIST.append(self)
         await self.accept()
+
+    async def disconnect(self, code):
+
+        async for chatroom in ChatRoom.objects.all():
+            if self.cur_user in chatroom.mem_list:
+                await self.channel_layer.group_discard("chat_" + chatroom.room_name + str(chatroom.chatroom_id), self.channel_name)
+
+        CONSUMER_OBJECT_LIST.remove(self)
+        raise StopConsumer()
 
     async def get_cur_username(self):
         if self.cur_user is None:
@@ -362,10 +379,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             attribute_name: return_field
         }))
 
-    async def disconnect(self, code):
-        CONSUMER_OBJECT_LIST.remove(self)
-        raise StopConsumer()
-        # Clients.objects.filter(channel_name=self.channel_name).delete()
+
 
     async def message_diffuse(self, event):
         msg_body = event["msg_body"]
@@ -399,21 +413,31 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
 
         # 初始化
-        user_name = self.cur_user
+        # username = self.cur_user
         room_name = json_info['room_name']
-        room_id = json_info['room_id']
+        room_id = str(json_info['room_id'])
 
+        self.room_id = room_id
+        self.room_name = room_name
+        self.chatroom_name = "chat_" + room_name + room_id
         # 加入在线用户列表
 
         # await create_onlineuser(user_name, self.channel_name, room_id)
 
         # 加入群聊
-        chat_room = await filter_first_chatroom(chatroom_id=room_id)
-        if chat_room is None:
-            await self.send(text_data="chatroom not exists")
-            await self.close()
-        self.chatroom_name = "chat_" + room_name + str(room_id)
-        await self.channel_layer.group_add(self.chatroom_name, self.channel_name)
+        # chat_room = await filter_first_chatroom(chatroom_id=room_id)
+        # if chat_room is None:
+        #     await self.send(text_data="chatroom not exists")
+        #     await self.close()
+        
+        # await self.channel_layer.group_add(self.chatroom_name, self.channel_name)
+        #
+        # username = self.cur_user
+        # async for chatroom in ChatRoom.objects.all():
+        #     if username in chatroom.mem_list:
+        #         await self.channel_layer.group_add("chat_" + chatroom.room_name + str(chatroom.chatroom_id), self.channel_name)
+
+
 
         # Fix: Unify
         # 发送历史信息
@@ -426,25 +450,27 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
 
         # 初始化
-        user_name = self.cur_user
-        # onliner = await filter_first_onlineuser(user_name)
-
-        # 改动Timeline的cursor
-        chatroom = await filter_first_chatroom(chatroom_id=onliner.chatroom_id)
-        timeline = await filter_first_timeline(timeline_id=chatroom.timeline_id)
-        lis = chatroom.mem_list.index(user_name)
-        timeline.cursor_list[lis] = 0
-
-        # 离开在线用户列表
-        if onliner is None:
-            await self.send(text_data="you are not online")
-            await self.close()
-        await database_sync_to_async(onliner.delete)()
-        await database_sync_to_async(onliner.save)()
+        # user_name = self.cur_user
+        # # onliner = await filter_first_onlineuser(user_name)
+        #
+        # # 改动Timeline的cursor
+        # chatroom = await filter_first_chatroom(chatroom_id=onliner.chatroom_id)
+        # timeline = await filter_first_timeline(timeline_id=chatroom.timeline_id)
+        # lis = chatroom.mem_list.index(user_name)
+        # timeline.cursor_list[lis] = 0
+        #
+        # # 离开在线用户列表
+        # if onliner is None:
+        #     await self.send(text_data="you are not online")
+        #     await self.close()
+        # await database_sync_to_async(onliner.delete)()
+        # await database_sync_to_async(onliner.save)()
 
         # 离开群聊
+        self.room_id = None
+        self.room_name = None
         self.chatroom_name = None
-        await self.channel_layer.group_discard(self.chatroom_name, self.channel_name)
+        # await self.channel_layer.group_discard(self.chatroom_name, self.channel_name)
 
     async def send_message(self, json_info):
         """
@@ -465,13 +491,18 @@ class UserConsumer(AsyncWebsocketConsumer):
         user_name = self.cur_user
 
         # 获取在线用户
-        onliner = await filter_first_onlineuser(user_name)
-        if onliner is None:
-            await self.send('you are not in the chatroom')
-            await self.close()
+        # onliner = await filter_first_onlineuser(user_name)
+        # if onliner is None:
+        #     await self.send('you are not in the chatroom')
+        #     await self.close()
 
         # 获取群聊和Timeline
-        room_id = onliner.chatroom_id
+        # room_id = onliner.chatroom_id
+
+        room_id = self.room_id
+        room_name = self.room_name
+        chatroom_name = self.chatroom_name
+
         chatroom = await filter_first_chatroom(chatroom_id=room_id)
         if chatroom is None:
             await self.send('chatroom not exists')
@@ -494,7 +525,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
                 # Msg R3 for online cas
                 await self.channel_layer.group_send(
-                    self.chat_group_name, {
+                    self.chatroom_name, {
                         "type": "message_diffuse",
                         'msg_id': message.msg_id,
                         'msg_type': msg_type,
@@ -529,7 +560,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                 }
                 )
             )
-
 
         elif msg_type == 'combine':
             msg_body = json_info['msg_body']
@@ -613,15 +643,17 @@ class UserConsumer(AsyncWebsocketConsumer):
         user_name = self.cur_user
         is_back = json_info['is_back']
         count = json_info['count']
+        room_id = self.room_id
+        room_name = self.room_name
+        chatroom_name = self.chatroom_name
 
         if is_back:
             # 获取onliner，群聊和Timeline
-            onliner = await filter_first_onlineuser(user_name)
-            if onliner is None:
-                await self.send('you are not in the chatroom')
-                await self.close()
+            # onliner = await filter_first_onlineuser(user_name)
+            # if onliner is None:
+            #     await self.send('you are not in the chatroom')
+            #     await self.close()
 
-            room_id = onliner.chatroom_id
             chatroom = await filter_first_chatroom(chatroom_id=room_id)
             if chatroom is None:
                 await self.send('chatroom not exists')
@@ -636,12 +668,12 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         else:
             # 获取onliner，群聊和Timeline
-            onliner = await filter_first_onlineuser(user_name)
-            if onliner is None:
-                await self.send('you are not in the chatroom')
-                await self.close()
+            # onliner = await filter_first_onlineuser(user_name)
+            # if onliner is None:
+            #     await self.send('you are not in the chatroom')
+            #     await self.close()
 
-            room_id = onliner.chatroom_id
+
             chatroom = await filter_first_chatroom(chatroom_id=room_id)
             if chatroom is None:
                 await self.send('chatroom not exists')
@@ -802,21 +834,36 @@ class UserConsumer(AsyncWebsocketConsumer):
                     }))
 
     async def add_group(self, json_info):
+        """
+        json_info = {
+
+        }
+        """
         pass
 
     async def leave_group(self, json_info):
+        """
+        json_info = {
+
+        }
+        """
         pass
 
     async def allow_add_group(self, json_info):
+        """
+        json_info = {
+
+        }
+        """
         pass
 
     async def release_notice(self, json_info):
-        '''
+        """
         json_info = {
             'msg_type': 'text',
             'msg_body': 'hello',
         }
-        '''
+        """
 
         msg_body = json_info['msg_body']
 
@@ -862,18 +909,21 @@ class UserConsumer(AsyncWebsocketConsumer):
                     }))
 
     async def withdraw_message(self, json_info):
-        '''
+        """
         json_info = {
             msg_id: 114514
         }
-        '''
+        """
         username = await self.get_cur_username()
         msg_id = json_info['msg_id']
-        online_user = await filter_first_onlineuser(username)
+        # online_user = await filter_first_onlineuser(username)
 
-        chatroom_id = online_user.chatroom_id
-        chatroom = filter_first_chatroom(chatroom_id=chatroom_id)
-        timeline = filter_first_timeline(chatroom_id=chatroom_id)
+        room_id = self.room_id
+        room_name = self.room_name
+        chatroom_name = self.chatroom_name
+
+        chatroom = filter_first_chatroom(chatroom_id=room_id)
+        timeline = filter_first_timeline(chatroom_id=room_id)
 
         # 删除Timeline的消息
         message = filter_first_message(msg_id=msg_id)
