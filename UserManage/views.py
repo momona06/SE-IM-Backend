@@ -188,7 +188,6 @@ def delete_user_in_other_add_list(reply_name, username):
             del other_add_list.apply_ensure[index]
             del other_add_list.apply_answer[index]
 
-
 '''
 nzh code
 '''
