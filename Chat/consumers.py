@@ -289,6 +289,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         return_field = {
             "function": "confirm"
         }
+
         await self.send(text_data=json.dumps(return_field))
         for user in CONSUMER_OBJECT_LIST:
             if user.cur_user == apply_to:
@@ -355,13 +356,15 @@ class UserConsumer(AsyncWebsocketConsumer):
     async def message_diffuse(self, event):
         msg_body = event["msg_body"]
         msg_id = event["msg_id"]
+        sender = event['sender']
 
         # event = {'type': 'chat_message', 'message': 'res'}
 
         await self.send(text_data=json.dumps({
-            'type': 'Msg',
+            'function': 'Msg',
             'msg_id': msg_id,
-            "msg_body": msg_body
+            "msg_body": msg_body,
+            'sender': sender
         }))
 
     async def acknowledge_diffuse(self, event):
@@ -478,6 +481,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                 reply_id = json_info['reply_id']
                 message = await database_sync_to_async(
                     create_message)(type=msg_type, body=msg_body, time=msg_time, sender=user_name, reply_id=reply_id)
+
                 # Msg R3 for online cas
                 await self.channel_layer.group_send(
                     self.chat_group_name, {
@@ -485,6 +489,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                         'msg_id': message.msg_id,
                         'msg_type': msg_type,
                         'msg_body': msg_body,
+                        'sender': user_name,
                         'reply_id': reply_id
                     }
                 )
@@ -492,6 +497,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             else:
                 message = await database_sync_to_async(
                     create_message)(type=msg_type, body=msg_body, time=msg_time, sender=user_name)
+
                 # Msg R3 for online case
                 await self.channel_layer.group_send(
                     self.chat_group_name, {
@@ -499,6 +505,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                         'msg_id': message.msg_id,
                         'msg_type': msg_type,
                         'msg_body': msg_body,
+                        'sender': user_name,
                     }
                 )
 
@@ -507,7 +514,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             # Ack 2
             await self.send(
                 text_data=json.dumps({
-                        "type": "Ack 2",
+                        "function": "Ack 2",
                         'msg_id': message.msg_id,
                     }
                 )
@@ -529,6 +536,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                     'msg_id': message.msg_id,
                     'msg_type': msg_type,
                     'msg_body': msg_body,
+                    'sender': user_name,
                 }
             )
 
@@ -537,7 +545,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             # Ack 2
             await self.send(
                 text_data=json.dumps({
-                        "type": "Ack 2",
+                        "function": "Ack 2",
                         'msg_id': message.msg_id,
                     }
                 )
@@ -557,6 +565,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                     'msg_id': message.msg_id,
                     'msg_type': msg_type,
                     'msg_body': msg_body,
+                    'sender': user_name,
                 }
             )
 
@@ -565,7 +574,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             # Ack 2
             await self.send(
                 text_data=json.dumps({
-                        "type": "Ack 2",
+                        "function": "Ack 2",
                         'msg_id': message.msg_id,
                     }
                 )
@@ -579,19 +588,18 @@ class UserConsumer(AsyncWebsocketConsumer):
         json_info = {
             'is_back': False,
             'count': 1,
-            # 'msg_id': 35
+
         }
         ''
         json_info = {
             'is_back': True,
             'count': 5,
-            # 'msg_id': [16, 77, 33, 63, 12]
+
         }
         '''
 
         # Pipeline
         # called by Ack 4
-        # send Ack 5 to cli B
         # move the cursor of cli B
 
         # 初始化
