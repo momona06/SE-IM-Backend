@@ -5,10 +5,11 @@ import time
 
 from channels.db import database_sync_to_async
 from asgiref.sync import sync_to_async
+from django.contrib.auth.models import User
 
+from Chat.models import create_chatroom, create_onlineuser, create_message, ChatRoom, Message
 from FriendRelation.models import FriendList, Friend
 from utils.utils_database import *
-from Chat.models import *
 
 CONSUMER_OBJECT_LIST = []
 USER_NAME_LIST = []
