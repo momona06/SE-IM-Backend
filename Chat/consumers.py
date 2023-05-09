@@ -394,7 +394,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         if chat_room is None:
             await self.send(text_data="chatroom not exists")
             await self.close()
-        self.chatroom_name = "chat_" + room_name + room_id
+        chat_room.chatroom_name = "chat_" + room_name + room_id
         await self.channel_layer.group_add(self.chatroom_name, self.channel_name)
 
         # Fix: Unify
@@ -689,7 +689,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         member_list = json_info['member_list']
 
         chat_room = await create_chatroom(room_name, await username_list_to_id_list(member_list), username)
-        chat_time_line = await create_chat_timeline()
+        chat_time_line = await create_chat_timeline(chat_room.chatroom_id)
         # chat_room.timeline_id = chat_time_line.timeline_id
         chat_time_line.chatroom_id = chat_room.chatroom_id
         await sync_to_async(chat_room.save)()
@@ -854,7 +854,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
         '''
         username = await self.get_cur_username()
-        online_user = await database_sync_to_async(OnlineUser.objects.filter)(user_name=username).first()
+        online_user = await filter_first_onlineuser(username)
         chatroom_id = online_user.chatroom_id
         chatroom = filter_first_chatroom(chatroom_id=chatroom_id)
         timeline = filter_first_timeline(chatroom_id=chatroom_id)
