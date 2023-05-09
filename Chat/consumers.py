@@ -70,11 +70,9 @@ async def id_list_to_username_list(id_list):
 
 
 async def get_power(chatroom, username):
-    user_id = await get_user_id(username)
-
-    if user_id == chatroom.master_name:
+    if username == chatroom.master_name:
         return 2
-    elif user_id in chatroom.manager_list:
+    elif username in chatroom.manager_list:
         return 1
     else:
         return 0
@@ -83,22 +81,22 @@ async def get_power(chatroom, username):
 # channel: the specific user
 # group: a group of channels (users)
 
-async def chatroom_delete_member(chatroom, member_id):
-    for index, user_id in enumerate(chatroom.mem_list):
-        if user_id == member_id:
+async def chatroom_delete_member(chatroom, member_name):
+    for index, username in enumerate(chatroom.mem_list):
+        if username == member_name:
             chatroom.mem_list.pop(index)
             chatroom.is_top.pop(index)
             chatroom.is_notice.pop(index)
 
-            if user_id in chatroom.manage_list:
-                chatroom.magage_list.remove(user_id)
+            if username in chatroom.manage_list:
+                chatroom.magage_list.remove(username)
             break
 
     await database_sync_to_async(chatroom.save)()
 
 
-async def chatroom_add_member(chatroom, member_id):
-    chatroom.mem_list.append(member_id)
+async def chatroom_add_member(chatroom, member_name):
+    chatroom.mem_list.append(member_name)
     chatroom.is_top.append(False)
     chatroom.is_notice.append(True)
 
@@ -802,14 +800,13 @@ class UserConsumer(AsyncWebsocketConsumer):
 
                 if not manager_user is None and \
                         await self.check_user_in_chatroom(function_name, chatroom, manager_name):
-                    manager_user_id = manager_user.id
-                    if manager_user_id in chatroom.manager_list:
+                    if manager_name in chatroom.manager_list:
                         await self.send(text_data=json.dumps({
                             'function': function_name,
                             'message': 'User is already an manager'
                         }))
                     else:
-                        chatroom.manager_list.append(manager_user_id)
+                        chatroom.manager_list.append(manager_name)
                         await self.send(text_data=json.dumps({
                             'function': function_name,
                             'message': 'Success'
@@ -859,7 +856,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             invited_user = await self.check_user_exist(function_name, invited_name)
 
             if invited_user is not None:
-                if invited_user.id in chatroom.mem_list:
+                if invited_name in chatroom.mem_list:
                     await self.send(text_data=json.dumps({
                         'function': function_name,
                         'message': 'User is already in the group'
@@ -878,7 +875,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                         message.ensure = 1
                         await sync_to_async(message.save)()
 
-                        await chatroom_add_member(chatroom, user.id)
+                        await chatroom_add_member(chatroom, username)
 
                     await self.send(text_data=json.dumps({
                         'function': function_name,
@@ -907,13 +904,13 @@ class UserConsumer(AsyncWebsocketConsumer):
             user = await get_user(username)
 
             if await self.check_user_in_chatroom(function_name, chatroom, username):
-                if user.id == chatroom.master_name:
+                if username == chatroom.master_name:
                     await self.send(text_data=json.dumps({
                         'function': function_name,
                         'message': 'You are group master'
                     }))
                 else:
-                    await chatroom_delete_member(chatroom, user.id)
+                    await chatroom_delete_member(chatroom, username)
 
                     await self.send(text_data=json.dumps({
                         'function': function_name,
@@ -945,7 +942,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                 invited_user = await self.check_user_exist(function_name, invited_name)
 
                 if invited_user is not None:
-                    if invited_user.id in chatroom.mem_list:
+                    if invited_name in chatroom.mem_list:
                         await self.send(text_data=json.dumps({
                             'function': function_name,
                             'message': 'User is already in the group'
@@ -959,7 +956,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                                 'message': 'Permission denied'
                             }))
                         else:
-                            await chatroom_add_member(chatroom_id, user.id)
+                            await chatroom_add_member(chatroom_id, username)
 
                             await self.send(text_data=json.dumps({
                                 'function': function_name,
@@ -1012,7 +1009,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                     }))
 
                 else:
-                    await chatroom_delete_member(chatroom, member.id)
+                    await chatroom_delete_member(chatroom, member_name)
                     await sync_to_async(chatroom.save)()
                     await self.send(text_data=json.dumps({
                         'function': function_name,
