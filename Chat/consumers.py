@@ -89,6 +89,9 @@ async def chatroom_delete_member(chatroom, member_id):
             chatroom.mem_list.pop(index)
             chatroom.is_top.pop(index)
             chatroom.is_notice.pop(index)
+
+            if user_id in chatroom.manage_list:
+                chatroom.magage_list.remove(user_id)
             break
 
     await database_sync_to_async(chatroom.save)()
@@ -889,7 +892,35 @@ class UserConsumer(AsyncWebsocketConsumer):
 
 
     async def leave_group(self, json_info):
-        pass
+        """
+        json_info = {
+            'chatroom_id': 114514,
+        }
+        """
+        function_name = 'leave_group'
+
+        chatroom_id = json_info['chatroom_id']
+        chatroom = await self.find_chatroom(function_name, chatroom_id)
+
+        if chatroom is not None:
+            username = await self.get_cur_username()
+            user = await get_user(username)
+
+            if await self.check_user_in_chatroom(function_name, chatroom, username):
+                if user.id == chatroom.master_name:
+                    await self.send(text_data=json.dumps({
+                        'function': function_name,
+                        'message': 'You are group master'
+                    }))
+                else:
+                    await chatroom_delete_member(chatroom, user.id)
+
+                    await self.send(text_data=json.dumps({
+                        'function': function_name,
+                        'message': 'Success'
+                    }))
+
+
 
     async def reply_add_group(self, json_info):
         """
