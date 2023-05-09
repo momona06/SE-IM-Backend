@@ -86,6 +86,8 @@ class UserConsumer(AsyncWebsocketConsumer):
         self.chatroom_name = None
         self.cur_user = None
 
+        self.count = None
+
     async def get_cur_username(self):
         if self.cur_user is None:
             return self.scope['user'].username
@@ -95,10 +97,10 @@ class UserConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.cur_user = await self.get_cur_username()
 
-        count = 0
+
         async for chatroom in ChatRoom.objects.all():
             if self.cur_user in chatroom.mem_list:
-                count += 1
+                self.count += 1
                 await self.channel_layer.group_add("chat_" + str(chatroom.chatroom_id), self.channel_name)
 
         CONSUMER_OBJECT_LIST.append(self)
@@ -230,7 +232,8 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
         """
         await self.send(text_data=json.dumps({
-            'function': 'heartbeatconfirm'
+            'function': 'heartbeatconfirm',
+            'count': self.count
         }))
 
     async def apply_friend(self, json_info):
