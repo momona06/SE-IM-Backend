@@ -924,6 +924,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         '''
         json_info = {
 
+
         }
         '''
         username = json_info['username']
