@@ -846,7 +846,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             "roomlist": return_field
         }))
 
-    async def
+
 
     async def fetch_message(self, json_info):
         '''
