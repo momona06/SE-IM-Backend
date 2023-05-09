@@ -283,17 +283,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         await sync_to_async(friend1.save)()
         await sync_to_async(friend2.save)()
 
-        # Fix
-        new_room = ChatRoom(is_private=True, mem_list=[], not_read=[], is_notice=[], is_top=[], manager_list=[], mes_list=[], notice_list=[])
-        # new_room = await database_sync_to_async(create_chatroom)(mem_list=[], is_private=True)
-        new_room.mem_list.append(username)
-        new_room.not_read.append(0)
-        new_room.mem_list.append(apply_from)
-        new_room.not_read.append(0)
-        await sync_to_async(new_room.save)()
-
-        # Fix
-        new_timeline = await database_sync_to_async(create_chat_timeline)(chatroom_id=new_room.chatroom_id)
+        await create_chatroom('private_chat', [username, apply_from], username)
 
         # 若applyer在线结果发送到applyer
         return_field = {
@@ -333,7 +323,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         await self.fetch_addlist_attribute(username, 'receivelist')
 
     async def fetch_addlist_attribute(self, username, attribute_name):
-        add_list = await get_addlist(user_name=username)
+        add_list = await get_addlist(username)
         return_field = []
 
         if attribute_name == 'applylist':
@@ -487,8 +477,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             if msg_type == 'reply':
                 reply_id = json_info['reply_id']
                 message = await database_sync_to_async(
-                    create_message(type=msg_type, body=msg_body, time=msg_time, sender=user_name, reply_id=reply_id))
-                # Msg R3 for online case
+                    create_message)(type=msg_type, body=msg_body, time=msg_time, sender=user_name, reply_id=reply_id)
+                # Msg R3 for online cas
                 await self.channel_layer.group_send(
                     self.chat_group_name, {
                         "type": "message_diffuse",
@@ -501,7 +491,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
             else:
                 message = await database_sync_to_async(
-                    create_message(type=msg_type, body=msg_body, time=msg_time, sender=user_name))
+                    create_message)(type=msg_type, body=msg_body, time=msg_time, sender=user_name)
                 # Msg R3 for online case
                 await self.channel_layer.group_send(
                     self.chat_group_name, {
@@ -530,7 +520,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             msg_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
 
             message = await database_sync_to_async(
-                create_message(type=msg_type, body=msg_body, time=msg_time, sender=user_name))
+                create_message)(type=msg_type, body=msg_body, time=msg_time, sender=user_name)
 
             # Msg R3 for online case
             await self.channel_layer.group_send(
@@ -559,7 +549,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             msg_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
 
             message = await database_sync_to_async(
-                create_message(type=msg_type, body=msg_body, time=msg_time, sender=user_name))
+                create_message)(type=msg_type, body=msg_body, time=msg_time, sender=user_name)
             # Msg R3 for online case
             await self.channel_layer.group_send(
                 self.chat_group_name, {
@@ -707,7 +697,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         chat_room.timeline_id = chat_time_line.timeline_id
         chat_time_line.chatroom_id = chat_room.chatroom_id
         await sync_to_async(chat_room.save)()
-        await sync_to_async(chat_time_line.save)()
 
         await self.send(text_data=json.dumps({
             'function': 'create_group',
@@ -868,7 +857,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
         '''
         username = await self.get_cur_username()
-        online_user = await database_sync_to_async(OnlineUser.objects.filter)(user_name=username).first()
+        online_user = await filter_first_onlineuser(username)
         chatroom_id = online_user.chatroom_id
         chatroom = filter_first_chatroom(chatroom_id=chatroom_id)
         timeline = filter_first_timeline(chatroom_id=chatroom_id)
@@ -947,7 +936,9 @@ class UserConsumer(AsyncWebsocketConsumer):
                 room.not_read[li] = 0
                 await sync_to_async(room.save)()
                 break
-        for msg in room.mes_list:
+
+        timeline = await get_timeline(chatroom_id=room.chatroom_id)
+        for msg in timeline.msg_line:
             cur_message1 = await sync_to_async(Message.objects.filter)(msg_id=msg)
             cur_message = await sync_to_async(cur_message1.first)()
             return_field.append({
@@ -961,3 +952,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             "function": "fetchmessage",
             "messagelist": return_field
         }))
+
+    async def add_group_member(self, json_info):
+        pass

@@ -4,6 +4,8 @@ from django.contrib.postgres.fields import ArrayField
 
 from channels.db import database_sync_to_async
 
+from utils.utils_database import filter_first_chatroom
+
 
 # Design philosophy: remove info about the chatroom and only reserve the necessary info
 # Timeline for storage owned by a specific chatroom
@@ -12,6 +14,7 @@ class ChatTimeLine(models.Model):
     timeline_id = models.BigAutoField(primary_key=True)
     chatroom_id = models.BigIntegerField(default=0)
 
+    # meg id list
     msg_line = ArrayField(
         models.BigIntegerField(default=0)
     )
@@ -28,11 +31,11 @@ class ChatTimeLine(models.Model):
     )
 
 async def create_chat_timeline(chatroom_id):
-    chatroom = filter_first_chatroom(chatroom_id=chatroom_id)
+    chatroom = await filter_first_chatroom(chatroom_id=chatroom_id)
     mem_len = len(chatroom.mem_list)
 
     new_timeline = await database_sync_to_async(ChatTimeLine)(chatroom_id=chatroom_id, msg_line=[], cursor_list=[], is_read=[])
-    for _ in rage(mem_len):
+    for _ in range(mem_len):
         new_timeline.cursor_list.append(0)
     await sync_to_async(new_timeline.save)()
 
@@ -78,22 +81,26 @@ class ChatRoom(models.Model):
     manager_list = ArrayField(
         models.CharField(max_length=100)
     )
-    mes_list = ArrayField(
-        models.BigIntegerField(default=0)
-    )
 
     notice_id = models.BigIntegerField(default=0)
     notice_list = ArrayField(
         models.BigIntegerField(default=0)
     )
 
-async def create_chatroom(mem_list, room_name='DefaultName', master_name='DefaultName', is_private=False, is_notice=True, is_top=False):
-    new_chatroom = await database_sync_to_async(ChatRoom(is_private=is_private, room_name=room_name,
+async def create_chatroom(room_name, mem_list, master_name, is_private=False, is_notice=True, is_top=False):
+    """
+    参考：room_name='private_chat'
+    """
+    new_chatroom = await database_sync_to_async(ChatRoom)(is_private=is_private, room_name=room_name,
                             mem_count=len(mem_list), mem_list=mem_list,
                             is_notice=is_notice, is_top=is_top,
                             master_name=master_name, manager_list=[],
-                            notice_id=0, notice_list=[], not_read=[])) # Fix:not_read
+                            notice_id=0, notice_list=[])
+    timeline = await create_chat_timeline(new_chatroom.chatroom_id)
+    new_chatroom.timeline_id = timeline.timeline_id
+    timeline.chatroom_id = new_chatroom.chatroom_id
     await sync_to_async(new_chatroom.save)()
+    await sync_to_async(timeline.save)()
     return new_chatroom
 
 
