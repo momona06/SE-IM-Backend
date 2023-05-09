@@ -221,7 +221,8 @@ class UserConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'function': 'heartbeatconfirm',
             'count': self.count,
-            'cur_user': self.cur_user
+            'cur_user': self.cur_user,
+            'room_id': self.room_id
         }))
 
     async def apply_friend(self, json_info):
@@ -391,7 +392,9 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     async def add_channel(self, json_info):
         """
-        json_info = {}
+        json_info = {
+            'username': 'default',
+        }
         """
         username = json_info['username']
         self.cur_user = username
@@ -404,7 +407,7 @@ class UserConsumer(AsyncWebsocketConsumer):
     async def add_chat(self, json_info):
         """
         json_info = {
-            'room_id': '5',
+            'room_id': 5,
             'room_name': 'default',
         }
         """
@@ -458,10 +461,9 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         # type = {text, image, file, video, audio, combine, reply, invite}
         if msg_type == 'text' or msg_type == 'reply':
-
             if msg_type == 'reply':
                 reply_id = json_info['reply_id']
-                # Msg R3 for online cas
+                # Msg R3 for online case
                 await self.channel_layer.group_send(
                     chatroom_name, {
                         "type": "message_diffuse",
