@@ -609,13 +609,11 @@ class UserConsumer(AsyncWebsocketConsumer):
         json_info = {
             'is_back': False,
             'count': 1,
-
         }
 
         json_info = {
             'is_back': True,
             'count': 5,
-
         }
         '''
 
