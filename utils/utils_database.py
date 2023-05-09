@@ -1,7 +1,7 @@
 from channels.db import database_sync_to_async
 from django.contrib.auth.models import User
 
-from Chat.models import ChatTimeLine, ChatRoom, OnlineUser, Message
+from Chat.models import *
 from FriendRelation.models import AddList, FriendList, Friend
 
 
@@ -72,9 +72,9 @@ def filter_first_timeline(chatroom_id=None, timeline_id=None):
         return ChatTimeLine.objects.filter(timeline_id=timeline_id).first()
 
 
-@database_sync_to_async
-def filter_first_onlineuser(username):
-    return OnlineUser.objects.filter(user_name=username).first()
+# @database_sync_to_async
+# def filter_first_onlineuser(username):
+#     return OnlineUser.objects.filter(user_name=username).first()
 
 
 @database_sync_to_async

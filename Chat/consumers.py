@@ -2,13 +2,12 @@ from channels.exceptions import StopConsumer
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 import time
-from Chat.models import *
 from channels.db import database_sync_to_async
 from asgiref.sync import sync_to_async
 from django.contrib.auth.models import User
 
-from Chat.models import create_chatroom, create_onlineuser, create_message, ChatRoom, Message
-from FriendRelation.models import FriendList, Friend
+from Chat.models import *
+from FriendRelation.models import *
 from utils.utils_database import *
 
 CONSUMER_OBJECT_LIST = []
@@ -383,11 +382,9 @@ class UserConsumer(AsyncWebsocketConsumer):
         }))
 
     async def acknowledge_diffuse(self, event):
-
         msg_id = event["msg_id"]
 
         # event = {'type': 'chat_message', 'message': 'res'}
-
         await self.send(text_data=json.dumps({
             'type': 'Ack',
             'msg_id': msg_id,
@@ -407,7 +404,8 @@ class UserConsumer(AsyncWebsocketConsumer):
         room_id = json_info['room_id']
 
         # 加入在线用户列表
-        await create_onlineuser(user_name, self.channel_name, room_id)
+
+        # await create_onlineuser(user_name, self.channel_name, room_id)
 
         # 加入群聊
         chat_room = await filter_first_chatroom(chatroom_id=room_id)
@@ -429,7 +427,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         # 初始化
         user_name = self.cur_user
-        onliner = await filter_first_onlineuser(user_name)
+        # onliner = await filter_first_onlineuser(user_name)
 
         # 改动Timeline的cursor
         chatroom = await filter_first_chatroom(chatroom_id=onliner.chatroom_id)
@@ -975,11 +973,11 @@ class UserConsumer(AsyncWebsocketConsumer):
         }))
 
     async def fetch_message(self, json_info):
-        '''
+        """
         json_info = {
 
         }
-        '''
+        """
         chatroom_id = json_info['chatroom_id']
         username = json_info['username']
         room1 = await sync_to_async(ChatRoom.objects.filter)(chatroom_id=chatroom_id)
