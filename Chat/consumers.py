@@ -6,6 +6,7 @@ import time
 from channels.db import database_sync_to_async
 from asgiref.sync import sync_to_async
 
+from FriendRelation.models import FriendList, Friend
 from utils.utils_database import *
 from Chat.models import *
 
