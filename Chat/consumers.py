@@ -804,10 +804,13 @@ class UserConsumer(AsyncWebsocketConsumer):
     async def release_notice(self, json_info):
         '''
         json_info = {
-
+            'msg_type': 'text',
+            'msg_body': 'hello',
         }
         '''
-        pass
+
+        msg_body = json_info['msg_body']
+
 
     async def remove_group_member(self, json_info):
         """

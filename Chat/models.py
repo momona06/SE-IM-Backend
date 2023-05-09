@@ -38,18 +38,6 @@ async def delete_chat_timeline():
     pass
 
 
-# Timeline for sync owned by a specific user
-# Viewed As Sync Database
-# class UserTimeLine(models.Model):
-#     utl_id = models.BigAutoField(primary_key=True)
-#
-#     owner = models.CharField(max_length=100)
-#
-#     cursor = models.BigIntegerField(default=0)
-#     msg_line = ArrayField(
-#         models.BigIntegerField(default=0)
-#     )
-
 
 
 
