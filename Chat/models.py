@@ -24,17 +24,12 @@ class ChatTimeLine(models.Model):
         models.BigIntegerField(default=0)
     )
 
-    is_read = ArrayField(
-        ArrayField(
-            models.BooleanField(default=False)
-        )
-    )
 
 async def create_chat_timeline(chatroom_id):
     chatroom = await filter_first_chatroom(chatroom_id=chatroom_id)
     mem_len = len(chatroom.mem_list)
 
-    new_timeline = await database_sync_to_async(ChatTimeLine)(chatroom_id=chatroom_id, msg_line=[], cursor_list=[], is_read=[])
+    new_timeline = await database_sync_to_async(ChatTimeLine)(chatroom_id=chatroom_id, msg_line=[], cursor_list=[])
     for _ in range(mem_len):
         new_timeline.cursor_list.append(0)
     await sync_to_async(new_timeline.save)()
