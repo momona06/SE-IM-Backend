@@ -136,9 +136,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             await self.fetch_friend_list(json_info)
 
         # chat zone
-        elif function == 'get_username':
-            await self.get_username(json_info)
-
         elif function == 'add_channel':
             await self.add_channel(json_info)
 
@@ -390,13 +387,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             'type': 'Ack',
             'msg_id': msg_id,
         }))
-
-    async def get_username(self, json_info):
-        """
-        json_info = {
-            'username': 'zj'
-        }
-        """
 
     async def add_channel(self, json_info):
         """
