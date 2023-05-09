@@ -478,7 +478,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         # move the cursor of cli A
 
         # 初始化
-        user_name = self.cur_user
+        username = self.cur_user
         room_id = self.room_id
         room_name = self.room_name
         chatroom_name = self.chatroom_name
@@ -493,15 +493,13 @@ class UserConsumer(AsyncWebsocketConsumer):
         msg_type = json_info['msg_type']
         msg_body = json_info['msg_body']
         msg_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
+        message = await create_message(type=msg_type, body=msg_body, time=msg_time, sender=username)
 
         # type = {text, image, file, video, audio, combine, reply, invite}
         if msg_type == 'text' or msg_type == 'reply':
 
             if msg_type == 'reply':
                 reply_id = json_info['reply_id']
-                message = await database_sync_to_async(
-                    create_message)(type=msg_type, body=msg_body, time=msg_time, sender=user_name, reply_id=reply_id)
-
                 # Msg R3 for online cas
                 await self.channel_layer.group_send(
                     self.chatroom_name, {
@@ -509,15 +507,12 @@ class UserConsumer(AsyncWebsocketConsumer):
                         'msg_id': message.msg_id,
                         'msg_type': msg_type,
                         'msg_body': msg_body,
-                        'sender': user_name,
+                        'sender': username,
                         'reply_id': reply_id
                     }
                 )
 
             else:
-                message = await database_sync_to_async(
-                    create_message)(type=msg_type, body=msg_body, time=msg_time, sender=user_name)
-
                 # Msg R3 for online case
                 await self.channel_layer.group_send(
                     self.chat_group_name, {
@@ -525,7 +520,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                         'msg_id': message.msg_id,
                         'msg_type': msg_type,
                         'msg_body': msg_body,
-                        'sender': user_name,
+                        'sender': username,
                     }
                 )
 
@@ -541,10 +536,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             )
 
         elif msg_type == 'combine':
-
-            message = await database_sync_to_async(
-                create_message)(type=msg_type, body=msg_body, time=msg_time, sender=user_name)
-
             # Msg R3 for online case
             await self.channel_layer.group_send(
                 self.chat_group_name, {
@@ -552,7 +543,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                     'msg_id': message.msg_id,
                     'msg_type': msg_type,
                     'msg_body': msg_body,
-                    'sender': user_name,
+                    'sender': username,
                 }
             )
 
@@ -563,14 +554,10 @@ class UserConsumer(AsyncWebsocketConsumer):
                 text_data=json.dumps({
                     "function": "Ack 2",
                     'msg_id': message.msg_id,
-                }
-                )
+                })
             )
 
         elif msg_type == 'invite':
-
-            message = await database_sync_to_async(
-                create_message)(type=msg_type, body=msg_body, time=msg_time, sender=user_name)
             # Msg R3 for online case
             await self.channel_layer.group_send(
                 self.chat_group_name, {
@@ -578,7 +565,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                     'msg_id': message.msg_id,
                     'msg_type': msg_type,
                     'msg_body': msg_body,
-                    'sender': user_name,
+                    'sender': username,
                 }
             )
 
@@ -589,8 +576,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                 text_data=json.dumps({
                     "function": "Ack 2",
                     'msg_id': message.msg_id,
-                }
-                )
+                })
             )
 
         elif msg_type == 'image' or msg_type == 'video' or msg_type == 'audio' or msg_type == 'file':
@@ -888,9 +874,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             msg_id: 114514
         }
         """
-        username = await self.get_cur_username()
+        username = self.cur_user
         msg_id = json_info['msg_id']
-        # online_user = await filter_first_onlineuser(username)
 
         room_id = self.room_id
         room_name = self.room_name
