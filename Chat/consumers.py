@@ -473,8 +473,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             if msg_type == 'reply':
                 reply_id = json_info['reply_id']
                 message = await database_sync_to_async(
-                    create_message(type=msg_type, body=msg_body, time=msg_time, sender=user_name, reply_id=reply_id))
-                # Msg R3 for online case
+                    create_message)(type=msg_type, body=msg_body, time=msg_time, sender=user_name, reply_id=reply_id)
+                # Msg R3 for online cas
                 await self.channel_layer.group_send(
                     self.chat_group_name, {
                         "type": "message_diffuse",
@@ -487,7 +487,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
             else:
                 message = await database_sync_to_async(
-                    create_message(type=msg_type, body=msg_body, time=msg_time, sender=user_name))
+                    create_message)(type=msg_type, body=msg_body, time=msg_time, sender=user_name)
                 # Msg R3 for online case
                 await self.channel_layer.group_send(
                     self.chat_group_name, {
@@ -516,7 +516,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             msg_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
 
             message = await database_sync_to_async(
-                create_message(type=msg_type, body=msg_body, time=msg_time, sender=user_name))
+                create_message)(type=msg_type, body=msg_body, time=msg_time, sender=user_name)
 
             # Msg R3 for online case
             await self.channel_layer.group_send(
@@ -545,7 +545,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             msg_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
 
             message = await database_sync_to_async(
-                create_message(type=msg_type, body=msg_body, time=msg_time, sender=user_name))
+                create_message)(type=msg_type, body=msg_body, time=msg_time, sender=user_name)
             # Msg R3 for online case
             await self.channel_layer.group_send(
                 self.chat_group_name, {
@@ -949,3 +949,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             "function": "fetchmessage",
             "messagelist": return_field
         }))
+
+    async def add_group_member(self, json_info):
+        pass
