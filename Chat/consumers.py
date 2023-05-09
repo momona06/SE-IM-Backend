@@ -78,10 +78,6 @@ async def get_power(chatroom, username):
     else:
         return 0
 
-
-# channel: the specific user
-# group: a group of channels (users)
-
 class UserConsumer(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
@@ -90,30 +86,35 @@ class UserConsumer(AsyncWebsocketConsumer):
         self.chatroom_name = None
         self.cur_user = None
 
+    async def get_cur_username(self):
+        if self.cur_user is None:
+            return self.scope['user'].username
+        else:
+            return self.cur_user
+
     async def connect(self):
         self.cur_user = await self.get_cur_username()
 
+        count = 0
         async for chatroom in ChatRoom.objects.all():
             if self.cur_user in chatroom.mem_list:
+                count += 1
                 await self.channel_layer.group_add("chat_" + str(chatroom.chatroom_id), self.channel_name)
+
+        self.send(text_data=json.dumps({
+            "count": count,
+        }))
 
         CONSUMER_OBJECT_LIST.append(self)
         await self.accept()
 
     async def disconnect(self, code):
-
         async for chatroom in ChatRoom.objects.all():
             if self.cur_user in chatroom.mem_list:
                 await self.channel_layer.group_discard("chat_" + str(chatroom.chatroom_id), self.channel_name)
 
         CONSUMER_OBJECT_LIST.remove(self)
         raise StopConsumer()
-
-    async def get_cur_username(self):
-        if self.cur_user is None:
-            return self.scope['user'].username
-        else:
-            return self.cur_user
 
     async def receive(self, text_data=None, bytes_data=None):
 
@@ -404,7 +405,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             'room_name': 'default',
         }
         """
-
         room_name = json_info['room_name']
         room_id = json_info['room_id']
 
@@ -416,8 +416,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
         json_info = {}
         """
-
-        # 离开群聊
         self.room_id = None
         self.room_name = None
         self.chatroom_name = None
@@ -568,12 +566,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         chatroom_name = self.chatroom_name
 
         if is_back:
-            # 获取onliner，群聊和Timeline
-            # onliner = await filter_first_onlineuser(user_name)
-            # if onliner is None:
-            #     await self.send('you are not in the chatroom')
-            #     await self.close()
-
             chatroom = await filter_first_chatroom(chatroom_id=room_id)
             if chatroom is None:
                 await self.send('chatroom not exists')
@@ -583,16 +575,9 @@ class UserConsumer(AsyncWebsocketConsumer):
 
             # 移动Timeline的cursor
             lis = chatroom.mem_list.index(user_name)
-
             timeline.cursor_list[lis] += count
 
         else:
-            # 获取onliner，群聊和Timeline
-            # onliner = await filter_first_onlineuser(user_name)
-            # if onliner is None:
-            #     await self.send('you are not in the chatroom')
-            #     await self.close()
-
             chatroom = await filter_first_chatroom(chatroom_id=room_id)
             if chatroom is None:
                 await self.send('chatroom not exists')
