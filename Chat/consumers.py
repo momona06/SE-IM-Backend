@@ -394,7 +394,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         if chat_room is None:
             await self.send(text_data="chatroom not exists")
             await self.close()
-        chat_room.chatroom_name = "chat_" + room_name + room_id
+        self.chatroom_name = "chat_" + room_name + room_id
         await self.channel_layer.group_add(self.chatroom_name, self.channel_name)
 
         # Fix: Unify

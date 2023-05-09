@@ -14,6 +14,7 @@ class ChatTimeLine(models.Model):
     timeline_id = models.BigAutoField(primary_key=True)
     chatroom_id = models.BigIntegerField(default=0)
 
+    # meg id list
     msg_line = ArrayField(
         models.BigIntegerField(default=0)
     )
@@ -92,6 +93,9 @@ async def create_chatroom(room_name, mem_list, master_name, is_private=False, is
                             is_notice=is_notice, is_top=is_top,
                             master_name=master_name, manager_list=[],
                             notice_id=0, notice_list=[])
+    timeline = await create_chat_timeline(new_chatroom.chatroom_id)
+    new_chatroom.timeline_id = timeline.timeline_id
+    timeline.chatroom_id = new_chatroom.chatroom_id
     await sync_to_async(new_chatroom.save)()
     return new_chatroom
 
