@@ -28,7 +28,7 @@ class ChatTimeLine(models.Model):
     )
 
 async def create_chat_timeline(chatroom_id):
-    new_timeline = await database_sync_to_async(ChatTimeLine)(chatroom_id = chatroom_id)
+    new_timeline = await database_sync_to_async(ChatTimeLine(chatroom_id = chatroom_id))
     await sync_to_async(new_timeline.save)()
     return new_timeline
 
@@ -94,11 +94,11 @@ class ChatRoom(models.Model):
     )
 
 async def create_chatroom(room_name, mem_list, master_name, is_private=False, is_notice=True, is_top=False):
-    new_chatroom = await database_sync_to_async(ChatRoom)(is_private=is_private, room_name=room_name,
+    new_chatroom = await database_sync_to_async(ChatRoom(is_private=is_private, room_name=room_name,
                             mem_count=len(mem_list), mem_list=mem_list,
                             is_notice=is_notice, is_top=is_top,
                             master_name=master_name, manager_list=[],
-                            notice_id=0, notice_list=[])
+                            notice_id=0, notice_list=[]))
     await sync_to_async(new_chatroom.save)()
     return new_chatroom
 
@@ -119,14 +119,15 @@ class Message(models.Model):
     # type = {text, image, file, video, audio, combine, reply, invite}
     type = models.CharField(max_length=20)
 
-    # msg for {text, rel}
+    # msg for {text, reply}
     body = models.CharField(max_length=500)
 
     # src for image, file, video, audio
     # src = models.FileField(upload_to=user_directory_path, blank=True, null=True)
 
     # related msg for {reply}
-    rel_id = models.BigIntegerField(default=0)
+    reply_id = models.BigIntegerField(default=0)
+
 
     time = models.CharField(max_length=100)
     sender = models.CharField(max_length=100)
@@ -138,8 +139,8 @@ def user_directory_path(instance, filename):
 
 
 
-async def create_message(type, body, time, sender, is_reply=False, rel_id=0):
-    new_message = await database_sync_to_async(Message)(type=type, body=body, time=time, sender=sender, is_reply=is_reply, rel_id=rel_id)
+async def create_message(type, body, time, sender, is_reply=False, reply_id=0):
+    new_message = await database_sync_to_async(Message(type=type, body=body, time=time, sender=sender, is_reply=is_reply, reply_id=reply_id))
     new_message.save()
     return new_message
 
@@ -159,7 +160,7 @@ class OnlineUser(models.Model):
 
 
 async def create_onlineuser(user_name, channel_name, room_id):
-    new_onliner = await database_sync_to_async(OnlineUser)(user_name=user_name, channel_name=channel_name, chatroom_id=room_id)
+    new_onliner = await database_sync_to_async(OnlineUser(user_name=user_name, channel_name=channel_name, chatroom_id=room_id))
     new_onliner.save()
     return new_onliner
 
