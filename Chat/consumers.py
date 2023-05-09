@@ -549,11 +549,13 @@ class UserConsumer(AsyncWebsocketConsumer):
         json_info = {
             'is_back': False,
             'count': 1,
+            'room_id': 6,
         }
 
         json_info = {
             'is_back': True,
             'count': 5,
+            'room_id': 5,
         }
         """
 
@@ -563,17 +565,12 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         # 初始化
         username = self.cur_user
-        room_id = self.room_id
-        room_name = self.room_name
-        chatroom_name = self.chatroom_name
+        room_id = json_info['room_id']
         is_back = json_info['is_back']
         count = json_info['count']
 
         if is_back:
             chatroom = await filter_first_chatroom(chatroom_id=room_id)
-            # if chatroom is None:
-            #     await self.send('chatroom not exists')
-            #     await self.close()
 
             timeline = await filter_first_timeline(chatroom_id=room_id)
 
