@@ -792,6 +792,15 @@ class UserConsumer(AsyncWebsocketConsumer):
                         'message': 'Success'
                     }))
 
+    async def add_group(self, json_info):
+        pass
+
+    async def leave_group(self, json_info):
+        pass
+
+    async def allow_add_group(self, json_info):
+        pass
+
     async def release_notice(self, json_info):
         '''
         json_info = {
