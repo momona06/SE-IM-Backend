@@ -88,7 +88,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         self.chat_group_name = None
 
     async def connect(self):
-
         CONSUMER_OBJECT_LIST.append(self)
         self.cur_user = await self.get_cur_username()
         await self.accept()
@@ -243,22 +242,17 @@ class UserConsumer(AsyncWebsocketConsumer):
             return_field = []
             flen = len(add_list.apply_list)
             for li in range(flen):
-                return_field.append(
-                    {
+                return_field.append({
                         "username": add_list.apply_list[li],
                         "is_confirmed": add_list.apply_answer[li],
                         "make_sure": add_list.apply_ensure[li]
-                    }
-                )
+                })
             for user in CONSUMER_OBJECT_LIST:
                 if user.cur_user == apply_to:
-                    await user.send(text_data=json.dumps(
-                        {
+                    await user.send(text_data=json.dumps({
                             'function': 'applylist',
                             'applylist': return_field
-                        }
-                    )
-                    )
+                    }))
 
     async def confirm_friend(self, json_info):
         username = json_info['username']
@@ -340,13 +334,11 @@ class UserConsumer(AsyncWebsocketConsumer):
             ensure = add_list.reply_ensure
 
         for li in range(len(current_list)):
-            return_field.append(
-                {
+            return_field.append({
                     "username": current_list[li],
                     "is_confirmed": answer[li],
                     "make_sure": ensure[li]
-                }
-            )
+            })
         await self.send(text_data=json.dumps({
             'function': attribute_name,
             attribute_name: return_field
@@ -489,8 +481,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                     create_message(type=msg_type, body=msg_body, time=msg_time, sender=user_name, reply_id=reply_id))
                 # Msg R3 for online case
                 await self.channel_layer.group_send(
-                    self.chat_group_name,
-                    {
+                    self.chat_group_name, {
                         "type": "message_diffuse",
                         'msg_id': message.msg_id,
                         'msg_type': msg_type,
@@ -504,8 +495,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                     create_message(type=msg_type, body=msg_body, time=msg_time, sender=user_name))
                 # Msg R3 for online case
                 await self.channel_layer.group_send(
-                    self.chat_group_name,
-                    {
+                    self.chat_group_name, {
                         "type": "message_diffuse",
                         'msg_id': message.msg_id,
                         'msg_type': msg_type,
@@ -517,8 +507,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
             # Ack 2
             await self.send(
-                text_data=json.dumps(
-                    {
+                text_data=json.dumps({
                         "type": "Ack 2",
                         'msg_id': message.msg_id,
                     }
@@ -536,8 +525,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
             # Msg R3 for online case
             await self.channel_layer.group_send(
-                self.chat_group_name,
-                {
+                self.chat_group_name, {
                     "type": "message_diffuse",
                     'msg_id': message.msg_id,
                     'msg_type': msg_type,
@@ -549,8 +537,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
             # Ack 2
             await self.send(
-                text_data=json.dumps(
-                    {
+                text_data=json.dumps({
                         "type": "Ack 2",
                         'msg_id': message.msg_id,
                     }
@@ -566,8 +553,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                 create_message(type=msg_type, body=msg_body, time=msg_time, sender=user_name))
             # Msg R3 for online case
             await self.channel_layer.group_send(
-                self.chat_group_name,
-                {
+                self.chat_group_name, {
                     "type": "message_diffuse",
                     'msg_id': message.msg_id,
                     'msg_type': msg_type,
@@ -579,8 +565,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
             # Ack 2
             await self.send(
-                text_data=json.dumps(
-                    {
+                text_data=json.dumps({
                         "type": "Ack 2",
                         'msg_id': message.msg_id,
                     }
@@ -701,15 +686,13 @@ class UserConsumer(AsyncWebsocketConsumer):
     async def create_group(self, json_info):
         """
         json_info = {
-            'selection': 'list_create',
             'member_list': ['A', 'B'],
             'room_name': 'lob',
         }
         """
-
+        username = await self.get_cur_username()
         room_name = json_info['room_name']
         member_list = json_info['member_list']
-        username = await self.get_cur_username()
 
         chat_room = await create_chatroom(room_name, await username_list_to_id_list(member_list), username)
         chat_time_line = await create_chat_timeline()

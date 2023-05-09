@@ -28,8 +28,9 @@ class ChatTimeLine(models.Model):
     )
 
 async def create_chat_timeline(chatroom_id):
-    new_timeline = await database_sync_to_async(ChatTimeLine(chatroom_id = chatroom_id))
+    new_timeline = await database_sync_to_async(ChatTimeLine)(chatroom_id = chatroom_id)
     await sync_to_async(new_timeline.save)()
+
     return new_timeline
 
 
@@ -140,7 +141,7 @@ def user_directory_path(instance, filename):
 
 
 async def create_message(type, body, time, sender, is_reply=False, reply_id=0):
-    new_message = await database_sync_to_async(Message(type=type, body=body, time=time, sender=sender, is_reply=is_reply, reply_id=reply_id))
+    new_message = await database_sync_to_async(Message)(type=type, body=body, time=time, sender=sender, is_reply=is_reply, reply_id=reply_id)
     new_message.save()
     return new_message
 
@@ -160,7 +161,7 @@ class OnlineUser(models.Model):
 
 
 async def create_onlineuser(user_name, channel_name, room_id):
-    new_onliner = await database_sync_to_async(OnlineUser(user_name=user_name, channel_name=channel_name, chatroom_id=room_id))
+    new_onliner = await database_sync_to_async(OnlineUser)(user_name=user_name, channel_name=channel_name, chatroom_id=room_id)
     new_onliner.save()
     return new_onliner
 
