@@ -83,16 +83,18 @@ async def get_power(chatroom, username):
 # channel: the specific user
 # group: a group of channels (users)
 
-async def chatroom_delete_member(chatroom, member_name):
-    for index, username in enumerate(chatroom.mem_list):
-        if username==member_name:
+async def chatroom_delete_member(chatroom, member_id):
+    for index, user_id in enumerate(chatroom.mem_list):
+        if user_id==member_id:
             chatroom.mem_list.pop(index)
             chatroom.is_top.pop(index)
             chatroom.is_notice.pop(index)
 
 
-async def chatroom_add_member(chatroom,member_name):
-    for
+async def chatroom_add_member(chatroom,member_id):
+    chatroom.mem_list.append(member_id)
+    chatroom.is_top.append(False)
+    chatroom.is_notice.append(True)
 
 
 class UserConsumer(AsyncWebsocketConsumer):
@@ -700,7 +702,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         return True
 
     async def check_user_exist(self, function_name, username, message='User not found'):
-        manager_user = await sync_to_async((await sync_to_async(User.objects.filter)(username=username)).first)()
+        manager_user = await get_user(username)
 
         if manager_user is None:
             await self.send(text_data=json.dumps({
@@ -839,11 +841,26 @@ class UserConsumer(AsyncWebsocketConsumer):
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
         if chatroom is not None:
-            if not invited_name in chatroom.mem_list:
+            invited_user = await self.check_user_exist(function_name, invited_name)
+
+            if invited_user is not None:
+                if invited_user.id in chatroom.mem_list:
+                    await self.send(text_data=json.dumps({
+                        'function': function_name,
+                        'message': 'User is already in the group'
+                    }))
+
                 username = await self.get_cur_username()
+                user = await get_user(username)
 
                 if get_power(chatroom, username) != 0:
-                    chatroom.
+                    await chatroom_add_member(chatroom, user.id)
+
+                    await self.send(text_data=json.dumps({
+                        'function': function_name,
+                        'message': 'Success'
+                    }))
+
                 else:
 
         pass
@@ -899,7 +916,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                     }))
 
                 else:
-                    await chatroom_delete_member(chatroom, member_name)
+                    await chatroom_delete_member(chatroom, member.id)
                     await sync_to_async(chatroom.save)()
                     await self.send(text_data=json.dumps({
                         'function': function_name,
