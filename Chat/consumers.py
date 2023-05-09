@@ -92,7 +92,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         self.chat_group_name = None
 
     async def connect(self):
-
         self.cur_user = await self.get_cur_username()
 
         async for chatroom in ChatRoom.objects.all():
@@ -379,15 +378,11 @@ class UserConsumer(AsyncWebsocketConsumer):
             attribute_name: return_field
         }))
 
-
-
     async def message_diffuse(self, event):
         msg_body = event["msg_body"]
         msg_id = event["msg_id"]
         sender = event['sender']
-
         # event = {'type': 'chat_message', 'message': 'res'}
-
         await self.send(text_data=json.dumps({
             'function': 'Msg',
             'msg_id': msg_id,
@@ -397,7 +392,6 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     async def acknowledge_diffuse(self, event):
         msg_id = event["msg_id"]
-
         # event = {'type': 'chat_message', 'message': 'res'}
         await self.send(text_data=json.dumps({
             'type': 'Ack',
@@ -412,14 +406,12 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
         """
 
-        # 初始化
-        # username = self.cur_user
         room_name = json_info['room_name']
-        room_id = str(json_info['room_id'])
+        room_id = json_info['room_id']
 
         self.room_id = room_id
         self.room_name = room_name
-        self.chatroom_name = "chat_" + room_name + room_id
+        self.chatroom_name = "chat_" + room_name + str(room_id)
         # 加入在线用户列表
 
         # await create_onlineuser(user_name, self.channel_name, room_id)
@@ -436,8 +428,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         # async for chatroom in ChatRoom.objects.all():
         #     if username in chatroom.mem_list:
         #         await self.channel_layer.group_add("chat_" + chatroom.room_name + str(chatroom.chatroom_id), self.channel_name)
-
-
 
         # Fix: Unify
         # 发送历史信息
@@ -489,16 +479,6 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         # 初始化
         user_name = self.cur_user
-
-        # 获取在线用户
-        # onliner = await filter_first_onlineuser(user_name)
-        # if onliner is None:
-        #     await self.send('you are not in the chatroom')
-        #     await self.close()
-
-        # 获取群聊和Timeline
-        # room_id = onliner.chatroom_id
-
         room_id = self.room_id
         room_name = self.room_name
         chatroom_name = self.chatroom_name
@@ -511,12 +491,11 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         # 添加消息
         msg_type = json_info['msg_type']
+        msg_body = json_info['msg_body']
+        msg_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
 
         # type = {text, image, file, video, audio, combine, reply, invite}
         if msg_type == 'text' or msg_type == 'reply':
-
-            msg_body = json_info['msg_body']
-            msg_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
 
             if msg_type == 'reply':
                 reply_id = json_info['reply_id']
@@ -562,8 +541,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             )
 
         elif msg_type == 'combine':
-            msg_body = json_info['msg_body']
-            msg_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
 
             message = await database_sync_to_async(
                 create_message)(type=msg_type, body=msg_body, time=msg_time, sender=user_name)
@@ -591,9 +568,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             )
 
         elif msg_type == 'invite':
-            # Fix
-            msg_body = json_info['msg_body']
-            msg_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
 
             message = await database_sync_to_async(
                 create_message)(type=msg_type, body=msg_body, time=msg_time, sender=user_name)
@@ -672,7 +646,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             # if onliner is None:
             #     await self.send('you are not in the chatroom')
             #     await self.close()
-
 
             chatroom = await filter_first_chatroom(chatroom_id=room_id)
             if chatroom is None:

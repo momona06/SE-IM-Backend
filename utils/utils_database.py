@@ -72,11 +72,6 @@ def filter_first_timeline(chatroom_id=None, timeline_id=None):
         return ChatTimeLine.objects.filter(timeline_id=timeline_id).first()
 
 
-# @database_sync_to_async
-# def filter_first_onlineuser(username):
-#     return OnlineUser.objects.filter(user_name=username).first()
-
-
 @database_sync_to_async
 def filter_first_message(msg_id):
     return Message.objects.filter(msg_id=msg_id).first()

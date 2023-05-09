@@ -134,22 +134,8 @@ async def create_message(type, body, time, sender, is_reply=False, reply_id=0):
 
 
 async def delete_message():
+    """
+    json_info = {
+    }
+    """
     pass
-
-
-# # Users in chatrooms
-# class OnlineUser(models.Model):
-#     user_name = models.CharField(max_length=100)
-#     channel_name = models.CharField(max_length=1000)
-#     chatroom_id = models.BigIntegerField(default=0)
-#
-#
-# async def create_onlineuser(user_name, channel_name, room_id):
-#     new_onliner = await database_sync_to_async(OnlineUser)(user_name=user_name, channel_name=channel_name,
-#                                                            chatroom_id=room_id)
-#     await database_sync_to_async(new_onliner.save)()
-#     return new_onliner
-#
-#
-# async def delete_onlineuser(user_name):
-#     await database_sync_to_async(OnlineUser.objects.filter(user_name=user_name).delete)()
