@@ -97,6 +97,9 @@ async def chatroom_add_member(chatroom, member_id):
     chatroom.is_notice.append(True)
 
 
+
+
+
 class UserConsumer(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
@@ -113,6 +116,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             return self.scope['user'].username
         else:
             return self.cur_user
+
 
     async def receive(self, text_data=None, bytes_data=None):
 
@@ -194,13 +198,9 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == 'transfer_master':
             await self.transfer_master(json_info)
 
-        # 群主/管理员允许申请用户加入群聊
-        elif function == 'confirm_add_group':
-            await self.confirm_add_group(json_info)
-
-        # 群主/管理员拒绝申请用户加入群聊
-        elif function == 'decline_add_group':
-            await self.decline_add_group(json_info)
+        # 群主/管理员处理申请用户加入群聊信息
+        elif function == 'reply_add_group':
+            await self.reply_add_group(json_info)
 
         # 群主/管理员直接添加用户到群聊
         # 与 add_group 重复
@@ -714,6 +714,22 @@ class UserConsumer(AsyncWebsocketConsumer):
             }))
             return False
 
+    async def message_pre_treat(self, function_name, message_type, ensure):
+        if message_type != 'invite':
+            await self.send(text_data=json.dumps({
+                'function': function_name,
+                'message': 'Message type error'
+            }))
+            return False
+        elif ensure != '-1':
+            await self.send(text_data=json.dumps({
+                'function': function_name,
+                'message': 'Message Replied'
+            }))
+            return False
+        else:
+            return True
+
     async def create_group(self, json_info):
         """
         json_info = {
@@ -845,39 +861,53 @@ class UserConsumer(AsyncWebsocketConsumer):
                     username = await self.get_cur_username()
                     user = await get_user(username)
 
+                    msg_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
+                    message = await database_sync_to_async(create_message)(type='invite', body=invited_name,
+                                                                           time=msg_time,
+                                                                           sender=username)
+
+                    await sync_to_async(message.save)()
                     if get_power(chatroom, username) != 0:
+                        message.ensure = 1
+                        await sync_to_async(message.save)()
+
                         await chatroom_add_member(chatroom, user.id)
 
-                        await self.send(text_data=json.dumps({
-                            'function': function_name,
-                            'message': 'Success'
-                        }))
+                    await self.send(text_data=json.dumps({
+                        'function': function_name,
+                        'message': 'Success',
+                        'type': 'invite',
+                        'body' : invited_name,
+                        'time' : msg_time,
+                        'sender' : username
+                    }))
 
-                    else:
-                        msg_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
-                        message = await database_sync_to_async(create_message)(type='invite', body=invited_name, time=msg_time,
-                                                                               sender=username)
-                        message.save()
-
-                        await self.send(text_data=json.dumps({
-                            'function': function_name,
-                            'message': 'Success'
-                        }))
-
-        pass
 
     async def leave_group(self, json_info):
         pass
 
-    async def confirm_add_group(self, json_info):
+    async def reply_add_group(self, json_info):
         """
         json_info = {
             'chatroom_id': 114514,
             ‘message’: message.object,
         }
         """
+        function_name = 'confirm_add_group'
 
-    async def decline_add_group(self, json_info):
+        chatroom_id = json_info['chatroom_id']
+        message = json_info['message']
+        chatroom = await self.find_chatroom(function_name, chatroom_id)
+
+        if chatroom is not None:
+            if await self.message_pre_treat():
+
+            invited_user = await self.check_user_exist(function_name, invited_name)
+
+            if invited_user is not None:
+                if invited_user.id in chatroom.mem_list:
+
+
 
 
     async def release_notice(self, json_info):
