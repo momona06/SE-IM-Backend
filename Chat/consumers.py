@@ -233,7 +233,8 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
         await self.send(text_data=json.dumps({
             'function': 'heartbeatconfirm',
-            'count': self.count
+            'count': self.count,
+            'cur_user':self.cur_user
         }))
 
     async def apply_friend(self, json_info):
