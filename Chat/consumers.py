@@ -676,7 +676,8 @@ class UserConsumer(AsyncWebsocketConsumer):
         return True
 
     async def check_user_exist(self, function_name, username, message='User not found'):
-        manager_user = await sync_to_async((await sync_to_async(User.objects.filter)(username=username)).first)()
+        manager_users = await sync_to_async(User.objects.filter)(username=username)
+        manager_user = await sync_to_async(manager_users.first)()
 
         if manager_user is None:
             await self.send(text_data=json.dumps({
@@ -686,8 +687,8 @@ class UserConsumer(AsyncWebsocketConsumer):
         return manager_user
 
     async def check_user_in_chatroom(self, function_name, chatroom, username, message='User is not in the group'):
-        user_id = await get_user_id(username)
-        if user_id in chatroom.mem_list:
+        #user_id = await get_user_id(username)
+        if username in chatroom.mem_list:
             return True
         else:
             await self.send(text_data=json.dumps({
@@ -761,14 +762,14 @@ class UserConsumer(AsyncWebsocketConsumer):
 
                 if manager_user is not None and \
                         await self.check_user_in_chatroom(function_name, chatroom, manager_name):
-                    manager_user_id = manager_user.id
-                    if manager_user_id in chatroom.manager_list:
+                    manager_user_name = manager_user.username
+                    if manager_user_name in chatroom.manager_list:
                         await self.send(text_data=json.dumps({
                             'function': function_name,
                             'message': 'User is already an manager'
                         }))
                     else:
-                        chatroom.manager_list.append(manager_user_id)
+                        chatroom.manager_list.append(manager_user_name)
                         await self.send(text_data=json.dumps({
                             'function': function_name,
                             'message': 'Success'
@@ -854,7 +855,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                     }))
 
                 else:
-                    chatroom.manager_list.remove(member.id)
+                    chatroom.manager_list.remove(member.username)
                     await sync_to_async(chatroom.save)()
                     await self.send(text_data=json.dumps({
                         'function': function_name,
@@ -934,12 +935,27 @@ class UserConsumer(AsyncWebsocketConsumer):
                             roomname = room.mem_list[1]
                         else:
                             roomname = room.mem_list[0]
+                    chatroom_id = room.chatroom_id
+                    room1 = await sync_to_async(ChatRoom.objects.filter)(chatroom_id=chatroom_id)
+                    room = await sync_to_async(room1.first)()
+                    message_list = []
+
+                    timeline = await get_timeline(chatroom_id=room.chatroom_id)
+                    for msg in timeline.msg_line:
+                        cur_message1 = await sync_to_async(Message.objects.filter)(msg_id=msg)
+                        cur_message = await sync_to_async(cur_message1.first)()
+                        message_list.append({
+                            "body": cur_message.body,
+                            "id": cur_message.msg_id,
+                            "time": cur_message.time,
+                            "sender": cur_message.sender
+                        })
                     return_field.append({
                         "roomid": room.chatroom_id,
                         "roomname": roomname,
                         "is_notice": room.is_notice[li],
-                        "is_top": room.is_top[li]
-                        # "is_private": room.is_private
+                        "is_top": room.is_top[li],
+                        "message_list": message_list
                     })
                     break
         await self.send(text_data=json.dumps({
