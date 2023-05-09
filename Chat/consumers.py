@@ -981,6 +981,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         mem_count = room.mem_count
 
         await self.send(text_data=json.dumps({
+            "function": "fetchroominfo",
             "mem_list": mem_list,
             "manager_list": manager_list,
             "master": master,
