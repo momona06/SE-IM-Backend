@@ -107,7 +107,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
         self.send(text_data=json.dumps({
-            "count": count,
+            "count": self.count,
         }))
 
     async def disconnect(self, code):
