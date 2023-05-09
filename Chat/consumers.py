@@ -7,6 +7,7 @@ from channels.db import database_sync_to_async
 from asgiref.sync import sync_to_async
 
 from utils.utils_database import *
+from Chat.models import *
 
 CONSUMER_OBJECT_LIST = []
 USER_NAME_LIST = []
@@ -277,13 +278,9 @@ class UserConsumer(AsyncWebsocketConsumer):
                          group_name=friend_list2.group_list[0])
         await sync_to_async(friend1.save)()
         await sync_to_async(friend2.save)()
-        new_room = ChatRoom(mem_list=[], not_read=[], is_notice=[], is_top=[], manager_list=[],
-                            notice_list=[])
-        new_room.mem_list.append(username)
-        new_room.not_read.append(0)
-        new_room.mem_list.append(apply_from)
-        new_room.not_read.append(0)
-        await sync_to_async(new_room.save)()
+
+        await create_chatroom('private_chat', [username, apply_from], username)
+
         # 若applyer在线结果发送到applyer
         return_field = {"function": "confirm"}
         await self.send(text_data=json.dumps(return_field))
@@ -689,11 +686,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         member_list = json_info['member_list']
 
         chat_room = await create_chatroom(room_name, await username_list_to_id_list(member_list), username)
-        chat_time_line = await create_chat_timeline(chat_room.chatroom_id)
-        # chat_room.timeline_id = chat_time_line.timeline_id
-        chat_time_line.chatroom_id = chat_room.chatroom_id
         await sync_to_async(chat_room.save)()
-        await sync_to_async(chat_time_line.save)()
 
         await self.send(text_data=json.dumps({
             'function': 'create_group',
