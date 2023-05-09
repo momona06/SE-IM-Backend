@@ -4,7 +4,20 @@ from django.contrib.postgres.fields import ArrayField
 
 from channels.db import database_sync_to_async
 
-from utils.utils_database import filter_first_chatroom
+
+
+@database_sync_to_async
+def filter_first_chatroom(chatroom_id=None, timeline_id=None):
+    """
+    只填一个即可
+    """
+    if chatroom_id is None:
+        if timeline_id is None:
+            return None
+        else:
+            return ChatRoom.objects.filter(timeline_id=chatroom_id).first()
+    else:
+        return ChatRoom.objects.filter(chatroom_id=timeline_id).first()
 
 
 # Design philosophy: remove info about the chatroom and only reserve the necessary info

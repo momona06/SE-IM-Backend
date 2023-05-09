@@ -1,8 +1,8 @@
 from channels.db import database_sync_to_async
 from django.contrib.auth.models import User
 
-from Chat.models import ChatRoom,ChatTimeLine,OnlineUser,Message
-from FriendRelation.models import *
+import Chat.models
+import FriendRelation.models
 
 
 @database_sync_to_async
@@ -17,12 +17,12 @@ def get_user_id(username):
 
 @database_sync_to_async
 def get_addlist(username):
-    return AddList.objects.get(user_name=username)
+    return FriendRelation.models.AddList.objects.get(user_name=username)
 
 
 @database_sync_to_async
 def get_friendlist(username):
-    return FriendList.objects.get(user_name=username)
+    return FriendRelation.models.FriendList.objects.get(user_name=username)
 
 
 @database_sync_to_async
@@ -34,14 +34,14 @@ def get_timeline(chatroom_id=None, timeline_id=None):
         if timeline_id is None:
             return None
         else:
-            return ChatTimeLine.objects.get(timeline_id=timeline_id)
+            return Chat.models.ChatTimeLine.objects.get(timeline_id=timeline_id)
     else:
-        return ChatTimeLine.objects.get(chatroom_id=chatroom_id)
+        return Chat.models.ChatTimeLine.objects.get(chatroom_id=chatroom_id)
 
 
 @database_sync_to_async
 def filter_first_addlist(username):
-    return AddList.objects.filter(user_name=username).first()
+    return FriendRelation.models.AddList.objects.filter(user_name=username).first()
 
 
 @database_sync_to_async
@@ -53,9 +53,9 @@ def filter_first_chatroom(chatroom_id=None, timeline_id=None):
         if timeline_id is None:
             return None
         else:
-            return ChatRoom.objects.filter(timeline_id=chatroom_id).first()
+            return Chat.models.ChatRoom.objects.filter(timeline_id=chatroom_id).first()
     else:
-        return ChatRoom.objects.filter(chatroom_id=timeline_id).first()
+        return Chat.models.ChatRoom.objects.filter(chatroom_id=timeline_id).first()
 
 
 @database_sync_to_async
@@ -67,20 +67,20 @@ def filter_first_timeline(chatroom_id=None, timeline_id=None):
         if timeline_id is None:
             return None
         else:
-            return ChatTimeLine.objects.filter(chatroom_id=chatroom_id).first()
+            return Chat.models.ChatTimeLine.objects.filter(chatroom_id=chatroom_id).first()
     else:
-        return ChatTimeLine.objects.filter(timeline_id=timeline_id).first()
+        return Chat.models.ChatTimeLine.objects.filter(timeline_id=timeline_id).first()
 
 
 @database_sync_to_async
 def filter_first_onlineuser(username):
-    return OnlineUser.objects.filter(user_name=username).first()
+    return Chat.models.OnlineUser.objects.filter(user_name=username).first()
 
 
 @database_sync_to_async
 def filter_first_message(msg_id):
-    return Message.objects.filter(msg_id=msg_id).first()
+    return Chat.models.Message.objects.filter(msg_id=msg_id).first()
 
 @database_sync_to_async
 def filter_first_friend(user_name,friend_name):
-    return Friend.objects.filter(friend_name=friend_name,user_name=user_name).first()
+    return FriendRelation.models.Friend.objects.filter(friend_name=friend_name, user_name=user_name).first()
