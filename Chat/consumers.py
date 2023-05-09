@@ -571,9 +571,9 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         if is_back:
             chatroom = await filter_first_chatroom(chatroom_id=room_id)
-            if chatroom is None:
-                await self.send('chatroom not exists')
-                await self.close()
+            # if chatroom is None:
+            #     await self.send('chatroom not exists')
+            #     await self.close()
 
             timeline = await filter_first_timeline(chatroom_id=room_id)
 
