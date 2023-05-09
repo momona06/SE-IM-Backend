@@ -284,7 +284,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         await sync_to_async(friend1.save)()
         await sync_to_async(friend2.save)()
 
-        await create_chatroom('private_chat', [username, apply_from], username)
+        await create_chatroom('private_chat', [username, apply_from], username, is_private=True)
 
         # 若applyer在线结果发送到applyer
         return_field = {"function": "confirm"}
@@ -295,7 +295,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                 await user.fetch_friend_list({"username": user.cur_user})
                 break
 
-        # TODO
 
         # await self.fetch_room(json.dumps({"username": username}))
         await self.fetch_friend_list({"username": username})
