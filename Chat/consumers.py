@@ -91,6 +91,9 @@ async def chatroom_delete_member(chatroom, member_name):
             chatroom.is_notice.pop(index)
 
 
+async def chatroom_add_member(chatroom,member_name):
+    for
+
 
 class UserConsumer(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
@@ -437,9 +440,9 @@ class UserConsumer(AsyncWebsocketConsumer):
 
 
     async def leave_chat(self, json_info):
-        '''
+        """
         json_info: {}
-        '''
+        """
 
         # 初始化
         user_name = self.cur_user
@@ -467,13 +470,13 @@ class UserConsumer(AsyncWebsocketConsumer):
 
 
     async def send_message(self, json_info):
-        '''
+        """
         json_info = {
             'msg_type': 'text',
             'msg_body': 'hello',
             'reply_id': 16,
         }
-        '''
+        """
 
         # Pipeline
         # called by Msg R1
@@ -614,7 +617,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             pass
 
     async def acknowledge_message(self, json_info):
-        '''
+        """
         json_info = {
             'is_back': False,
             'count': 1,
@@ -624,7 +627,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             'is_back': True,
             'count': 5,
         }
-        '''
+        """
 
         # Pipeline
         # called by Ack 4
@@ -852,12 +855,12 @@ class UserConsumer(AsyncWebsocketConsumer):
         pass
 
     async def release_notice(self, json_info):
-        '''
+        """
         json_info = {
             'msg_type': 'text',
             'msg_body': 'hello',
         }
-        '''
+        """
 
         msg_body = json_info['msg_body']
 
@@ -904,11 +907,11 @@ class UserConsumer(AsyncWebsocketConsumer):
                     }))
 
     async def withdraw_message(self, json_info):
-        '''
+        """
         json_info = {
             msg_id: 114514
         }
-        '''
+        """
         username = await self.get_cur_username()
         msg_id = json_info['msg_id']
         online_user = await filter_first_onlineuser(username)
@@ -964,11 +967,11 @@ class UserConsumer(AsyncWebsocketConsumer):
         }))
 
     async def fetch_room(self, json_info):
-        '''
+        """
         json_info = {
 
         }
-        '''
+        """
         username = json_info['username']
         return_field = []
         async for room in ChatRoom.objects.all():
@@ -1020,11 +1023,11 @@ class UserConsumer(AsyncWebsocketConsumer):
 
 
     async def fetch_message(self, json_info):
-        '''
+        """
         json_info = {
 
         }
-        '''
+        """
         chatroom_id = json_info['chatroom_id']
         username = json_info['username']
         room1 = await sync_to_async(ChatRoom.objects.filter)(chatroom_id=chatroom_id)
