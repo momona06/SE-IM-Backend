@@ -141,11 +141,8 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         # 发送各种消息
         # {text}: 直接处理
-
         # {rel}: 添加
-
         # {image, audio, file}: 采用下载链接处理
-
         elif function == 'send_message':
             await self.send_message(json_info)
 
@@ -193,22 +190,22 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == 'remove_group_member':
             await self.remove_group_member(json_info)
 
+        # 获取用户的所有私聊/群聊信息
         elif function == "fetch_room":
             await self.fetch_room(json_info)
 
+        # 获取群消息列表
         elif function == "fetch_message":
             await self.fetch_message(json_info)
 
+        # 发送群公告
         elif function == "release_notice":
             await self.release_notice(json_info)
 
     async def heat_beat(self):
-        await self.send(text_data=json.dumps(
-            {
-                'function': 'heartbeatconfirm'
-            }
-        )
-        )
+        await self.send(text_data=json.dumps({
+            'function': 'heartbeatconfirm'
+        }))
 
     async def apply_friend(self, json_info):
         username = json_info['username']
@@ -355,7 +352,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         msg_body = event["msg_body"]
         msg_id = event["msg_id"]
 
-        print('event in public_msg =', event)
         # event = {'type': 'chat_message', 'message': 'res'}
 
         await self.send(text_data=json.dumps({
@@ -368,7 +364,6 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         msg_id = event["msg_id"]
 
-        print('event in public_msg =', event)
         # event = {'type': 'chat_message', 'message': 'res'}
 
         await self.send(text_data=json.dumps({
@@ -599,7 +594,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         user_name = self.cur_user
         is_back = json_info['is_back']
         count = json_info['count']
-        # msg_id = json_info['msg_id']
 
         if is_back:
             # 获取onliner，群聊和Timeline
@@ -696,7 +690,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         chat_room = await create_chatroom(room_name, await username_list_to_id_list(member_list), username)
         chat_time_line = await create_chat_timeline()
-        chat_room.timeline_id = chat_time_line.timeline_id
+        # chat_room.timeline_id = chat_time_line.timeline_id
         chat_time_line.chatroom_id = chat_room.chatroom_id
         await sync_to_async(chat_room.save)()
         await sync_to_async(chat_time_line.save)()
@@ -856,10 +850,16 @@ class UserConsumer(AsyncWebsocketConsumer):
     async def withdraw_message(self, json_info):
         '''
         json_info = {
-
+            msg_id: 114514
         }
         '''
-        pass
+        username = await self.get_cur_username()
+        online_user = await database_sync_to_async(OnlineUser.objects.filter)(user_name=username).first()
+        chatroom_id = online_user.chatroom_id
+        chatroom = filter_first_chatroom(chatroom_id=chatroom_id)
+        timeline = filter_first_timeline(chatroom_id=chatroom_id)
+        # Fix
+
 
     async def fetch_friend_list(self, json_info):
         '''

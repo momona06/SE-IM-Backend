@@ -9,4 +9,3 @@ urlpatterns = [
     path('deletefriend', views.delete_friend),
     path('deletefgroup', views.delete_friend_group)
 ]
-

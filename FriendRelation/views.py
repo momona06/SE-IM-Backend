@@ -10,6 +10,7 @@ from UserManage.models import IMUser
 from FriendRelation.models import FriendList, Friend
 from Chat.models import ChatRoom
 
+
 def delete_friend(req: HttpRequest):
     if req.method == "DELETE":
         try:
@@ -34,9 +35,9 @@ def delete_friend(req: HttpRequest):
                     'info': 'Friend Not Exists'
                 })
 
-            for i in [0,1]:
+            for i in [0, 1]:
                 name_list = [username, friend_name]
-                friend = Friend.objects.filter(user_name=name_list[i], friend_name=name_list[1-i]).first()
+                friend = Friend.objects.filter(user_name=name_list[i], friend_name=name_list[1 - i]).first()
 
                 if not friend is None:
                     flist = FriendList.objects.get(user_name=name_list[i])
@@ -47,7 +48,7 @@ def delete_friend(req: HttpRequest):
                     flist.save()
                     friend.delete()
             for room in ChatRoom.objects.all():
-                if room.is_private==True and (username in room.mem_list) and (friend_name in room.mem_list):
+                if room.is_private == True and (username in room.mem_list) and (friend_name in room.mem_list):
                     room.delete()
                     break
 
@@ -78,8 +79,6 @@ def delete_friend_group(req: HttpRequest):
             user = user_model.objects.filter(username=username).first()
             im_user = IMUser.objects.filter(user=user).first()
 
-
-
             if im_user.token != token:
                 return JsonResponse({
                     'code': -2,
@@ -109,7 +108,7 @@ def delete_friend_group(req: HttpRequest):
                 })
             empty = True
             for friend_name in flist.friend_list:
-                friend = Friend.objects.filter(friend_name=friend_name,user_name=username).first()
+                friend = Friend.objects.filter(friend_name=friend_name, user_name=username).first()
                 if friend is None:
                     break
                 if friend.group_name == fgroup_name:
@@ -190,7 +189,7 @@ def add_friend_group(req: HttpRequest):
             username = str(body["username"])
             token = str(body["token"])
             fgroup_name = str(body["fgroup_name"])
-            friend_name = str(body["friend_name"])
+            # friend_name = str(body["friend_name"])
 
             user_model = get_user_model()
             user = user_model.objects.filter(username=username).first()
@@ -207,7 +206,7 @@ def add_friend_group(req: HttpRequest):
 
             # flist.friend_list[lis].append(friend_name)
             for friend_name in flist.friend_list:
-                friend = Friend.objects.filter(friend_name=friend_name,user_name=username).first()
+                friend = Friend.objects.filter(friend_name=friend_name, user_name=username).first()
                 if friend.friend_name == friend_name:
                     friend.group_name = fgroup_name
                     friend.save()

@@ -28,7 +28,12 @@ class ChatTimeLine(models.Model):
     )
 
 async def create_chat_timeline(chatroom_id):
-    new_timeline = await database_sync_to_async(ChatTimeLine)(chatroom_id = chatroom_id)
+    chatroom = filter_first_chatroom(chatroom_id=chatroom_id)
+    mem_len = len(chatroom.mem_list)
+
+    new_timeline = await database_sync_to_async(ChatTimeLine)(chatroom_id=chatroom_id, msg_line=[], cursor_list=[], is_read=[])
+    for _ in rage(mem_len):
+        new_timeline.cursor_list.append(0)
     await sync_to_async(new_timeline.save)()
 
     return new_timeline
@@ -50,7 +55,7 @@ async def delete_chat_timeline():
 class ChatRoom(models.Model):
     chatroom_id = models.BigAutoField(primary_key=True)
 
-    # timeline_id = models.BigIntegerField(default=0)
+    timeline_id = models.BigIntegerField(default=0)
 
     room_name = models.CharField(max_length=30, default='private_chat')
     is_private = models.BooleanField(default=True)
