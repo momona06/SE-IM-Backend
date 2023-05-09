@@ -89,6 +89,9 @@ async def chatroom_delete_member(chatroom, member_id):
             chatroom.mem_list.pop(index)
             chatroom.is_top.pop(index)
             chatroom.is_notice.pop(index)
+            break
+
+    await database_sync_to_async(chatroom.save)()
 
 
 async def chatroom_add_member(chatroom, member_id):
@@ -96,6 +99,7 @@ async def chatroom_add_member(chatroom, member_id):
     chatroom.is_top.append(False)
     chatroom.is_notice.append(True)
 
+    await database_sync_to_async(chatroom.save)()
 
 
 
@@ -877,6 +881,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                         'function': function_name,
                         'message': 'Success',
                         'type': 'invite',
+                        'ensure': message.ensure,
                         'body' : invited_name,
                         'time' : msg_time,
                         'sender' : username
@@ -890,22 +895,38 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
         json_info = {
             'chatroom_id': 114514,
-            ‘message’: message.object,
+            'type': 'invite',
+            'ensure': -1,
+            'body': 'ashitemaru'
         }
         """
-        function_name = 'confirm_add_group'
+        function_name = 'reply_add_group'
 
         chatroom_id = json_info['chatroom_id']
-        message = json_info['message']
+        message_type = json_info['type']
+        ensure = json_info['ensure']
+        invited_name = json_info['body']
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
         if chatroom is not None:
-            if await self.message_pre_treat():
+            if await self.message_pre_treat(function_name,message_type,ensure):
 
-            invited_user = await self.check_user_exist(function_name, invited_name)
+                invited_user = await self.check_user_exist(function_name, invited_name)
 
-            if invited_user is not None:
-                if invited_user.id in chatroom.mem_list:
+                if invited_user is not None:
+                    if invited_user.id in chatroom.mem_list:
+                        await self.send(text_data=json.dumps({
+                            'function': function_name,
+                            'message': 'User is already in the group'
+                        }))
+                    else:
+                        username = await self.get_cur_username()
+                        if get_power(chatroom, username) != 0:
+                            await self.send(text_data=json.dumps({
+                                'function': function_name,
+                                'message': 'Permission denied'
+                            }))
+                        else:
 
 
 
