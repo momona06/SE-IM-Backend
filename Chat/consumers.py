@@ -405,9 +405,9 @@ class UserConsumer(AsyncWebsocketConsumer):
         user_name = self.cur_user
         room_name = json_info['room_name']
         room_id = json_info['room_id']
-        print('self.cur_user = ', self.cur_user)
+
         # 加入在线用户列表
-        await sync_to_async(create_onlineuser)(user_name, self.channel_name, room_id)
+        await create_onlineuser(user_name, self.channel_name, room_id)
 
         # 加入群聊
         chat_room = await filter_first_chatroom(chatroom_id=room_id)
@@ -423,9 +423,9 @@ class UserConsumer(AsyncWebsocketConsumer):
         # self.fetch_message(json_info)
 
     async def leave_chat(self, json_info):
-        '''
+        """
         json_info = {}
-        '''
+        """
 
         # 初始化
         user_name = self.cur_user
@@ -449,13 +449,13 @@ class UserConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_discard(self.chatroom_name, self.channel_name)
 
     async def send_message(self, json_info):
-        '''
+        """
         json_info = {
             'msg_type': 'text',
             'msg_body': 'hello',
             'reply_id': 16,
         }
-        '''
+        """
 
         # Pipeline
         # called by Msg R1
@@ -595,7 +595,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             pass
 
     async def acknowledge_message(self, json_info):
-        '''
+        """
         json_info = {
             'is_back': False,
             'count': 1,
@@ -605,7 +605,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             'is_back': True,
             'count': 5,
         }
-        '''
+        """
 
         # Pipeline
         # called by Ack 4
