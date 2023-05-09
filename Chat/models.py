@@ -126,9 +126,9 @@ def user_directory_path(instance, filename):
     return "user_{0}/{1}".format(instance.user.id)
 
 
-async def create_message(type, body, time, sender, is_reply=False, reply_id=0):
-    new_message = await database_sync_to_async(Message)(type=type, body=body, time=time, sender=sender,
-                                                        is_reply=is_reply, reply_id=reply_id)
+async def create_message(type, body, time, sender, reply_id=0):
+    new_message = await database_sync_to_async(Message)(type=type, body=body, time=time,
+                                                        sender=sender, reply_id=reply_id)
     await database_sync_to_async(new_message.save)()
     return new_message
 
