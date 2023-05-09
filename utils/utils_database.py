@@ -52,9 +52,9 @@ def filter_first_chatroom(chatroom_id=None, timeline_id=None):
         if timeline_id is None:
             return None
         else:
-            return ChatRoom.objects.filter(chatroom_id=chatroom_id).first()
+            return ChatRoom.objects.filter(timeline_id=chatroom_id).first()
     else:
-        return ChatRoom.objects.filter(timeline_id=timeline_id).first()
+        return ChatRoom.objects.filter(chatroom_id=timeline_id).first()
 
 
 @database_sync_to_async
