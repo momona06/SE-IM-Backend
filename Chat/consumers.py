@@ -885,7 +885,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             })
             for friend_name in flist.friend_list:
                 friend = await filter_first_friend(username,friend_name)
-                if (not friend is None) and flist.group_list[i] == friend.group_name:
+                if friend is not None and flist.group_list[i] == friend.group_name:
                     return_list[i]['username'].append(friend_name)
 
         await self.send(text_data=json.dumps({
@@ -904,9 +904,15 @@ class UserConsumer(AsyncWebsocketConsumer):
         async for room in ChatRoom.objects.all():
             for li, user in enumerate(room.mem_list):
                 if user == username:
+                    roomname = room.room_name
+                    if room.is_private:
+                        if room.mem_list[0] == username:
+                            roomname = room.mem_list[1]
+                        else:
+                            roomname = room.mem_list[0]
                     return_field.append({
                         "roomid": room.chatroom_id,
-                        "roomname": room.room_name,
+                        "roomname": roomname,
                         "is_notice": room.is_notice[li],
                         "is_top": room.is_top[li]
                         #"is_private": room.is_private
