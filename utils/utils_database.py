@@ -1,6 +1,7 @@
+from channels.db import database_sync_to_async
 from django.contrib.auth.models import User
 
-from Chat.models import *
+from Chat.models import ChatRoom,ChatTimeLine,OnlineUser,Message
 from FriendRelation.models import *
 
 

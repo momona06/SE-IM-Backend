@@ -85,8 +85,8 @@ async def create_chatroom(room_name, mem_list, master_name, is_private=False):
     参考：room_name='private_chat'
     """
     mem_len = len(mem_list)
-    true_mem_len_list = [True for i in range(mem_len)]
-    false_mem_len_list = [True for i in range(mem_len)]
+    true_mem_len_list = [True for _ in range(mem_len)]
+    false_mem_len_list = [True for _ in range(mem_len)]
     new_chatroom = await database_sync_to_async(ChatRoom)(is_private=is_private, room_name=room_name,
                             mem_count=mem_len, mem_list=mem_list,
                             master_name=master_name, manager_list=[],is_notice=true_mem_len_list,is_top=false_mem_len_list,
