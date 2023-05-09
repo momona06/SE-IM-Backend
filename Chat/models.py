@@ -37,16 +37,7 @@ class ChatTimeLine(models.Model):
 
 
 
-async def create_chat_timeline(chatroom_id):
-    chatroom = await filter_first_chatroom(chatroom_id=chatroom_id)
-    mem_len = len(chatroom.mem_list)
 
-    new_timeline = await database_sync_to_async(ChatTimeLine)(chatroom_id=chatroom_id, msg_line=[], cursor_list=[])
-    for _ in range(mem_len):
-        new_timeline.cursor_list.append(0)
-    await sync_to_async(new_timeline.save)()
-
-    return new_timeline
 
 
 async def delete_chat_timeline():
@@ -103,7 +94,11 @@ async def create_chatroom(room_name, mem_list, master_name, is_private=False):
                             master_name=master_name, manager_list=[],is_notice=true_mem_len_list,is_top=false_mem_len_list,
                             notice_id=0, notice_list=[])
     await database_sync_to_async(new_chatroom.save)()
-    timeline = await create_chat_timeline(new_chatroom.chatroom_id)
+
+    timeline = await database_sync_to_async(ChatTimeLine)(chatroom_id=new_chatroom.chatroom_id, msg_line=[], cursor_list=[])
+    timeline.cursor_list = [0 for _ in range(mem_len)]
+    await database_sync_to_async(timeline.save)()
+
     new_chatroom.timeline_id = timeline.timeline_id
     timeline.chatroom_id = new_chatroom.chatroom_id
     await database_sync_to_async(new_chatroom.save)()
