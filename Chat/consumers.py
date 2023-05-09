@@ -101,12 +101,12 @@ class UserConsumer(AsyncWebsocketConsumer):
                 count += 1
                 await self.channel_layer.group_add("chat_" + str(chatroom.chatroom_id), self.channel_name)
 
+        CONSUMER_OBJECT_LIST.append(self)
+        await self.accept()
+
         self.send(text_data=json.dumps({
             "count": count,
         }))
-
-        CONSUMER_OBJECT_LIST.append(self)
-        await self.accept()
 
     async def disconnect(self, code):
         async for chatroom in ChatRoom.objects.all():
