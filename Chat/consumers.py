@@ -97,23 +97,11 @@ class UserConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.cur_user = await self.get_cur_username()
 
-
-        async for chatroom in ChatRoom.objects.all():
-            if self.cur_user in chatroom.mem_list:
-                self.count += 1
-                await self.channel_layer.group_add("chat_" + str(chatroom.chatroom_id), self.channel_name)
-
         CONSUMER_OBJECT_LIST.append(self)
         await self.accept()
 
-        self.send(text_data=json.dumps({
-            "count": self.count,
-        }))
-
     async def disconnect(self, code):
-        async for chatroom in ChatRoom.objects.all():
-            if self.cur_user in chatroom.mem_list:
-                await self.channel_layer.group_discard("chat_" + str(chatroom.chatroom_id), self.channel_name)
+
 
         CONSUMER_OBJECT_LIST.remove(self)
         raise StopConsumer()
@@ -150,6 +138,16 @@ class UserConsumer(AsyncWebsocketConsumer):
             await self.fetch_friend_list(json_info)
 
         # chat zone
+
+        elif function == 'get_username':
+            await self.get_username(json_info)
+
+        elif function == 'add_channel':
+            await self.add_channel(json_info)
+
+        elif function == 'leave_channel':
+            await self.leave_channel(json_info)
+
 
         # 连接私聊/群聊
         elif function == 'add_chat':
@@ -227,9 +225,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     async def heat_beat(self):
         """
-        json_info = {
-
-        }
+        json_info = {}
         """
         await self.send(text_data=json.dumps({
             'function': 'heartbeatconfirm',
@@ -401,6 +397,38 @@ class UserConsumer(AsyncWebsocketConsumer):
             'type': 'Ack',
             'msg_id': msg_id,
         }))
+
+    async def get_username(self, json_info):
+        """
+        json_info = {
+            'username': 'zj'
+        }
+        """
+        username = json_info['username']
+        self.cur_user = username
+
+    async def add_channel(self, json_info):
+        """
+        json_info = {}
+        """
+        username = self.cur_user
+
+        async for chatroom in ChatRoom.objects.all():
+            if username in chatroom.mem_list:
+                self.count += 1
+                await self.channel_layer.group_add("chat_" + str(chatroom.chatroom_id), self.channel_name)
+
+
+    async def leave_channel(self, json_info):
+        """
+        json_info = {}
+        """
+        username = self.cur_user
+
+        async for chatroom in ChatRoom.objects.all():
+            if username in chatroom.mem_list:
+                await self.channel_layer.group_discard("chat_" + str(chatroom.chatroom_id), self.channel_name)
+
 
     async def add_chat(self, json_info):
         """
