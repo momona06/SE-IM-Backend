@@ -8,7 +8,7 @@ from utils.utils_request import BAD_METHOD
 from django.contrib.auth.models import User
 from UserManage.models import IMUser
 from FriendRelation.models import FriendList, Friend
-from Chat.models import ChatRoom
+from Chat.models import ChatRoom, ChatTimeLine
 
 
 def delete_friend(req: HttpRequest):
@@ -49,6 +49,8 @@ def delete_friend(req: HttpRequest):
                     friend.delete()
             for room in ChatRoom.objects.all():
                 if room.is_private == True and (username in room.mem_list) and (friend_name in room.mem_list):
+                    timeline = ChatTimeLine.objects.filter(chatroom_id=room.chatroom_id).first()
+                    timeline.delete()
                     room.delete()
                     break
 

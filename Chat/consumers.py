@@ -289,7 +289,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         await sync_to_async(friend1.save)()
         await sync_to_async(friend2.save)()
 
-        await create_chatroom('private_chat', [username, apply_from], username)
+        await create_chatroom('private_chat', [username, apply_from], username, is_private=True)
 
         # 若applyer在线结果发送到applyer
         return_field = {
@@ -303,7 +303,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                 await user.fetch_friend_list({"username": user.cur_user})
                 break
 
-        # TODO
 
         # await self.fetch_room(json.dumps({"username": username}))
         await self.fetch_friend_list({"username": username})
@@ -948,9 +947,15 @@ class UserConsumer(AsyncWebsocketConsumer):
         async for room in ChatRoom.objects.all():
             for li, user in enumerate(room.mem_list):
                 if user == username:
+                    roomname = room.room_name
+                    if room.is_private:
+                        if room.mem_list[0] == username:
+                            roomname = room.mem_list[1]
+                        else:
+                            roomname = room.mem_list[0]
                     return_field.append({
                         "roomid": room.chatroom_id,
-                        "roomname": room.room_name,
+                        "roomname": roomname,
                         "is_notice": room.is_notice[li],
                         "is_top": room.is_top[li]
                         #"is_private": room.is_private
