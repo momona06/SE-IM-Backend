@@ -96,12 +96,12 @@ async def create_chatroom(room_name, mem_list, master_name, is_private=False, is
                             is_notice=is_notice, is_top=is_top,
                             master_name=master_name, manager_list=[],
                             notice_id=0, notice_list=[])
-    await sync_to_async(new_chatroom.save)()
+    await database_sync_to_async(new_chatroom.save)()
     timeline = await create_chat_timeline(new_chatroom.chatroom_id)
     new_chatroom.timeline_id = timeline.timeline_id
     timeline.chatroom_id = new_chatroom.chatroom_id
-    await sync_to_async(new_chatroom.save)()
-    await sync_to_async(timeline.save)()
+    await database_sync_to_async(new_chatroom.save)()
+    await database_sync_to_async(timeline.save)()
     return new_chatroom
 
 
