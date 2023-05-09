@@ -195,12 +195,17 @@ class UserConsumer(AsyncWebsocketConsumer):
             await self.transfer_master(json_info)
 
         # 群主/管理员允许申请用户加入群聊
-        elif function == 'allow_add_group':
-            await self.allow_add_group(json_info)
+        elif function == 'confirm_add_group':
+            await self.confirm_add_group(json_info)
+
+        # 群主/管理员拒绝申请用户加入群聊
+        elif function == 'decline_add_group':
+            await self.decline_add_group(json_info)
 
         # 群主/管理员直接添加用户到群聊
-        elif function == 'add_group_member':
-            await self.add_group_member(json_info)
+        # 与 add_group 重复
+        # elif function == 'add_group_member':
+        #    await self.add_group_member(json_info)
 
         # 群主/管理员移除群成员
         elif function == 'remove_group_member':
@@ -836,36 +841,44 @@ class UserConsumer(AsyncWebsocketConsumer):
                         'function': function_name,
                         'message': 'User is already in the group'
                     }))
-
-                username = await self.get_cur_username()
-                user = await get_user(username)
-
-                if get_power(chatroom, username) != 0:
-                    await chatroom_add_member(chatroom, user.id)
-
-                    await self.send(text_data=json.dumps({
-                        'function': function_name,
-                        'message': 'Success'
-                    }))
-
                 else:
-                    msg_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
-                    message = await database_sync_to_async(create_message)(type='invite', body=invited_name, time=msg_time,
-                                                                           sender=username)
-                    message.save()
+                    username = await self.get_cur_username()
+                    user = await get_user(username)
 
-                    await self.send(text_data=json.dumps({
-                        'function': function_name,
-                        'message': 'Success'
-                    }))
+                    if get_power(chatroom, username) != 0:
+                        await chatroom_add_member(chatroom, user.id)
+
+                        await self.send(text_data=json.dumps({
+                            'function': function_name,
+                            'message': 'Success'
+                        }))
+
+                    else:
+                        msg_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
+                        message = await database_sync_to_async(create_message)(type='invite', body=invited_name, time=msg_time,
+                                                                               sender=username)
+                        message.save()
+
+                        await self.send(text_data=json.dumps({
+                            'function': function_name,
+                            'message': 'Success'
+                        }))
 
         pass
 
     async def leave_group(self, json_info):
         pass
 
-    async def allow_add_group(self, json_info):
-        pass
+    async def confirm_add_group(self, json_info):
+        """
+        json_info = {
+            'chatroom_id': 114514,
+            ‘message’: message.object,
+        }
+        """
+
+    async def decline_add_group(self, json_info):
+
 
     async def release_notice(self, json_info):
         """
