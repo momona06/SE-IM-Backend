@@ -290,6 +290,8 @@ class UserConsumer(AsyncWebsocketConsumer):
                 await user.fetch_friend_list(json.dumps({"username": user.cur_user}))
                 break
 
+        # TODO
+
         # await self.fetch_room(json.dumps({"username": username}))
         await self.fetch_friend_list(json.dumps({"username": username}))
 
@@ -876,7 +878,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             })
             for friend_name in flist.friend_list:
                 friend = await filter_first_friend(username,friend_name)
-                if flist.group_list[i] == friend.group_name:
+                if (not friend is None) and flist.group_list[i] == friend.group_name:
                     return_list[i]['username'].append(friend_name)
 
         await self.send(text_data=json.dumps({
