@@ -83,13 +83,12 @@ class ChatRoom(models.Model):
         models.BigIntegerField(default=0)
     )
 
-async def create_chatroom(room_name, mem_list, master_name, is_private=False, is_notice=True, is_top=False):
+async def create_chatroom(room_name, mem_list, master_name, is_private=False):
     """
     参考：room_name='private_chat'
     """
     new_chatroom = await database_sync_to_async(ChatRoom)(is_private=is_private, room_name=room_name,
                             mem_count=len(mem_list), mem_list=mem_list,
-                            is_notice=is_notice, is_top=is_top,
                             master_name=master_name, manager_list=[],
                             notice_id=0, notice_list=[])
     await database_sync_to_async(new_chatroom.save)()
