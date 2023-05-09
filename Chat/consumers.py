@@ -694,7 +694,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         room_name = json_info['room_name']
         member_list = json_info['member_list']
 
-        chat_room = await create_chatroom(room_name, await username_list_to_id_list(member_list), username)
+        chat_room = await create_chatroom(room_name, member_list, username)
         await sync_to_async(chat_room.save)()
 
         await self.send(text_data=json.dumps({
