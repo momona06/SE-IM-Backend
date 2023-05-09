@@ -88,6 +88,9 @@ class ChatRoom(models.Model):
     )
 
 async def create_chatroom(room_name, mem_list, master_name, is_private=False, is_notice=True, is_top=False):
+    """
+    参考：room_name='private_chat'
+    """
     new_chatroom = await database_sync_to_async(ChatRoom)(is_private=is_private, room_name=room_name,
                             mem_count=len(mem_list), mem_list=mem_list,
                             is_notice=is_notice, is_top=is_top,
@@ -97,6 +100,7 @@ async def create_chatroom(room_name, mem_list, master_name, is_private=False, is
     new_chatroom.timeline_id = timeline.timeline_id
     timeline.chatroom_id = new_chatroom.chatroom_id
     await sync_to_async(new_chatroom.save)()
+    await sync_to_async(timeline.save)()
     return new_chatroom
 
 
