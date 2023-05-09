@@ -78,6 +78,7 @@ async def get_power(chatroom, username):
     else:
         return 0
 
+
 class UserConsumer(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
@@ -422,7 +423,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         self.room_name = None
         self.chatroom_name = None
 
-
     async def send_message(self, json_info):
         """
         json_info = {
@@ -625,7 +625,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         return manager_user
 
     async def check_user_in_chatroom(self, function_name, chatroom, username, message='User is not in the group'):
-        #user_id = await get_user_id(username)
+        # user_id = await get_user_id(username)
         if username in chatroom.mem_list:
             return True
         else:
@@ -782,7 +782,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
         """
         function_name = 'remove_group_member'
-
         chatroom_id = json_info['chatroom_id']
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
@@ -976,4 +975,9 @@ class UserConsumer(AsyncWebsocketConsumer):
         }))
 
     async def add_group_member(self, json_info):
+        """
+        json_info = {
+
+        }
+        """
         pass
