@@ -86,7 +86,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         self.chatroom_name = None
         self.cur_user = None
 
-        self.count = None
+        self.count = 0
 
     async def get_cur_username(self):
         if self.cur_user is None:
