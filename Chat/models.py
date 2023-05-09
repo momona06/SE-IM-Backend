@@ -25,6 +25,7 @@ class ChatTimeLine(models.Model):
     )
 
 
+
 async def create_chat_timeline(chatroom_id):
     chatroom = await filter_first_chatroom(chatroom_id=chatroom_id)
     mem_len = len(chatroom.mem_list)
