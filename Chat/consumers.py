@@ -83,6 +83,15 @@ async def get_power(chatroom, username):
 # channel: the specific user
 # group: a group of channels (users)
 
+async def chatroom_delete_member(chatroom, member_name):
+    for index, username in enumerate(chatroom.mem_list):
+        if username==member_name:
+            chatroom.mem_list.pop(index)
+            chatroom.is_top.pop(index)
+            chatroom.is_notice.pop(index)
+
+
+
 class UserConsumer(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
@@ -817,17 +826,22 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
         json_info = {
             'chatroom_id': 114514,
+            ‘invited_name’: 'ashitemaru'
         }
         """
         function_name = 'add_group'
 
         chatroom_id = json_info['chatroom_id']
+        invited_name = json_info['invited_name']
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
         if chatroom is not None:
-            username = await self.get_cur_username()
+            if not invited_name in chatroom.mem_list:
+                username = await self.get_cur_username()
 
-            if not username in chatroom.mem_list:
+                if get_power(chatroom, username) != 0:
+                    chatroom.
+                else:
 
         pass
 
@@ -882,7 +896,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                     }))
 
                 else:
-                    chatroom.manager_list.remove(member.id)
+                    await chatroom_delete_member(chatroom, member_name)
                     await sync_to_async(chatroom.save)()
                     await self.send(text_data=json.dumps({
                         'function': function_name,
