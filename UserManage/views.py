@@ -40,10 +40,18 @@ def revise(req: HttpRequest):
                 })
             else:
                 if revise_field == "username":
-                    chatroom_list = ChatRoom.objects.filter(master_name=username)
-
-                    for i in chatroom_list:
-                        i.master_name = revise_content
+                    for room in ChatRoom.objects.all()[::-1]:
+                        for index, user in enumerate(room.mem_list):
+                            if user == username:
+                                room.mem_list[index]= revise_content
+                                for index_, user_ in enumerate(room.manager_list):
+                                    if user_ == username:
+                                        room.manager_list[index_] = revise_content
+                                        break
+                                if room.master_name==username:
+                                    room.master_name=revise_content
+                                room.save()
+                                break
 
                     user_rev.username = revise_content
 
