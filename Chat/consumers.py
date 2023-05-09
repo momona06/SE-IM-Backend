@@ -146,7 +146,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             await self.send_message(json_info)
 
         # 确认收到消息
-        elif function == 'ack_message':
+        elif function == 'acknowledge_message':
             await self.acknowledge_message(json_info)
 
         # 撤回自己的消息
@@ -590,7 +590,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             'count': 1,
 
         }
-        ''
+
         json_info = {
             'is_back': True,
             'count': 5,
@@ -865,11 +865,27 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
         '''
         username = await self.get_cur_username()
+        msg_id = json_info['msg_id']
         online_user = await filter_first_onlineuser(username)
+
+
         chatroom_id = online_user.chatroom_id
         chatroom = filter_first_chatroom(chatroom_id=chatroom_id)
         timeline = filter_first_timeline(chatroom_id=chatroom_id)
-        # Fix
+
+        # 删除Timeline的消息
+        message = filter_first_message(msg_id=msg_id)
+        await sync_to_async(message.delete)()
+        lis = timeline.msg_line.index(msg_id)
+        del timeline.msg_line[lis]
+
+        # 移动用户的cursor
+        for _ in range(len(timeline.cursor_list)):
+            timeline.cursor_list[_] -= 1
+
+        # 发送给在线用户
+
+
 
 
     async def fetch_friend_list(self, json_info):
@@ -918,7 +934,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                     return_field.append({
                         "roomid": room.chatroom_id,
                         "roomname": room.room_name,
-                        "unreadnum": room.not_read[li],
                         "is_private": room.is_private
                     })
                     break
@@ -941,7 +956,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         return_field = []
         for li, user in enumerate(room.mem_list):
             if user == username:
-                room.not_read[li] = 0
                 await sync_to_async(room.save)()
                 break
 

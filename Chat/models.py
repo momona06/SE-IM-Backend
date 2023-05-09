@@ -61,9 +61,6 @@ class ChatRoom(models.Model):
     mem_list = ArrayField(
         models.CharField(max_length=100)
     )
-    not_read = ArrayField(
-        models.IntegerField(default=0)
-    )
     is_notice = ArrayField(
         models.BooleanField(default=True)
     )
