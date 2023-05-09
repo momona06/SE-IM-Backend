@@ -900,7 +900,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                     return_field.append({
                         "roomid": room.chatroom_id,
                         "roomname": room.room_name,
-                        "unreadnum": room.not_read[li],
                         "is_private": room.is_private
                     })
                     break
@@ -923,7 +922,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         return_field = []
         for li, user in enumerate(room.mem_list):
             if user == username:
-                room.not_read[li] = 0
                 await sync_to_async(room.save)()
                 break
 
