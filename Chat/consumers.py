@@ -277,7 +277,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                          group_name=friend_list2.group_list[0])
         await sync_to_async(friend1.save)()
         await sync_to_async(friend2.save)()
-        new_room = ChatRoom(mem_list=[], not_read=[], is_notice=[], is_top=[], manager_list=[], mes_list=[],
+        new_room = ChatRoom(mem_list=[], not_read=[], is_notice=[], is_top=[], manager_list=[],
                             notice_list=[])
         new_room.mem_list.append(username)
         new_room.not_read.append(0)
@@ -933,7 +933,9 @@ class UserConsumer(AsyncWebsocketConsumer):
                 room.not_read[li] = 0
                 await sync_to_async(room.save)()
                 break
-        for msg in room.mes_list:
+
+        timeline = await get_timeline(chatroom_id=room.chatroom_id)
+        for msg in timeline.msg_line:
             cur_message1 = await sync_to_async(Message.objects.filter)(msg_id=msg)
             cur_message = await sync_to_async(cur_message1.first)()
             return_field.append({
