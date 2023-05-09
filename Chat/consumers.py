@@ -81,7 +81,6 @@ async def get_power(chatroom, username):
 # group: a group of channels (users)
 
 class UserConsumer(AsyncWebsocketConsumer):
-
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
         self.cur_user = None
@@ -208,15 +207,22 @@ class UserConsumer(AsyncWebsocketConsumer):
         }))
 
     async def apply_friend(self, json_info):
+        """
+        json_info = {
+            'username': 'zj',
+            'to': 'zj',
+            'from': 'zj2'
+        }
+        """
         username = json_info['username']
         apply_from = json_info['from']
         apply_to = json_info['to']
         applyer_add_list = await filter_first_addlist(apply_from)
         receiver_add_list = await filter_first_addlist(apply_to)
 
+        # 确保被回复前不能重复发送
+        # mode=1意为在applyer_add_list.applylist中寻找apply_to
         if not await search_ensure_false_request_index(apply_to, applyer_add_list, mode=1) == -1:
-            # 确保被回复前不能重复发送
-            # mode=1意为在applyer_add_list.applylist中寻找apply_to
             await self.send(text_data="Has Been Sent")
 
         elif apply_to in (await sync_to_async(FriendList.objects.get)(user_name=apply_from)).friend_list:
@@ -233,59 +239,66 @@ class UserConsumer(AsyncWebsocketConsumer):
             receiver_add_list.reply_ensure.append(False)
             await sync_to_async(receiver_add_list.save)()
 
-            # 若receiver在线申请发送到receiver
-
+            # 若receiver在线则申请发送到receiver
             add_list = await get_addlist(username)
             return_field = []
             flen = len(add_list.apply_list)
             for li in range(flen):
                 return_field.append({
-                        "username": add_list.apply_list[li],
-                        "is_confirmed": add_list.apply_answer[li],
-                        "make_sure": add_list.apply_ensure[li]
+                    "username": add_list.apply_list[li],
+                    "is_confirmed": add_list.apply_answer[li],
+                    "make_sure": add_list.apply_ensure[li]
                 })
+
             for user in CONSUMER_OBJECT_LIST:
                 if user.cur_user == apply_to:
                     await user.send(text_data=json.dumps({
-                            'function': 'applylist',
-                            'applylist': return_field
+                        'function': 'applylist',
+                        'applylist': return_field
                     }))
+                    break
 
     async def confirm_friend(self, json_info):
         username = json_info['username']
-        # 修改数据库
         apply_from = json_info['from']
         apply_to = json_info['to']
         receiver_add_list = await get_addlist(apply_to)
         applyer_add_list = await get_addlist(apply_from)
 
+        # 修改数据库
         await modify_add_request_list_with_username(apply_from, receiver_add_list, True)
         await modify_add_request_list_with_username(apply_to, applyer_add_list, True, mode=1)
 
         friend_list1 = await get_friendlist(username)
         friend_list1.friend_list.append(apply_from)
         await sync_to_async(friend_list1.save)()
+
         friend_list2 = await get_friendlist(apply_from)
         friend_list2.friend_list.append(username)
         await sync_to_async(friend_list2.save)()
 
-        friend1 = Friend(user_name=username,
-                         friend_name=apply_from,
-                         group_name=friend_list1.group_list[0])
-        friend2 = Friend(user_name=apply_from,
-                         friend_name=username,
-                         group_name=friend_list2.group_list[0])
+        friend1 = Friend(user_name=username, friend_name=apply_from, group_name=friend_list1.group_list[0])
+        friend2 = Friend(user_name=apply_from, friend_name=username, group_name=friend_list2.group_list[0])
+
         await sync_to_async(friend1.save)()
         await sync_to_async(friend2.save)()
-        new_room = ChatRoom(mem_list=[], not_read=[], is_notice=[], is_top=[], manager_list=[], mes_list=[],
-                            notice_list=[])
+
+        # Fix
+        new_room = ChatRoom(is_private=True, mem_list=[], not_read=[], is_notice=[], is_top=[], manager_list=[], mes_list=[], notice_list=[])
+        # new_room = await database_sync_to_async(create_chatroom)(mem_list=[], is_private=True)
         new_room.mem_list.append(username)
         new_room.not_read.append(0)
         new_room.mem_list.append(apply_from)
         new_room.not_read.append(0)
         await sync_to_async(new_room.save)()
+
+        # Fix
+        new_timeline = await database_sync_to_async(create_chat_timeline)(chatroom_id=new_room.chatroom_id)
+
         # 若applyer在线结果发送到applyer
-        return_field = {"function": "confirm"}
+        return_field = {
+            "function": "confirm"
+        }
         await self.send(text_data=json.dumps(return_field))
         for user in CONSUMER_OBJECT_LIST:
             if user.cur_user == apply_to:
@@ -306,7 +319,9 @@ class UserConsumer(AsyncWebsocketConsumer):
         await modify_add_request_list_with_username(apply_from, receiver_add_list, False)
         await modify_add_request_list_with_username(apply_to, applyer_add_list, False, mode=1)
 
-        return_field = {"function": "decline"}
+        return_field = {
+            "function": "decline"
+        }
         await self.send(text_data=json.dumps(return_field))
 
     async def fetch_apply_list(self, json_info):
@@ -332,20 +347,19 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         for li in range(len(current_list)):
             return_field.append({
-                    "username": current_list[li],
-                    "is_confirmed": answer[li],
-                    "make_sure": ensure[li]
+                "username": current_list[li],
+                "is_confirmed": answer[li],
+                "make_sure": ensure[li]
             })
+
         await self.send(text_data=json.dumps({
             'function': attribute_name,
             attribute_name: return_field
         }))
 
     async def disconnect(self, code):
-
         CONSUMER_OBJECT_LIST.remove(self)
         raise StopConsumer()
-
         # Clients.objects.filter(channel_name=self.channel_name).delete()
 
     async def message_diffuse(self, event):
@@ -690,7 +704,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         chat_room = await create_chatroom(room_name, await username_list_to_id_list(member_list), username)
         chat_time_line = await create_chat_timeline()
-        # chat_room.timeline_id = chat_time_line.timeline_id
+        chat_room.timeline_id = chat_time_line.timeline_id
         chat_time_line.chatroom_id = chat_room.chatroom_id
         await sync_to_async(chat_room.save)()
         await sync_to_async(chat_time_line.save)()
