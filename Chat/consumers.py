@@ -85,13 +85,13 @@ async def get_power(chatroom, username):
 
 async def chatroom_delete_member(chatroom, member_id):
     for index, user_id in enumerate(chatroom.mem_list):
-        if user_id==member_id:
+        if user_id == member_id:
             chatroom.mem_list.pop(index)
             chatroom.is_top.pop(index)
             chatroom.is_notice.pop(index)
 
 
-async def chatroom_add_member(chatroom,member_id):
+async def chatroom_add_member(chatroom, member_id):
     chatroom.mem_list.append(member_id)
     chatroom.is_top.append(False)
     chatroom.is_notice.append(True)
@@ -317,7 +317,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                 await user.fetch_friend_list({"username": user.cur_user})
                 break
 
-
         # await self.fetch_room(json.dumps({"username": username}))
         await self.fetch_friend_list({"username": username})
         await self.fetch_reply_list({"username": username})
@@ -402,10 +401,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             'msg_id': msg_id,
         }))
 
-
-
-
-
     async def add_chat(self, json_info):
         """
         json_info = {
@@ -437,10 +432,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         # Msg R3 for back case
         # self.fetch_message(json_info)
 
-
-
-
-
     async def leave_chat(self, json_info):
         """
         json_info: {}
@@ -466,10 +457,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         # 离开群聊
         self.chatroom_name = None
         await self.channel_layer.group_discard(self.chatroom_name, self.channel_name)
-
-
-
-
 
     async def send_message(self, json_info):
         """
@@ -549,9 +536,9 @@ class UserConsumer(AsyncWebsocketConsumer):
             # Ack 2
             await self.send(
                 text_data=json.dumps({
-                        "function": "Ack 2",
-                        'msg_id': message.msg_id,
-                    }
+                    "function": "Ack 2",
+                    'msg_id': message.msg_id,
+                }
                 )
             )
 
@@ -580,9 +567,9 @@ class UserConsumer(AsyncWebsocketConsumer):
             # Ack 2
             await self.send(
                 text_data=json.dumps({
-                        "function": "Ack 2",
-                        'msg_id': message.msg_id,
-                    }
+                    "function": "Ack 2",
+                    'msg_id': message.msg_id,
+                }
                 )
             )
 
@@ -609,9 +596,9 @@ class UserConsumer(AsyncWebsocketConsumer):
             # Ack 2
             await self.send(
                 text_data=json.dumps({
-                        "function": "Ack 2",
-                        'msg_id': message.msg_id,
-                    }
+                    "function": "Ack 2",
+                    'msg_id': message.msg_id,
+                }
                 )
             )
 
@@ -862,6 +849,15 @@ class UserConsumer(AsyncWebsocketConsumer):
                     }))
 
                 else:
+                    msg_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
+                    message = await database_sync_to_async(create_message)(type='invite', body=invited_name, time=msg_time,
+                                                                           sender=username)
+                    message.save()
+
+                    await self.send(text_data=json.dumps({
+                        'function': function_name,
+                        'message': 'Success'
+                    }))
 
         pass
 
@@ -880,7 +876,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
 
         msg_body = json_info['msg_body']
-
 
     async def remove_group_member(self, json_info):
         """
@@ -933,7 +928,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         msg_id = json_info['msg_id']
         online_user = await filter_first_onlineuser(username)
 
-
         chatroom_id = online_user.chatroom_id
         chatroom = filter_first_chatroom(chatroom_id=chatroom_id)
         timeline = filter_first_timeline(chatroom_id=chatroom_id)
@@ -949,9 +943,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             timeline.cursor_list[_] -= 1
 
         # 发送给在线用户
-
-
-
 
     async def fetch_friend_list(self, json_info):
         """
@@ -974,7 +965,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                 "username": []
             })
             for friend_name in flist.friend_list:
-                friend = await filter_first_friend(username,friend_name)
+                friend = await filter_first_friend(username, friend_name)
                 if friend is not None and flist.group_list[i] == friend.group_name:
                     return_list[i]['username'].append(friend_name)
 
@@ -1005,7 +996,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                         "roomname": roomname,
                         "is_notice": room.is_notice[li],
                         "is_top": room.is_top[li]
-                        #"is_private": room.is_private
+                        # "is_private": room.is_private
                     })
                     break
         await self.send(text_data=json.dumps({
@@ -1037,7 +1028,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             "mem_count": mem_count,
             "notice_list": notice_list
         }))
-
 
     async def fetch_message(self, json_info):
         """
