@@ -95,7 +95,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         async for chatroom in ChatRoom.objects.all():
             if self.cur_user in chatroom.mem_list:
-                await self.channel_layer.group_add("chat_" + chatroom.room_name + str(chatroom.chatroom_id), self.channel_name)
+                await self.channel_layer.group_add("chat_" + str(chatroom.chatroom_id), self.channel_name)
 
         CONSUMER_OBJECT_LIST.append(self)
         await self.accept()
@@ -104,7 +104,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         async for chatroom in ChatRoom.objects.all():
             if self.cur_user in chatroom.mem_list:
-                await self.channel_layer.group_discard("chat_" + chatroom.room_name + str(chatroom.chatroom_id), self.channel_name)
+                await self.channel_layer.group_discard("chat_" + str(chatroom.chatroom_id), self.channel_name)
 
         CONSUMER_OBJECT_LIST.remove(self)
         raise StopConsumer()
@@ -410,56 +410,18 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         self.room_id = room_id
         self.room_name = room_name
-        self.chatroom_name = "chat_" + room_name + str(room_id)
-        # 加入在线用户列表
-
-        # await create_onlineuser(user_name, self.channel_name, room_id)
-
-        # 加入群聊
-        # chat_room = await filter_first_chatroom(chatroom_id=room_id)
-        # if chat_room is None:
-        #     await self.send(text_data="chatroom not exists")
-        #     await self.close()
-        
-        # await self.channel_layer.group_add(self.chatroom_name, self.channel_name)
-        #
-        # username = self.cur_user
-        # async for chatroom in ChatRoom.objects.all():
-        #     if username in chatroom.mem_list:
-        #         await self.channel_layer.group_add("chat_" + chatroom.room_name + str(chatroom.chatroom_id), self.channel_name)
-
-        # Fix: Unify
-        # 发送历史信息
-        # Msg R3 for back case
-        # self.fetch_message(json_info)
+        self.chatroom_name = "chat_" + str(room_id)
 
     async def leave_chat(self, json_info):
         """
         json_info = {}
         """
 
-        # 初始化
-        # user_name = self.cur_user
-        # # onliner = await filter_first_onlineuser(user_name)
-        #
-        # # 改动Timeline的cursor
-        # chatroom = await filter_first_chatroom(chatroom_id=onliner.chatroom_id)
-        # timeline = await filter_first_timeline(timeline_id=chatroom.timeline_id)
-        # lis = chatroom.mem_list.index(user_name)
-        # timeline.cursor_list[lis] = 0
-        #
-        # # 离开在线用户列表
-        # if onliner is None:
-        #     await self.send(text_data="you are not online")
-        #     await self.close()
-        # await database_sync_to_async(onliner.delete)()
-        # await database_sync_to_async(onliner.save)()
-
         # 离开群聊
         self.room_id = None
         self.room_name = None
         self.chatroom_name = None
-        # await self.channel_layer.group_discard(self.chatroom_name, self.channel_name)
+
 
     async def send_message(self, json_info):
         """
@@ -530,8 +492,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                 text_data=json.dumps({
                     "function": "Ack 2",
                     'msg_id': message.msg_id,
-                }
-                )
+                })
             )
 
         elif msg_type == 'combine':
