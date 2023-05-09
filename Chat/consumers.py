@@ -5,9 +5,11 @@ import time
 
 from channels.db import database_sync_to_async
 from asgiref.sync import sync_to_async
+from django.contrib.auth.models import User
 
+from Chat.models import create_chatroom, create_onlineuser, create_message, ChatRoom, Message
+from FriendRelation.models import FriendList, Friend
 from utils.utils_database import *
-from Chat.models import *
 
 CONSUMER_OBJECT_LIST = []
 USER_NAME_LIST = []
@@ -290,11 +292,13 @@ class UserConsumer(AsyncWebsocketConsumer):
         for user in CONSUMER_OBJECT_LIST:
             if user.cur_user == apply_to:
                 # await user.fetch_room(json.dumps({"username": user.cur_user}))
-                await user.fetch_friend_list(json.dumps({"username": user.cur_user}))
+                await user.fetch_friend_list({"username": user.cur_user})
                 break
 
+        # TODO
+
         # await self.fetch_room(json.dumps({"username": username}))
-        await self.fetch_friend_list(json.dumps({"username": username}))
+        await self.fetch_friend_list({"username": username})
 
     async def decline_friend(self, json_info):
         # 修改数据库
@@ -878,10 +882,8 @@ class UserConsumer(AsyncWebsocketConsumer):
                 "username": []
             })
             for friend_name in flist.friend_list:
-                friend_list_tem = await sync_to_async(Friend.objects.filter)(friend_name=friend_name,
-                                                                             user_name=username)
-                friend = await sync_to_async(friend_list_tem.first)()
-                if flist.group_list[i] == friend.group_name:
+                friend = await filter_first_friend(username,friend_name)
+                if (not friend is None) and flist.group_list[i] == friend.group_name:
                     return_list[i]['username'].append(friend_name)
 
         await self.send(text_data=json.dumps({
@@ -903,7 +905,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                     return_field.append({
                         "roomid": room.chatroom_id,
                         "roomname": room.room_name,
-                        "unreadnum": room.not_read[li],
                         "is_notice": room.is_notice[li],
                         "is_top": room.is_top[li]
                         #"is_private": room.is_private
@@ -952,7 +953,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         return_field = []
         for li, user in enumerate(room.mem_list):
             if user == username:
-                room.not_read[li] = 0
                 await sync_to_async(room.save)()
                 break
 
