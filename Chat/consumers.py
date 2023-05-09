@@ -318,7 +318,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         await self.fetch_addlist_attribute(username, 'receivelist')
 
     async def fetch_addlist_attribute(self, username, attribute_name):
-        add_list = await get_addlist(user_name=username)
+        add_list = await get_addlist(username)
         return_field = []
 
         if attribute_name == 'applylist':
