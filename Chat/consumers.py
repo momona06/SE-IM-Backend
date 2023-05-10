@@ -231,6 +231,9 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == "release_notice":
             await self.release_notice(json_info)
 
+        elif function == "revise_is_notice":
+            await self.revise_is_notice(json_info)
+
     async def heat_beat(self):
         await self.send(text_data=json.dumps({
             'function': 'heartbeatconfirm'
@@ -1161,3 +1164,67 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     async def add_group_member(self, json_info):
         pass
+
+    def revise_is_notice(self, json_info):
+        """
+        json_info = {
+            chatroom_id: 114514,
+            is_notice: True
+        }
+        """
+
+        function_name = 'revise_is_notice'
+
+        chatroom_id = json_info['chatroom_id']
+        chatroom = await self.find_chatroom(function_name, chatroom_id)
+
+        is_notice = json_info['is_notice']
+
+        if chatroom is not None:
+            username = await self.get_cur_username()
+
+            user = await self.check_user_exist(function_name, username)
+
+            if user is not None and await self.check_user_in_chatroom(function_name, chatroom, username):
+                for index, member_name in enumerate(chatroom.mem_list):
+                    if member_name == username:
+                        chatroom.is_notice[index] = is_notice
+
+                        await database_sync_to_async(chatroom.save)()
+                        await self.send(text_data=json.dumps({
+                            'function': function_name,
+                            'message': 'Success'
+                        }))
+
+    def revise_is_top(self, json_info):
+        """
+        json_info = {
+            chatroom_id: 114514,
+            is_top: True
+        }
+        """
+
+        function_name = 'revise_is_top'
+
+        chatroom_id = json_info['chatroom_id']
+        chatroom = await self.find_chatroom(function_name, chatroom_id)
+
+        is_top = json_info['is_top']
+
+        if chatroom is not None:
+            username = await self.get_cur_username()
+
+            user = await self.check_user_exist(function_name, username)
+
+            if user is not None and await self.check_user_in_chatroom(function_name, chatroom, username):
+                for index, member_name in enumerate(chatroom.mem_list):
+                    if member_name == username:
+                        chatroom.is_top[index] = is_top
+
+                        await database_sync_to_async(chatroom.save)()
+                        await self.send(text_data=json.dumps({
+                            'function': function_name,
+                            'message': 'Success'
+                        }))
+
+
