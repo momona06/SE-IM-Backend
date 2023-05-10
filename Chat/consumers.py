@@ -1165,7 +1165,7 @@ class UserConsumer(AsyncWebsocketConsumer):
     async def add_group_member(self, json_info):
         pass
 
-    def revise_is_notice(self, json_info):
+    async def revise_is_notice(self, json_info):
         """
         json_info = {
             chatroom_id: 114514,
@@ -1196,7 +1196,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                             'message': 'Success'
                         }))
 
-    def revise_is_top(self, json_info):
+    async def revise_is_top(self, json_info):
         """
         json_info = {
             chatroom_id: 114514,
