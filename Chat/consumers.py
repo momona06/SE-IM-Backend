@@ -530,10 +530,43 @@ class UserConsumer(AsyncWebsocketConsumer):
             pass
 
         elif msg_type == 'invite':
-            pass
+            function_name = 'send_message_invite'
+
+            if chatroom is not None:
+                invited_name = msg_body
+                invited_user = await self.check_user_exist(function_name, invited_name)
+
+                if invited_user is not None:
+                    if invited_name in chatroom.mem_list:
+                        await self.send(text_data=json.dumps({
+                            'function': function_name,
+                            'message': 'User is already in the group'
+                        }))
+                    else:
+                        username = await self.get_cur_username()
+                        user = await get_user(username)
+
+                        message = await database_sync_to_async(create_message)(type='invite', body=invited_name,
+                                                                               time=msg_time, sender=username)
+
+                        await sync_to_async(message.save)()
+                        if get_power(chatroom, username) != 0:
+                            message.answer = 1
+                            await sync_to_async(message.save)()
+
+                            await chatroom_add_member(chatroom, username)
+
+                        await self.send(text_data=json.dumps({
+                            'function': function_name,
+                            'message': 'Success',
+                        }))
 
         elif msg_type == 'image' or msg_type == 'video' or msg_type == 'audio' or msg_type == 'file':
             pass
+
+        elif msg_type == 'notice':
+            pass
+
 
     async def acknowledge_message(self, json_info):
         """
@@ -650,14 +683,14 @@ class UserConsumer(AsyncWebsocketConsumer):
             }))
             return False
 
-    async def message_pre_treat(self, function_name, message_type, ensure):
+    async def message_pre_treat(self, function_name, message_type, answer):
         if message_type != 'invite':
             await self.send(text_data=json.dumps({
                 'function': function_name,
                 'message': 'Message type error'
             }))
             return False
-        elif ensure != '-1':
+        elif answer != '-1':
             await self.send(text_data=json.dumps({
                 'function': function_name,
                 'message': 'Message Replied'
@@ -777,45 +810,45 @@ class UserConsumer(AsyncWebsocketConsumer):
             ‘invited_name’: 'ashitemaru'
         }
         """
-        function_name = 'add_group'
-
-        chatroom_id = json_info['chatroom_id']
-        invited_name = json_info['invited_name']
-        chatroom = await self.find_chatroom(function_name, chatroom_id)
-
-        if chatroom is not None:
-            invited_user = await self.check_user_exist(function_name, invited_name)
-
-            if invited_user is not None:
-                if invited_name in chatroom.mem_list:
-                    await self.send(text_data=json.dumps({
-                        'function': function_name,
-                        'message': 'User is already in the group'
-                    }))
-                else:
-                    username = await self.get_cur_username()
-                    user = await get_user(username)
-
-                    msg_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
-                    message = await database_sync_to_async(create_message)(type='invite', body=invited_name,
-                                                                           time=msg_time, sender=username)
-
-                    await sync_to_async(message.save)()
-                    if get_power(chatroom, username) != 0:
-                        message.ensure = 1
-                        await sync_to_async(message.save)()
-
-                        await chatroom_add_member(chatroom, username)
-
-                    await self.send(text_data=json.dumps({
-                        'function': function_name,
-                        'message': 'Success',
-                        'type': 'invite',
-                        'ensure': message.ensure,
-                        'body' : invited_name,
-                        'time' : msg_time,
-                        'sender' : username
-                    }))
+        # function_name = 'add_group'
+        #
+        # chatroom_id = json_info['chatroom_id']
+        # invited_name = json_info['invited_name']
+        # chatroom = await self.find_chatroom(function_name, chatroom_id)
+        #
+        # if chatroom is not None:
+        #     invited_user = await self.check_user_exist(function_name, invited_name)
+        #
+        #     if invited_user is not None:
+        #         if invited_name in chatroom.mem_list:
+        #             await self.send(text_data=json.dumps({
+        #                 'function': function_name,
+        #                 'message': 'User is already in the group'
+        #             }))
+        #         else:
+        #             username = await self.get_cur_username()
+        #             user = await get_user(username)
+        #
+        #             msg_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
+        #             message = await database_sync_to_async(create_message)(type='invite', body=invited_name,
+        #                                                                    time=msg_time, sender=username)
+        #
+        #             await sync_to_async(message.save)()
+        #             if get_power(chatroom, username) != 0:
+        #                 message.answer = 1
+        #                 await sync_to_async(message.save)()
+        #
+        #                 await chatroom_add_member(chatroom, username)
+        #
+        #             await self.send(text_data=json.dumps({
+        #                 'function': function_name,
+        #                 'message': 'Success',
+        #                 'type': 'invite',
+        #                 'answer': message.answer,
+        #                 'body' : invited_name,
+        #                 'time' : msg_time,
+        #                 'sender' : username
+        #             }))
 
 
     async def leave_group(self, json_info):
@@ -854,7 +887,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         json_info = {
             'chatroom_id': 114514,
             'type': 'invite',
-            'ensure': -1,
+            'answer': -1,
             'body': 'ashitemaru'
         }
         """
@@ -862,12 +895,12 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         chatroom_id = json_info['chatroom_id']
         message_type = json_info['type']
-        ensure = json_info['ensure']
+        answer = json_info['answer']
         invited_name = json_info['body']
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
         if chatroom is not None:
-            if await self.message_pre_treat(function_name,message_type,ensure):
+            if await self.message_pre_treat(function_name,message_type,answer):
 
                 invited_user = await self.check_user_exist(function_name, invited_name)
 
