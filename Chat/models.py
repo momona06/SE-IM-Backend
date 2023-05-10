@@ -36,10 +36,6 @@ class ChatTimeLine(models.Model):
     )
 
 
-async def delete_chat_timeline():
-    pass
-
-
 # Design philosophy: all the info about the room should be put here
 class ChatRoom(models.Model):
     chatroom_id = models.BigAutoField(primary_key=True)
@@ -108,6 +104,9 @@ class Message(models.Model):
     # type = {text, image, file, video, audio, combine, reply, invite}
     type = models.CharField(max_length=20)
 
+    # invite type, -1: no answer 0: decline 1: confirm
+    answer = models.IntegerField(default=-1)
+
     # msg for {text, reply}
     body = models.CharField(max_length=500)
 
@@ -117,39 +116,32 @@ class Message(models.Model):
     # related msg for {reply}
     reply_id = models.BigIntegerField(default=0)
 
+    # list for those who read this message
+    read_list = ArrayField(
+        models.BooleanField(default=False)
+    )
+
+    # list for combined message
+    combine_list = ArrayField(
+        models.BigIntegerField(default=0)
+    )
+
     time = models.CharField(max_length=100)
+
     sender = models.CharField(max_length=100)
 
 
-def user_directory_path(instance, filename):
-    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
-    return "user_{0}/{1}".format(instance.user.id)
-
-
-async def create_message(type, body, time, sender, is_reply=False, reply_id=0):
-    new_message = await database_sync_to_async(Message)(type=type, body=body, time=time, sender=sender,
-                                                        is_reply=is_reply, reply_id=reply_id)
+async def create_message(type, body, time, sender, reply_id=0, answer=-1, read_list=[], combine_list=[]):
+    new_message = await database_sync_to_async(Message)(type=type, body=body, time=time,
+                                                        sender=sender, reply_id=reply_id, answer=answer,
+                                                        read_list=read_list, combine_list=combine_list)
     await database_sync_to_async(new_message.save)()
     return new_message
 
 
 async def delete_message():
+    """
+    json_info = {
+    }
+    """
     pass
-
-
-# # Users in chatrooms
-# class OnlineUser(models.Model):
-#     user_name = models.CharField(max_length=100)
-#     channel_name = models.CharField(max_length=1000)
-#     chatroom_id = models.BigIntegerField(default=0)
-#
-#
-# async def create_onlineuser(user_name, channel_name, room_id):
-#     new_onliner = await database_sync_to_async(OnlineUser)(user_name=user_name, channel_name=channel_name,
-#                                                            chatroom_id=room_id)
-#     await database_sync_to_async(new_onliner.save)()
-#     return new_onliner
-#
-#
-# async def delete_onlineuser(user_name):
-#     await database_sync_to_async(OnlineUser.objects.filter(user_name=user_name).delete)()
