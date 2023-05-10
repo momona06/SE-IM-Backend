@@ -12,7 +12,8 @@ from django.contrib.auth.models import User
 from UserManage.models import IMUser, TokenPoll, create_im_user, EmailCode
 from django.core import mail
 
-from Chat.models import ChatRoom
+from Chat.models import ChatRoom, ChatTimeLine
+
 
 
 def revise(req: HttpRequest):
@@ -40,10 +41,18 @@ def revise(req: HttpRequest):
                 })
             else:
                 if revise_field == "username":
-                    chatroom_list = ChatRoom.objects.filter(master_name=username)
-
-                    for i in chatroom_list:
-                        i.master_name = revise_content
+                    for room in ChatRoom.objects.all()[::-1]:
+                        for index, user in enumerate(room.mem_list):
+                            if user == username:
+                                room.mem_list[index]= revise_content
+                                for index_, user_ in enumerate(room.manager_list):
+                                    if user_ == username:
+                                        room.manager_list[index_] = revise_content
+                                        break
+                                if room.master_name==username:
+                                    room.master_name=revise_content
+                                room.save()
+                                break
 
                     user_rev.username = revise_content
 
@@ -127,7 +136,6 @@ def cancel(req: HttpRequest):
 
             # 以上三条废弃, 包含此用户名的信息全删
 
-
             user_add_list = AddList.objects.filter(user_name=username).first()
 
             user_list = []
@@ -146,6 +154,20 @@ def cancel(req: HttpRequest):
 
             user_add_list.delete()
 
+            for room in ChatRoom.objects.all()[::-1]:
+                if username in room.mem_list:
+                    room.mem_list.remove(username)
+
+                    if username in room.manager_list:
+                        room.manager_list.remove(username)
+
+                    room.save()
+
+                    if username == room.master_name:
+                        timeline = ChatTimeLine.objects.filter(timeline_id=room.timeline_id).first()
+                        timeline.delete()
+                        room.delete()
+
             return JsonResponse({
                 "code": 0,
                 "info": "User Canceled"
@@ -162,15 +184,16 @@ def cancel(req: HttpRequest):
 
 def delete_user_in_other_add_list(reply_name, username):
     other_add_list = AddList.objects.filter(user_name=reply_name).first()
+    l = len(other_add_list.reply_list)
     for i, other_name in enumerate(other_add_list.reply_list[::-1]):
         if other_name == username:
-            index = len(other_add_list.reply_list) - i - 1
+            index =  l - i - 1
             del other_add_list.reply_list[index]
             del other_add_list.reply_ensure[index]
             del other_add_list.reply_answer[index]
     for i, other_name in enumerate(other_add_list.apply_list[::-1]):
         if other_name == username:
-            index = len(other_add_list.apply_list) - i - 1
+            index = l - i - 1
             del other_add_list.apply_list[index]
             del other_add_list.apply_ensure[index]
             del other_add_list.apply_answer[index]
