@@ -240,9 +240,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
         await self.send(text_data=json.dumps({
             'function': 'heartbeatconfirm',
-            'count': self.count,
-            'cur_user': self.cur_user,
-            'room_id': self.room_id,
         }))
 
     async def apply_friend(self, json_info):
@@ -490,7 +487,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         Msg_field = {
             "type": "message_diffuse",
             'msg_id': msg_id,
-            # 'msg_type': msg_type,
+            'msg_type': msg_type,
             'msg_body': msg_body,
             'msg_time': msg_time,
             'sender': username,
@@ -686,7 +683,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
         function_name = 'delete_group'
 
-        chatroom_id = json_info['chatroom_id']
+        chatroom_id = json_info['chatroom_i d']
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
         if chatroom is not None:
