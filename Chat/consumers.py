@@ -364,19 +364,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             attribute_name: return_field
         }))
 
-    async def message_diffuse(self, event):
-        msg_body = event["msg_body"]
-        msg_id = event["msg_id"]
-        sender = event['sender']
-        msg_time = event['time']
-        # event = {'type': 'chat_message', 'message': 'res'}
-        await self.send(text_data=json.dumps({
-            'function': 'Msg',
-            'msg_id': msg_id,
-            "msg_body": msg_body,
-            'msg_time': msg_time,
-            'sender': sender
-        }))
+
+
 
     async def add_channel(self, json_info):
         """
@@ -413,6 +402,25 @@ class UserConsumer(AsyncWebsocketConsumer):
         self.room_name = None
         self.chatroom_name = None
 
+    async def group_send(self, chatroom_name, return_field):
+        await self.channel_layer.group_send(chatroom_name, return_field)
+
+    async def message_diffuse(self, event):
+        msg_id = event["msg_id"]
+        msg_body = event["msg_body"]
+        msg_time = event['msg_time']
+        sender = event['sender']
+
+        return_field = {
+            'function': 'Msg',
+            'msg_id': msg_id,
+            "msg_body": msg_body,
+            'msg_time': msg_time,
+            'sender': sender
+        }
+
+        await self.send(text_data=json.dumps(return_field))
+
     async def send_message(self, json_info):
         """
         json_info = {
@@ -429,15 +437,13 @@ class UserConsumer(AsyncWebsocketConsumer):
         # move the cursor of cli A
 
         # 初始化
+
         username = self.cur_user
         room_id = self.room_id
         room_name = self.room_name
         chatroom_name = self.chatroom_name
 
         chatroom = await filter_first_chatroom(chatroom_id=room_id)
-        # if chatroom is None:
-        #     await self.send('chatroom not exists')
-        #     await self.close()
         timeline = await get_timeline(chatroom_id=room_id)
 
         # 添加消息
@@ -445,93 +451,45 @@ class UserConsumer(AsyncWebsocketConsumer):
         msg_body = json_info['msg_body']
         msg_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
         message = await create_message(type=msg_type, body=msg_body, time=msg_time, sender=username)
+        msg_id = message.msg_id
+
+        Msg_field = {
+            "type": "message_diffuse",
+            'msg_id': msg_id,
+            'msg_type': msg_type,
+            'msg_body': msg_body,
+            'msg_time': msg_time,
+            'sender': username,
+            'room_id': room_id,
+        }
+
+        Ack_field = {
+            "function": "Ack 2",
+            'msg_id': msg_id,
+        }
 
         # type = {text, image, file, video, audio, combine, reply, invite}
         if msg_type == 'text' or msg_type == 'reply':
             if msg_type == 'reply':
                 reply_id = json_info['reply_id']
+                Msg_field['reply_id'] = reply_id
 
-                # Msg R3 for online case
-                await self.channel_layer.group_send(
-                    chatroom_name, {
-                        "type": "message_diffuse",
-                        'msg_id': message.msg_id,
-                        'msg_type': msg_type,
-                        'msg_body': msg_body,
-                        'msg_time': msg_time,
-                        'sender': username,
-                        'reply_id': reply_id
-                    }
-                )
+            # Msg R3 for online case
+            await self.group_send(chatroom_name, Msg_field)
 
-            else:
-                # Msg R3 for online case
-                await self.channel_layer.group_send(
-                    chatroom_name, {
-                        "type": "message_diffuse",
-                        'msg_id': message.msg_id,
-                        'msg_type': msg_type,
-                        'msg_body': msg_body,
-                        'msg_time': msg_time,
-                        'sender': username,
-
-                    }
-                )
-
-            await sync_to_async(timeline.msg_line.append)(message.msg_id)
+            # Add to Database
+            await sync_to_async(timeline.msg_line.append)(msg_id)
             await sync_to_async(timeline.save)()
 
             # Ack 2
-            await self.send(
-                text_data=json.dumps({
-                    "function": "Ack 2",
-                    'msg_id': message.msg_id,
-                })
-            )
+            await self.send(text_data=json.dumps(Ack_field))
+
 
         elif msg_type == 'combine':
-            # Msg R3 for online case
-            await self.channel_layer.group_send(
-                chatroom_name, {
-                    "type": "message_diffuse",
-                    'msg_id': message.msg_id,
-                    'msg_type': msg_type,
-                    'msg_body': msg_body,
-                    'sender': username,
-                }
-            )
-
-            await sync_to_async(timeline.msg_line.append)(message.msg_id)
-
-            # Ack 2
-            await self.send(
-                text_data=json.dumps({
-                    "function": "Ack 2",
-                    'msg_id': message.msg_id,
-                })
-            )
+            pass
 
         elif msg_type == 'invite':
-            # Msg R3 for online case
-            await self.channel_layer.group_send(
-                chatroom_name, {
-                    "type": "message_diffuse",
-                    'msg_id': message.msg_id,
-                    'msg_type': msg_type,
-                    'msg_body': msg_body,
-                    'sender': username,
-                }
-            )
-
-            await sync_to_async(timeline.msg_line.append)(message.msg_id)
-
-            # Ack 2
-            await self.send(
-                text_data=json.dumps({
-                    "function": "Ack 2",
-                    'msg_id': message.msg_id,
-                })
-            )
+            pass
 
         elif msg_type == 'image' or msg_type == 'video' or msg_type == 'audio' or msg_type == 'file':
             pass
@@ -556,7 +514,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         # move the cursor of cli B
 
         # 初始化
-        self.count += 1
         username = self.cur_user
         room_id = json_info['room_id']
         is_back = json_info['is_back']
@@ -572,6 +529,9 @@ class UserConsumer(AsyncWebsocketConsumer):
             timeline.cursor_list[lis] += count
         else:
             timeline.cursor_list[lis] += 1
+
+
+
 
     async def find_chatroom(self, function_name, chatroom_id):
         chatroom_list_tem = await sync_to_async(ChatRoom.objects.filter)(chatroom_id=chatroom_id)
