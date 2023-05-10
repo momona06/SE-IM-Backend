@@ -368,11 +368,13 @@ class UserConsumer(AsyncWebsocketConsumer):
         msg_body = event["msg_body"]
         msg_id = event["msg_id"]
         sender = event['sender']
+        msg_time = event['time']
         # event = {'type': 'chat_message', 'message': 'res'}
         await self.send(text_data=json.dumps({
             'function': 'Msg',
             'msg_id': msg_id,
             "msg_body": msg_body,
+            'msg_time': msg_time,
             'sender': sender
         }))
 
@@ -456,6 +458,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                         'msg_id': message.msg_id,
                         'msg_type': msg_type,
                         'msg_body': msg_body,
+                        'msg_time': msg_time,
                         'sender': username,
                         'reply_id': reply_id
                     }
@@ -469,7 +472,9 @@ class UserConsumer(AsyncWebsocketConsumer):
                         'msg_id': message.msg_id,
                         'msg_type': msg_type,
                         'msg_body': msg_body,
+                        'msg_time': msg_time,
                         'sender': username,
+
                     }
                 )
 
