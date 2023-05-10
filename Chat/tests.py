@@ -2,10 +2,11 @@ import json
 from django.contrib.auth import get_user_model
 
 from django.contrib.auth.models import User
-from UserManage.models import IMUser
+
+from Chat.consumers import UserConsumer
 from django.test import TestCase
 
-from channels.testing import ChannelsLiveServerTestCase,WebsocketCommunicator
+from channels.testing import WebsocketCommunicator
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
@@ -18,14 +19,14 @@ USERNAME_1 = "test01"
 PASSWORD_1 = "123456"
 
 class MyConsumerTestCase(TestCase):
-    def register(self, username, password):
+    async def register(self, username, password):
         payload = {
             "username": username,
             "password": password
         }
         return self.client.post("/user/register", data=payload, content_type="application/json")
 
-    def login(self,username, password, email=""):
+    async def login(self,username, password, email=""):
         payload = {
             "username": username,
             "password": password,
@@ -34,8 +35,7 @@ class MyConsumerTestCase(TestCase):
         return self.client.post("/user/login", data=payload, content_type="application/json")
 
     async def test_consumer(self):
-        # 创建一个 WebsocketCommunicator 实例
-        # communicator = WebsocketCommunicator(FriendConsumer.as_asgi(), "/ws/")
+        communicator = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
 
         # 连接 WebSocket
         #connected, _ = await communicator.connect()
