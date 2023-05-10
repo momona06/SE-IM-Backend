@@ -155,11 +155,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == 'send_message':
             await self.send_message(json_info)
 
-        # 确认收到消息
-        elif function == 'acknowledge_message':
-            await self.acknowledge_message(json_info)
-
-        # 撤回自己的消息
         elif function == 'withdraw_message':
             await self.withdraw_message(json_info)
 
@@ -382,14 +377,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             'sender': sender
         }))
 
-    async def acknowledge_diffuse(self, event):
-        msg_id = event["msg_id"]
-        # event = {'type': 'chat_message', 'message': 'res'}
-        await self.send(text_data=json.dumps({
-            'type': 'Ack',
-            'msg_id': msg_id,
-        }))
-
     async def add_channel(self, json_info):
         """
         json_info = {
@@ -401,7 +388,6 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         async for chatroom in ChatRoom.objects.all():
             if username in chatroom.mem_list:
-                self.count += 1
                 await self.channel_layer.group_add("chat_" + str(chatroom.chatroom_id), self.channel_name)
 
     async def add_chat(self, json_info):
@@ -463,6 +449,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         if msg_type == 'text' or msg_type == 'reply':
             if msg_type == 'reply':
                 reply_id = json_info['reply_id']
+
                 # Msg R3 for online case
                 await self.channel_layer.group_send(
                     chatroom_name, {
@@ -569,26 +556,15 @@ class UserConsumer(AsyncWebsocketConsumer):
         is_back = json_info['is_back']
         count = json_info['count']
 
+        chatroom = await filter_first_chatroom(chatroom_id=room_id)
+        timeline = await filter_first_timeline(chatroom_id=room_id)
+
+        # 移动Timeline的cursor
+        lis = chatroom.mem_list.index(username)
+
         if is_back:
-            chatroom = await filter_first_chatroom(chatroom_id=room_id)
-
-            timeline = await filter_first_timeline(chatroom_id=room_id)
-
-            # 移动Timeline的cursor
-            lis = chatroom.mem_list.index(username)
             timeline.cursor_list[lis] += count
-
         else:
-            chatroom = await filter_first_chatroom(chatroom_id=room_id)
-            # if chatroom is None:
-            #     await self.send('chatroom not exists')
-            #     await self.close()
-
-            timeline = await filter_first_timeline(chatroom_id=room_id)
-
-            # 移动Timeline的cursor
-            lis = chatroom.mem_list.index(username)
-
             timeline.cursor_list[lis] += 1
 
     async def find_chatroom(self, function_name, chatroom_id):
@@ -600,7 +576,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                 'function': function_name,
                 'message': 'Group not found'
             }))
-
         return chatroom
 
     async def check_chatroom_master(self, function_name, chatroom, username):
