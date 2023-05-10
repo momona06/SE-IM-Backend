@@ -6,6 +6,7 @@ from channels.db import database_sync_to_async
 from asgiref.sync import sync_to_async
 from django.contrib.auth.models import User
 
+from UserManage.models import *
 from Chat.models import *
 from FriendRelation.models import *
 from utils.utils_database import *
@@ -121,6 +122,11 @@ class UserConsumer(AsyncWebsocketConsumer):
         async for chatroom in ChatRoom.objects.all():
             if username in chatroom.mem_list:
                 await self.channel_layer.group_discard("chat_" + str(chatroom.chatroom_id), self.channel_name)
+
+        user = await database_sync_to_async(User.objects.get)(username=username)
+        im_user = await database_sync_to_async(IMUser.objects.get)(user=user)
+        im_user.is_login = False
+        await sync_to_async(im_user.save)()
 
         CONSUMER_OBJECT_LIST.remove(self)
         raise StopConsumer()
@@ -473,7 +479,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         combine: json_info = {
             'msg_type': 'combine',
             'msg_body': 'hello',
-            'combine_id': [24, 15, 64],
+            'combine_id': [16, 17],
         }
 
         """
@@ -593,10 +599,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         chatroom = filter_first_chatroom(chatroom_id=room_id)
         timeline = filter_first_timeline(chatroom_id=room_id)
 
-        # 删除Timeline的消息
-        # message = filter_first_message(msg_id=msg_id)
-        # await sync_to_async(message.delete)()
-
         lis = await sync_to_async(timeline.msg_line.index)(msg_id)
         await sync_to_async(timeline.msg_line).pop(lis)
         await sync_to_async(timeline.save)()
@@ -698,7 +700,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
         function_name = 'delete_group'
 
-        chatroom_id = json_info['chatroom_i d']
+        chatroom_id = json_info['chatroom_id']
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
         if chatroom is not None:
@@ -721,7 +723,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             'manager_name': 'ashitemaru'
         }
         """
-
         function_name = 'appoint_manager'
 
         chatroom_id = json_info['chatroom_id']

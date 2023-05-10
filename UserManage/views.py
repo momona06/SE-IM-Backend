@@ -54,11 +54,6 @@ def revise(req: HttpRequest):
                                     room.master_name = revise_content
                                 room.save()
                                 break
-                        # timeline revise
-                        timeline = ChatTimeLine.objects.filter(timeline_id=room.chatroom_id).first()
-
-
-
 
                     user_rev.username = revise_content
 
@@ -184,7 +179,6 @@ def cancel(req: HttpRequest):
                 "code": -1,
                 "info": "User not Exists"
             })
-
     else:
         return BAD_METHOD
 
@@ -237,7 +231,10 @@ def user_register(request: HttpRequest):
 
             # unique
             if user is not None:
-                return JsonResponse({"code": -3, "info": "User already exists"})
+                return JsonResponse({
+                    "code": -3,
+                    "info": "User already exists"
+                })
 
             tem_user = User.objects.create_user(username=username, password=password)
 
@@ -334,15 +331,20 @@ def user_login(request, identity, password, login_filter):
             if tem_user:
                 tem_im_user = IMUser.objects.filter(user=tem_user).first()
                 if tem_im_user is not None:
-                    tem_im_user.token = get_new_token()
-                    tem_im_user.save()
+                    if not tem_im_user.is_login:
+                        tem_im_user.token = get_new_token()
+                        tem_im_user.is_login = True
+                        tem_im_user.save()
+                    else:
+                        return JsonResponse({
+                            "code": -7,
+                            "info": "User already login",
+                        })
                 else:
                     return JsonResponse({
                         "code": -1,
                         "info": "Unexpected error"
                     })
-                    # tem_im_user = create_im_user(tem_user,get_new_token())
-                    # tem_im_user.save()
 
                 return JsonResponse({
                     "username": tem_im_user.user.username,
