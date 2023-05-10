@@ -15,7 +15,6 @@ from django.core import mail
 from Chat.models import ChatRoom, ChatTimeLine
 
 
-
 def revise(req: HttpRequest):
     if req.method == "PUT":
         body = json.loads(req.body.decode("utf-8"))

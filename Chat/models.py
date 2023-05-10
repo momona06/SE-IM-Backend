@@ -109,7 +109,7 @@ class Message(models.Model):
     type = models.CharField(max_length=20)
 
     # invite type, -1: no answer 0: decline 1: confirm
-    answer = models.IntegerField(max_length=1,default=-1)
+    # answer = models.IntegerField(default=-1)
 
     # msg for {text, reply}
     body = models.CharField(max_length=500)
