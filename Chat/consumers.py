@@ -430,29 +430,34 @@ class UserConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_send(chatroom_name, return_field)
 
     async def message_diffuse(self, event):
-        # msg_id = event["msg_id"]
-        # msg_body = event["msg_body"]
-        # msg_time = event['msg_time']
-        # sender = event['sender']
-        # room_id = event['room_id']
-        #
-        # return_field = {
-        #     'function': 'Msg',
-        #     'msg_id': msg_id,
-        #     "msg_body": msg_body,
-        #     'msg_time': msg_time,
-        #     'sender': sender,
-        #     'room_id': room_id
-        # }
-        #
-        # await self.send(text_data=json.dumps(return_field))
+        msg_id = event["msg_id"]
+        msg_body = event["msg_body"]
+        msg_time = event['msg_time']
+        msg_type = event['msg_type']
+        sender = event['sender']
+        room_id = event['room_id']
 
-        event['function'] = 'Msg'
-        await self.send(text_data=json.dumps(event))
+        return_field = {
+            'function': 'Msg',
+            'msg_id': msg_id,
+            "msg_body": msg_body,
+            'msg_time': msg_time,
+            'msg_type': msg_type,
+            'sender': sender,
+            'room_id': room_id
+        }
+
+        await self.send(text_data=json.dumps(return_field))
 
     async def withdraw_diffuse(self, event):
-        event['function'] = 'withdraw_message'
-        await self.send(text_data=json.dumps(event))
+        msg_id = event["msg_id"]
+
+        return_field = {
+            'function': 'withdraw',
+            'msg_id': msg_id
+        }
+
+        await self.send(text_data=json.dumps(return_field))
 
     async def send_message(self, json_info):
         """
@@ -465,6 +470,12 @@ class UserConsumer(AsyncWebsocketConsumer):
             'msg_body': 'hello',
             'reply_id': 16,
         }
+        combine: json_info = {
+            'msg_type': 'combine',
+            'msg_body': 'hello',
+            'combine_id': [24, 15, 64],
+        }
+
         """
 
         # Pipeline
@@ -505,11 +516,17 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
 
         # type = {text, image, file, video, audio, combine, reply, invite}
-        if msg_type == 'text' or msg_type == 'reply':
+        if msg_type == 'text' or msg_type == 'reply' or msg_type == 'combine' or msg_type == 'invite':
             if msg_type == 'reply':
                 reply_id = json_info['reply_id']
                 Msg_field['reply_id'] = reply_id
 
+            elif msg_type == 'combine':
+                pass
+
+            elif msg_type == 'invite':
+                pass
+
             # Msg R3 for online case
             await self.group_send(chatroom_name, Msg_field)
 
@@ -519,21 +536,6 @@ class UserConsumer(AsyncWebsocketConsumer):
 
             # Ack 2
             await self.send(text_data=json.dumps(Ack_field))
-
-
-        elif msg_type == 'combine':
-            # Msg R3 for online case
-            await self.group_send(chatroom_name, Msg_field)
-
-            # Add to Database
-            await sync_to_async(timeline.msg_line.append)(msg_id)
-            await sync_to_async(timeline.save)()
-
-            # Ack 2
-            await self.send(text_data=json.dumps(Ack_field))
-
-        elif msg_type == 'invite':
-            pass
 
         elif msg_type == 'image' or msg_type == 'video' or msg_type == 'audio' or msg_type == 'file':
             pass
@@ -605,7 +607,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         withdraw_field = {
             'type': 'withdraw_diffuse',
-            'msg_id': 'msg_id'
+            'msg_id': msg_id
         }
         # 发送给在线用户
         await self.group_send(chatroom_name, withdraw_field)
