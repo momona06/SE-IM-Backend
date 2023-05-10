@@ -124,7 +124,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             if username in chatroom.mem_list:
                 await self.channel_layer.group_discard("chat_" + str(chatroom.chatroom_id), self.channel_name)
 
-        user_model = await get_user_model()
+        user_model = await sync_to_async(get_user_model)()
         user = await database_sync_to_async(user_model.objects.get)(username=username)
         im_user = await database_sync_to_async(IMUser.objects.get)(user=user)
         im_user.is_login = False
