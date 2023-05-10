@@ -81,8 +81,16 @@ class MyConsumerTestCase(TestCase):
             'to': USERNAME_1,
             'from': USERNAME_0
         })
-        response = await communicator_0.receive_from()
-        assert response.json()["function"] == 'applylist'
+
+        await communicator_1.send_json_to({
+            "function": "confirm",
+            "username": USERNAME_1,
+            'to': USERNAME_0,
+            'from': USERNAME_1
+        })
+
+        response = await communicator_1.receive_from()
+        assert response.json()["function"] == 'friendlist'
 
         await communicator_0.disconnect()
 
