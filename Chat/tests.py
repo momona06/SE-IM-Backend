@@ -35,38 +35,56 @@ class MyConsumerTestCase(TestCase):
         return await self.client.post("/user/login", data=payload, content_type="application/json")
 
     async def test_consumer(self):
-        communicator = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
+        await self.register(USERNAME_0,PASSWORD_0)
+        await self.register(USERNAME_1,PASSWORD_1)
+
+        communicator_0 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
+        communicator_1 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
 
         # 连接 WebSocket
-        connected, _ = await communicator.connect()
-
+        connected, _ = await communicator_0.connect()
+        assert connected
+        connected, _ = await communicator_1.connect()
         assert connected
 
         # 发送消息到 Consumer
-        # await communicator.send_json_to({"username": USERNAME_0, "password": PASSWORD_0, "function": "confirm", "from": USERNAME_0, "to": USERNAME_1})
+        await communicator_0.send_json_to({
+            "function": "add_channel",
+            "username": USERNAME_0
+        })
+        await communicator_1.send_json_to({
+            "function": "add_channel",
+            "username": USERNAME_1
+        })
 
-        # response = await communicator.receive_from()
-        # assert response == "hello"
+        await communicator_0.send_json_to({
+            "function": "apply",
+            "username": USERNAME_0,
+            'to': USERNAME_1,
+            'from': USERNAME_0
+        })
+        response = await communicator_1.receive_from()
+        assert response.json()["function"] == 'applylist'
 
-        await communicator.disconnect()
+        await communicator_0.disconnect()
 
         """
 
         # 接收 Consumer 的响应
-        response = await communicator.receive_json_from()
+        response = await communicator_0.receive_json_from()
 
         # 断言响应是否符合预期
         self.assertEqual(response, {"type": "my_message", "content": "Hello world!"})
 
         # 发送消息到 Consumer
-        await communicator.send_json_to({"type": "my_message", "content": "Goodbye world!"})
+        await communicator_0.send_json_to({"type": "my_message", "content": "Goodbye world!"})
 
         # 接收 Consumer 的响应
-        response = await communicator.receive_json_from()
+        response = await communicator_0.receive_json_from()
 
         # 断言响应是否符合预期
         self.assertEqual(response, {"type": "my_message", "content": "Goodbye world!"})
 
         """
 
-        await communicator.disconnect()
+        await communicator_0.disconnect()

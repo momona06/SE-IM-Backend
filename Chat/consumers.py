@@ -187,8 +187,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             await self.create_group(json_info)
 
         # 群主删除群聊
-        elif function == 'delete_group':
-            await self.delete_group(json_info)
+        elif function == 'delete_chat_group':
+            await self.delete_chat_group(json_info)
 
         # 申请加入群聊
         # 去send message
@@ -718,13 +718,13 @@ class UserConsumer(AsyncWebsocketConsumer):
             'chatroom_id': chat_room.chatroom_id
         }))
 
-    async def delete_group(self, json_info):
+    async def delete_chat_group(self, json_info):
         """
         json_info = {
             'chatroom_id': 114514,
         }
         """
-        function_name = 'delete_group'
+        function_name = 'delete_chat_group'
 
         chatroom_id = json_info['chatroom_id']
         chatroom = await self.find_chatroom(function_name, chatroom_id)
