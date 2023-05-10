@@ -136,6 +136,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             await self.fetch_friend_list(json_info)
 
         # chat zone
+
+        # 连接私聊/群聊
         elif function == 'add_channel':
             await self.add_channel(json_info)
 
@@ -154,6 +156,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == 'send_message':
             await self.send_message(json_info)
 
+        # 撤回消息
         elif function == 'withdraw_message':
             await self.withdraw_message(json_info)
 
@@ -197,12 +200,9 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == "fetch_room":
             await self.fetch_room(json_info)
 
+        # 获取群聊信息
         elif function == "fetch_roominfo":
             await self.fetch_roominfo(json_info)
-
-        # 获取群消息列表
-        elif function == "fetch_message":
-            await self.fetch_message(json_info)
 
         # 发送群公告
         elif function == "release_notice":
@@ -882,37 +882,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             "notice_list": notice_list
         }))
 
-    async def fetch_message(self, json_info):
-        """
-        json_info = {
-
-        }
-        """
-        chatroom_id = json_info['chatroom_id']
-        username = json_info['username']
-        room1 = await sync_to_async(ChatRoom.objects.filter)(chatroom_id=chatroom_id)
-        room = await sync_to_async(room1.first)()
-        return_field = []
-        for li, user in enumerate(room.mem_list):
-            if user == username:
-                await sync_to_async(room.save)()
-                break
-
-        timeline = await get_timeline(chatroom_id=room.chatroom_id)
-        for msg in timeline.msg_line:
-            cur_message1 = await sync_to_async(Message.objects.filter)(msg_id=msg)
-            cur_message = await sync_to_async(cur_message1.first)()
-            return_field.append({
-                "body": cur_message.body,
-                "id": cur_message.msg_id,
-                "time": cur_message.time,
-                "sender": cur_message.sender
-            })
-
-        await self.send(text_data=json.dumps({
-            "function": "fetchmessage",
-            "message_list": return_field
-        }))
 
     async def add_group_member(self, json_info):
         """

@@ -14,6 +14,7 @@ from django.core import mail
 
 from Chat.models import ChatRoom
 
+
 def revise(req: HttpRequest):
     if req.method == "PUT":
         body = json.loads(req.body.decode("utf-8"))
@@ -46,7 +47,6 @@ def revise(req: HttpRequest):
 
                     user_rev.username = revise_content
 
-
                 elif revise_field == "password":
                     user_rev.set_password(revise_content)
                 elif revise_field == "email":
@@ -74,7 +74,6 @@ def logout(req: HttpRequest):
         user_model = get_user_model()
         user = user_model.objects.get(username=username)
         im_user = IMUser.objects.filter(user=user).first()
-
 
         if im_user.token == token:
             poll_token = TokenPoll.objects.filter(token=token).first()
@@ -108,7 +107,6 @@ def cancel(req: HttpRequest):
             user = user_model.objects.get(username=username)
             user.delete()
 
-
             friend_list = FriendList.objects.filter(user_name=username).first()
             if friend_list is not None:
                 friend_list.delete()
@@ -129,18 +127,7 @@ def cancel(req: HttpRequest):
 
             # 以上三条废弃, 包含此用户名的信息全删
 
-            '''
-            a=[1,2,3,4,5]
-            for i, k in enumerate(a[::-1]):
-            l = len(a)
-            print(str(l-i-1) + " " + str(k))
-            
-            4 5
-            3 4
-            2 3
-            1 2
-            0 1
-            '''
+
             user_add_list = AddList.objects.filter(user_name=username).first()
 
             user_list = []
@@ -187,10 +174,6 @@ def delete_user_in_other_add_list(reply_name, username):
             del other_add_list.apply_list[index]
             del other_add_list.apply_ensure[index]
             del other_add_list.apply_answer[index]
-
-'''
-nzh code
-'''
 
 
 def check_user_data_valid(username=None, password=None):
@@ -250,12 +233,6 @@ def user_register(request: HttpRequest):
                     "code": -2,
                     "info": "Invalid Userdata",
                 })
-        # except Exception as e:
-        #     print(e)
-        #     return JsonResponse({
-        #         "code": -1,
-        #         "info": "Unexpected error"
-        #     })
     else:
         return BAD_METHOD
 
