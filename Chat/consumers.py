@@ -234,6 +234,9 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == "revise_is_notice":
             await self.revise_is_notice(json_info)
 
+        elif function == "revise_is_top":
+            await self.revise_is_top(json_info)
+
     async def heat_beat(self):
         await self.send(text_data=json.dumps({
             'function': 'heartbeatconfirm'

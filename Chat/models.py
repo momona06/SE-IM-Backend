@@ -118,11 +118,11 @@ async def delete_chatroom():
 class Message(models.Model):
     msg_id = models.BigAutoField(primary_key=True)
 
-    # type = {text, image, file, video, audio, combine, reply, invite}
+    # type = {text, image, file, video, audio, combine, reply, invite, notice}
     type = models.CharField(max_length=20)
 
     # invite type, -1: no answer 0: decline 1: confirm
-    answer = models.IntegerField(max_length=1,default=-1)
+    answer = models.IntegerField(default=-1)
 
     # msg for {text, reply}
     body = models.CharField(max_length=500)
