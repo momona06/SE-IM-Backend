@@ -390,6 +390,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
 
 
+
     async def add_channel(self, json_info):
         """
         json_info = {
@@ -455,7 +456,11 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     async def send_message(self, json_info):
         """
-        json_info = {
+        text: json_info = {
+            'msg_type': 'text',
+            'msg_body': 'hello',
+        }
+        reply: json_info = {
             'msg_type': 'text',
             'msg_body': 'hello',
             'reply_id': 16,
@@ -517,7 +522,15 @@ class UserConsumer(AsyncWebsocketConsumer):
 
 
         elif msg_type == 'combine':
-            pass
+            # Msg R3 for online case
+            await self.group_send(chatroom_name, Msg_field)
+
+            # Add to Database
+            await sync_to_async(timeline.msg_line.append)(msg_id)
+            await sync_to_async(timeline.save)()
+
+            # Ack 2
+            await self.send(text_data=json.dumps(Ack_field))
 
         elif msg_type == 'invite':
             pass
@@ -993,9 +1006,9 @@ class UserConsumer(AsyncWebsocketConsumer):
                         cur_message1 = await sync_to_async(Message.objects.filter)(msg_id=msg)
                         cur_message = await sync_to_async(cur_message1.first)()
                         message_list.append({
-                            "body": cur_message.body,
-                            "id": cur_message.msg_id,
-                            "time": cur_message.time,
+                            "msg_body": cur_message.body,
+                            "msg_id": cur_message.msg_id,
+                            "msg_time": cur_message.time,
                             "sender": cur_message.sender
                         })
                     return_field.append({
