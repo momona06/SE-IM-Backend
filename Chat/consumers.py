@@ -474,6 +474,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                 )
 
             await sync_to_async(timeline.msg_line.append)(message.msg_id)
+            await sync_to_async(timeline.save)()
 
             # Ack 2
             await self.send(
@@ -945,7 +946,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         await self.send(text_data=json.dumps({
             "function": "fetchmessage",
-            "messagelist": return_field
+            "message_list": return_field
         }))
 
     async def add_group_member(self, json_info):
