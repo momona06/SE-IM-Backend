@@ -1,4 +1,6 @@
 import json
+
+from asgiref.sync import sync_to_async
 from django.contrib.auth import get_user_model
 
 from django.contrib.auth.models import User
@@ -19,14 +21,16 @@ USERNAME_1 = "test01"
 PASSWORD_1 = "123456"
 
 class MyConsumerTestCase(TestCase):
-    async def register(self, username, password):
+    @sync_to_async
+    def register(self, username, password):
         payload = {
             "username": username,
             "password": password
         }
         return self.client.post("/user/register", data=payload, content_type="application/json")
 
-    async def login(self,username, password, email=""):
+    @sync_to_async
+    def login(self,username, password, email=""):
         payload = {
             "username": username,
             "password": password,
