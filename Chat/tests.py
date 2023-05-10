@@ -67,7 +67,6 @@ class MyConsumerTestCase(TestCase):
             "function": "heartbeat",
         })
         response = await communicator_0.receive_from()
-        print(response)
         assert json.loads(response)["cur_user"] == USERNAME_0
 
         await communicator_1.send_json_to({
@@ -82,7 +81,7 @@ class MyConsumerTestCase(TestCase):
             'to': USERNAME_1,
             'from': USERNAME_0
         })
-        response = await communicator_1.receive_from()
+        response = await communicator_0.receive_from()
         assert response.json()["function"] == 'applylist'
 
         await communicator_0.disconnect()
