@@ -432,22 +432,29 @@ class UserConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_send(chatroom_name, return_field)
 
     async def message_diffuse(self, event):
-        msg_id = event["msg_id"]
-        msg_body = event["msg_body"]
-        msg_time = event['msg_time']
-        sender = event['sender']
-        room_id = event['room_id']
+        # msg_id = event["msg_id"]
+        # msg_body = event["msg_body"]
+        # msg_time = event['msg_time']
+        # sender = event['sender']
+        # room_id = event['room_id']
+        #
+        # return_field = {
+        #     'function': 'Msg',
+        #     'msg_id': msg_id,
+        #     "msg_body": msg_body,
+        #     'msg_time': msg_time,
+        #     'sender': sender,
+        #     'room_id': room_id
+        # }
+        #
+        # await self.send(text_data=json.dumps(return_field))
 
-        return_field = {
-            'function': 'Msg',
-            'msg_id': msg_id,
-            "msg_body": msg_body,
-            'msg_time': msg_time,
-            'sender': sender,
-            'room_id': room_id
-        }
+        event['function'] = 'Msg'
+        await self.send(text_data=json.dumps(event))
 
-        await self.send(text_data=json.dumps(return_field))
+    async def withdraw_diffuse(self, event):
+        event['function'] = 'withdraw_message'
+        await self.send(text_data=json.dumps(event))
 
     async def send_message(self, json_info):
         """
@@ -465,7 +472,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         # move the cursor of cli A
 
         # 初始化
-
         username = self.cur_user
         room_id = self.room_id
         room_name = self.room_name
@@ -484,7 +490,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         Msg_field = {
             "type": "message_diffuse",
             'msg_id': msg_id,
-            'msg_type': msg_type,
+            # 'msg_type': msg_type,
             'msg_body': msg_body,
             'msg_time': msg_time,
             'sender': username,
@@ -558,6 +564,41 @@ class UserConsumer(AsyncWebsocketConsumer):
         else:
             timeline.cursor_list[lis] += 1
 
+
+    async def withdraw_message(self, json_info):
+        """
+        json_info = {
+            msg_id: 114514
+        }
+        """
+        username = await self.get_cur_username()
+        msg_id = json_info['msg_id']
+
+        room_id = self.room_id
+        room_name = self.room_name
+        chatroom_name = self.chatroom_name
+
+        chatroom = filter_first_chatroom(chatroom_id=room_id)
+        timeline = filter_first_timeline(chatroom_id=room_id)
+
+        # 删除Timeline的消息
+        # message = filter_first_message(msg_id=msg_id)
+        # await sync_to_async(message.delete)()
+
+        lis = await sync_to_async(timeline.msg_line.index)(msg_id)
+        await sync_to_async(timeline.msg_line).pop(lis)
+        await sync_to_async(timeline.save)()
+
+        # 移动用户的cursor
+        for i in range(len(timeline.cursor_list)):
+            timeline.cursor_list[i] -= 1
+
+        withdraw_field = {
+            'type': 'withdraw_diffuse',
+            'msg_id': 'msg_id'
+        }
+        # 发送给在线用户
+        await self.group_send(chatroom_name, withdraw_field)
 
 
 
@@ -750,8 +791,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
                     msg_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
                     message = await database_sync_to_async(create_message)(type='invite', body=invited_name,
-                                                                           time=msg_time,
-                                                                           sender=username)
+                                                                           time=msg_time, sender=username)
 
                     await sync_to_async(message.save)()
                     if get_power(chatroom, username) != 0:
@@ -898,33 +938,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                         'message': 'Success'
                     }))
 
-    async def withdraw_message(self, json_info):
-        """
-        json_info = {
-            msg_id: 114514
-        }
-        """
-        username = await self.get_cur_username()
-        msg_id = json_info['msg_id']
-
-        room_id = self.room_id
-        room_name = self.room_name
-        chatroom_name = self.chatroom_name
-
-        chatroom = filter_first_chatroom(chatroom_id=room_id)
-        timeline = filter_first_timeline(chatroom_id=room_id)
-
-        # 删除Timeline的消息
-        message = filter_first_message(msg_id=msg_id)
-        await sync_to_async(message.delete)()
-        lis = timeline.msg_line.index(msg_id)
-        del timeline.msg_line[lis]
-
-        # 移动用户的cursor
-        for _ in range(len(timeline.cursor_list)):
-            timeline.cursor_list[_] -= 1
-
-        # 发送给在线用户
 
     async def fetch_friend_list(self, json_info):
         """
