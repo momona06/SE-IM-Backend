@@ -380,9 +380,11 @@ def send_email(request:HttpRequest):
         except Exception as e:
             print(e)
             return JsonResponse({
-                "code" : -1,
-                "info" : "发送失败"
+                "code": -1,
+                "info": "发送失败"
             })
+
+
 def bind_email(request):
     if request.method == 'GET':
         return HttpResponse('bind_email')
