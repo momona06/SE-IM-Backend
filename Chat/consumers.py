@@ -86,7 +86,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         self.room_name = None
         self.chatroom_name = None
         self.cur_user = None
-
         self.count = 0
 
     async def get_cur_username(self):
@@ -217,7 +216,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             'function': 'heartbeatconfirm',
             'count': self.count,
             'cur_user': self.cur_user,
-            'room_id': self.room_id
+            'room_id': self.room_id,
         }))
 
     async def apply_friend(self, json_info):
@@ -551,6 +550,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         # move the cursor of cli B
 
         # 初始化
+        self.count += 1
         username = self.cur_user
         room_id = json_info['room_id']
         is_back = json_info['is_back']
