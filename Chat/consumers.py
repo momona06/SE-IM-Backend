@@ -191,6 +191,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             await self.delete_group(json_info)
 
         # 申请加入群聊
+        # 去send message
         elif function == 'add_group':
             await self.add_group(json_info)
 
@@ -228,6 +229,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             await self.fetch_roominfo(json_info)
 
         # 发送群公告
+        # 已废弃
+        # 去send message
         elif function == "release_notice":
             await self.release_notice(json_info)
 
@@ -236,6 +239,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         elif function == "revise_is_top":
             await self.revise_is_top(json_info)
+
 
     async def heat_beat(self):
         """
@@ -894,12 +898,22 @@ class UserConsumer(AsyncWebsocketConsumer):
     async def release_notice(self, json_info):
         """
         json_info = {
-            'msg_type': 'text',
+            'msg_type': 'notice',
             'msg_body': 'hello',
+            'chatroom_id': 114514,
+            'msg_time': '%Y-%m-%d %H:%M:%S',
         }
         """
-
-        msg_body = json_info['msg_body']
+        #
+        # function_name = 'release_notice'
+        #
+        # chatroom_id = json_info['chatroom_id']
+        # message_type = json_info['msg_type']
+        # invited_name = json_info['msg_body']
+        # message_time = json_info['msg_time']
+        # chatroom = await self.find_chatroom(function_name, chatroom_id)
+        #
+        # msg_body = json_info['msg_body']
 
     async def remove_group_member(self, json_info):
         """
@@ -950,7 +964,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
         attribute_name = 'friendlist'
 
-        username = json_info["username"]
+        username = await self.get_cur_username()
 
         flist = await get_friendlist(username)
 
