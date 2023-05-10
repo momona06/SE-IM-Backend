@@ -16,6 +16,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait
 
+from utils.utils_database import filter_first_addlist
+
 USERNAME_0 = "test00"
 PASSWORD_0 = "123456"
 USERNAME_1 = "test01"
@@ -67,7 +69,6 @@ class MyConsumerTestCase(TestCase):
             "function": "heartbeat",
         })
         response = await communicator_0.receive_from()
-        print(response)
         assert json.loads(response)["cur_user"] == USERNAME_0
 
         await communicator_1.send_json_to({
@@ -96,6 +97,8 @@ class MyConsumerTestCase(TestCase):
             'from': USERNAME_1
         })
 
+        a = await filter_first_addlist(USERNAME_0)
+        print(a.apply_list)
         response = await communicator_1.receive_from()
         assert response.json()["function"] == 'friendlist'
 
