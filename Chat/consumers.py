@@ -5,6 +5,7 @@ import time
 from channels.db import database_sync_to_async
 from asgiref.sync import sync_to_async
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, get_user_model
 
 from UserManage.models import *
 from Chat.models import *
@@ -123,7 +124,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             if username in chatroom.mem_list:
                 await self.channel_layer.group_discard("chat_" + str(chatroom.chatroom_id), self.channel_name)
 
-        user = await database_sync_to_async(User.objects.get)(username=username)
+        user_model = await get_user_model()
+        user = await database_sync_to_async(user_model.objects.get)(username=username)
         im_user = await database_sync_to_async(IMUser.objects.get)(user=user)
         im_user.is_login = False
         await sync_to_async(im_user.save)()
