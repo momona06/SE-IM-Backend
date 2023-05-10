@@ -24,7 +24,7 @@ class MyConsumerTestCase(TestCase):
             "username": username,
             "password": password
         }
-        return self.client.post("/user/register", data=payload, content_type="application/json")
+        return await self.client.post("/user/register", data=payload, content_type="application/json")
 
     async def login(self,username, password, email=""):
         payload = {
@@ -32,15 +32,15 @@ class MyConsumerTestCase(TestCase):
             "password": password,
             "email": email
         }
-        return self.client.post("/user/login", data=payload, content_type="application/json")
+        return await self.client.post("/user/login", data=payload, content_type="application/json")
 
     async def test_consumer(self):
         communicator = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
 
         # 连接 WebSocket
-        #connected, _ = await communicator.connect()
+        connected, _ = await communicator.connect()
 
-        # assert connected
+        assert connected
 
         # 发送消息到 Consumer
         # await communicator.send_json_to({"username": USERNAME_0, "password": PASSWORD_0, "function": "confirm", "from": USERNAME_0, "to": USERNAME_1})
@@ -48,7 +48,7 @@ class MyConsumerTestCase(TestCase):
         # response = await communicator.receive_from()
         # assert response == "hello"
 
-        # await communicator.disconnect()
+        await communicator.disconnect()
 
         """
 
@@ -69,5 +69,4 @@ class MyConsumerTestCase(TestCase):
 
         """
 
-        # 关闭 WebSocket 连接
-        # await communicator.disconnect()
+        await communicator.disconnect()
