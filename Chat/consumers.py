@@ -436,13 +436,15 @@ class UserConsumer(AsyncWebsocketConsumer):
         msg_body = event["msg_body"]
         msg_time = event['msg_time']
         sender = event['sender']
+        room_id = event['room_id']
 
         return_field = {
             'function': 'Msg',
             'msg_id': msg_id,
             "msg_body": msg_body,
             'msg_time': msg_time,
-            'sender': sender
+            'sender': sender,
+            'room_id': room_id
         }
 
         await self.send(text_data=json.dumps(return_field))
@@ -1094,5 +1096,3 @@ class UserConsumer(AsyncWebsocketConsumer):
                             'function': function_name,
                             'message': 'Success'
                         }))
-
-

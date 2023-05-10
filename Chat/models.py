@@ -109,7 +109,7 @@ class Message(models.Model):
     type = models.CharField(max_length=20)
 
     # invite type, -1: no answer 0: decline 1: confirm
-    # answer = models.IntegerField(default=-1)
+    answer = models.IntegerField(default=-1)
 
     # msg for {text, reply}
     body = models.CharField(max_length=500)
@@ -129,9 +129,9 @@ def user_directory_path(instance, filename):
     return "user_{0}/{1}".format(instance.user.id)
 
 
-async def create_message(type, body, time, sender, reply_id=0):
+async def create_message(type, body, time, sender, reply_id=0, answer=-1):
     new_message = await database_sync_to_async(Message)(type=type, body=body, time=time,
-                                                        sender=sender, reply_id=reply_id)
+                                                        sender=sender, reply_id=reply_id, answer=answer)
     await database_sync_to_async(new_message.save)()
     return new_message
 
