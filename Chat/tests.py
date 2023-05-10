@@ -46,6 +46,9 @@ class MyConsumerTestCase(TestCase):
         await self.register(USERNAME_0,PASSWORD_0)
         await self.register(USERNAME_1,PASSWORD_1)
 
+        a = await filter_first_addlist(USERNAME_0)
+        print(a)
+
         communicator_0 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
         communicator_1 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
 
@@ -60,6 +63,8 @@ class MyConsumerTestCase(TestCase):
             "function": "add_channel",
             "username": USERNAME_0
         })
+
+
         await communicator_1.send_json_to({
             "function": "add_channel",
             "username": USERNAME_1
