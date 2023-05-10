@@ -1,5 +1,6 @@
 import json
 
+import pytest
 from asgiref.sync import sync_to_async
 from django.contrib.auth import get_user_model
 
@@ -38,6 +39,7 @@ class MyConsumerTestCase(TestCase):
         }
         return self.client.post("/user/login", data=payload, content_type="application/json")
 
+    @pytest.mark.django_db(transaction=True)
     async def test_consumer(self):
         await self.register(USERNAME_0,PASSWORD_0)
         await self.register(USERNAME_1,PASSWORD_1)
