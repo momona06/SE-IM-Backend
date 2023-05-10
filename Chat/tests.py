@@ -76,6 +76,12 @@ class MyConsumerTestCase(TestCase):
         assert json.loads(response)["cur_user"] == USERNAME_1
 
         await communicator_0.send_json_to({
+            "function": "heartbeat",
+        })
+        response = await communicator_0.receive_from()
+        assert json.loads(response)["cur_user"] == USERNAME_0
+
+        await communicator_0.send_json_to({
             "function": "apply",
             "username": USERNAME_0,
             'to': USERNAME_1,
@@ -93,7 +99,7 @@ class MyConsumerTestCase(TestCase):
         assert response.json()["function"] == 'friendlist'
 
         await communicator_0.disconnect()
-
+        await communicator_1.disconnect()
         """
 
         # 接收 Consumer 的响应
@@ -113,4 +119,3 @@ class MyConsumerTestCase(TestCase):
 
         """
 
-        await communicator_0.disconnect()
