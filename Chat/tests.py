@@ -24,7 +24,7 @@ class MyConsumerTestCase(TestCase):
             "username": username,
             "password": password
         }
-        return await self.client.post("/user/register", data=payload, content_type="application/json")
+        return self.client.post("/user/register", data=payload, content_type="application/json")
 
     async def login(self,username, password, email=""):
         payload = {
@@ -32,7 +32,7 @@ class MyConsumerTestCase(TestCase):
             "password": password,
             "email": email
         }
-        return await self.client.post("/user/login", data=payload, content_type="application/json")
+        return self.client.post("/user/login", data=payload, content_type="application/json")
 
     async def test_consumer(self):
         await self.register(USERNAME_0,PASSWORD_0)
