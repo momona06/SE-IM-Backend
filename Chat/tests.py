@@ -46,9 +46,6 @@ class MyConsumerTestCase(TestCase):
         await self.register(USERNAME_0,PASSWORD_0)
         await self.register(USERNAME_1,PASSWORD_1)
 
-        a = await filter_first_addlist(USERNAME_0)
-        print(a.username)
-
         communicator_0 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
         communicator_1 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
 
@@ -64,7 +61,6 @@ class MyConsumerTestCase(TestCase):
             "username": USERNAME_0
         })
 
-
         await communicator_1.send_json_to({
             "function": "add_channel",
             "username": USERNAME_1
@@ -73,6 +69,7 @@ class MyConsumerTestCase(TestCase):
         await communicator_0.send_json_to({
             "function": "heartbeat",
         })
+
         response = await communicator_0.receive_from()
         assert json.loads(response)["cur_user"] == USERNAME_0
 
@@ -103,8 +100,6 @@ class MyConsumerTestCase(TestCase):
             'from': USERNAME_1
         })
 
-        a = await filter_first_addlist(USERNAME_0)
-        print(a.apply_list)
         response = await communicator_1.receive_from()
         assert response.json()["function"] == 'friendlist'
 
