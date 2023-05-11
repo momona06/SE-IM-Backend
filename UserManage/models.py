@@ -11,7 +11,7 @@ def create_im_user(user, token):
 class IMUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     token = models.CharField(max_length=100)
-    # avatar = models.ImageField(upload_to='avatar/%Y%m%d/', blank=True)
+    avatar = models.ImageField(upload_to='pic/')
 
 
 class TokenPoll(models.Model):

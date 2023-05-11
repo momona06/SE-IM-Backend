@@ -1,6 +1,7 @@
 import json
 import re
 import random
+import os
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 
@@ -340,6 +341,7 @@ def user_login(request, identity, password, login_filter):
                 return JsonResponse({
                     "username": tem_im_user.user.username,
                     "token": tem_im_user.token,
+                    "avatar": os.path.join("/static/media/pic/", tem_im_user.avatar),
                     "code": 0,
                     "info": "Login Succeed",
                 })
@@ -408,3 +410,25 @@ def bind_email(request):
                 "info": "验证码错误"
             })
         return None
+
+def upload_avatar(request):
+    if request.method == 'GET':
+        return HttpResponse('upload')
+    if request.method == 'POST':
+        try:
+            cur_pic = request.FILES.get("avatar")
+            body = json.loads(request.body.decode("utf-8"))
+            cur_user = str(body["user"])
+            user = IMUser.objects.filter(username=cur_user).first()
+            user.avatar = cur_pic
+            user.save()
+            return JsonResponse({
+                "code": 0,
+                "info": "successfully upload"
+            })
+        except Exception as e:
+            print(e)
+            return JsonResponse({
+                "code": -1,
+                "info": "Unexpected error"
+            })

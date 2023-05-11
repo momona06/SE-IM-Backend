@@ -19,3 +19,4 @@ daphne
 psycopg2
 
 selenium
+pillow

@@ -9,6 +9,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'collect_static')
 STATICFILES_DIRS = [  # 列表或者元组都行
     os.path.join(BASE_DIR, 'static')  # 你也可以配置多个静态文件目录，只需拼上路径就好了
 ]
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(STATIC_ROOT, 'media')
 
 SECRET_KEY = 'django-insecure-xvv16d@^4vu6-_^8w73_wt+xqf-wfppqevn)_zgye!#7l^6=p$'
 
