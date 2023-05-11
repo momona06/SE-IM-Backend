@@ -472,8 +472,8 @@ def upload_avatar(request):
             user.save()
             return JsonResponse({
                 "code": 0,
-                "info": "successfully upload",
-                "avatar": os.path.join("/static/media/pic/", user.avatar)
+                "info": "successfully upload"
+                #"avatar": os.path.join("/static/media/pic/", user.avatar)
             })
         except Exception as e:
             print(e)
