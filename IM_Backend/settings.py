@@ -4,8 +4,8 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 STATIC_URL = '/static/'  # 通过别名指向STATICFILES_DIRS目录，当然，别名也可以修改
+STATIC_ROOT = os.path.join(BASE_DIR, 'collect_static')
 STATICFILES_DIRS = [  # 列表或者元组都行
     os.path.join(BASE_DIR, 'static')  # 你也可以配置多个静态文件目录，只需拼上路径就好了
 ]
@@ -18,6 +18,8 @@ if envDep is None:
     DEBUG = True
 else:
     DEBUG = False
+
+#DEBUG = True
 
 ALLOWED_HOSTS = [
     '*'

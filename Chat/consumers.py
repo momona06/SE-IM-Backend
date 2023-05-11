@@ -1018,7 +1018,8 @@ class UserConsumer(AsyncWebsocketConsumer):
                         "roomname": roomname,
                         "is_notice": room.is_notice[li],
                         "is_top": room.is_top[li],
-                        "message_list": message_list
+                        "message_list": message_list,
+                        "is_private": room.is_private
                     })
                     break
         await self.send(text_data=json.dumps({
