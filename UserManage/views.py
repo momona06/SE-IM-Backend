@@ -339,7 +339,7 @@ def user_login(request, identity, password, login_filter):
                     # tem_im_user.save()
                 avatar = ""
                 if tem_im_user.avatar is not None:
-                    avatar = os.path.join("/static/media/pic/", str(tem_im_user.avatar))
+                    avatar = os.path.join("/static/media/", str(tem_im_user.avatar))
 
                 return JsonResponse({
                     "username": tem_im_user.user.username,
@@ -473,7 +473,7 @@ def upload_avatar(request):
             return JsonResponse({
                 "code": 0,
                 "info": "successfully upload",
-                "avatar": os.path.join("/static/media/pic/", str(user.avatar))
+                "avatar": os.path.join("/static/media/", str(user.avatar))
             })
         except Exception as e:
             print(e)
