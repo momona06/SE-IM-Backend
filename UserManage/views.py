@@ -465,8 +465,8 @@ def upload_avatar(request):
         try:
             cur_pic = request.FILES.get("avatar")
             #body = json.loads(request.body.decode("utf-8"))
-            #cur_user = str(body["username"])
-            cur_user = User.objects.filter(username='111111').first()
+            name = request.POST['username']
+            cur_user = User.objects.filter(username=name).first()
             user = IMUser.objects.filter(user=cur_user).first()
             user.avatar = cur_pic
             user.save()
