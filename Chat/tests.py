@@ -79,6 +79,7 @@ class MyConsumerTestCase(TestCase):
         await communicator_1.send_json_to({
             "function": "heartbeat",
         })
+
         response = await communicator_1.receive_from()
         assert json.loads(response)["cur_user"] == USERNAME_1
 
