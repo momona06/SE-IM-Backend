@@ -345,10 +345,10 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
 
         await self.send(text_data=json.dumps(return_field))
-        for user in CONSUMER_OBJECT_LIST:
+        for index,user in enumerate(CONSUMER_OBJECT_LIST):
             if user.cur_user == apply_to:
                 # await user.fetch_room(json.dumps({"username": user.cur_user}))
-                await user.fetch_friend_list({"username": user.cur_user})
+                await CONSUMER_OBJECT_LIST[index].fetch_friend_list({"username": user.cur_user})
                 break
 
         # await self.fetch_room(json.dumps({"username": username}))
