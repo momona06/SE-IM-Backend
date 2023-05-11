@@ -473,17 +473,18 @@ class UserConsumer(AsyncWebsocketConsumer):
             'msg_type': 'text',
             'msg_body': 'hello',
         }
+
         reply: json_info = {
-            'msg_type': 'text',
+            'msg_type': 'reply',
             'msg_body': 'hello',
             'reply_id': 16,
         }
+
         combine: json_info = {
             'msg_type': 'combine',
-            'msg_body': 'hello',
-            'combine_id': [16, 17],
+            'combine_list': [16, 17],
+            'transroom_list': [14, 5, 86],
         }
-
         """
 
         # Pipeline
