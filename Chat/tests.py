@@ -64,11 +64,16 @@ class MyConsumerTestCase(TestCase):
         })
         response = await communicator_0.receive_from()
         assert json.loads(response)["cur_user"] == USERNAME_0
+
+        print(response)
+
         await communicator_0.send_json_to({
             "function": "heartbeat",
         })
         response = await communicator_0.receive_from()
         assert json.loads(response)["cur_user"] == USERNAME_0
+
+        print(response)
 
         await communicator_0.disconnect()
         # await communicator_0.send_json_to({
