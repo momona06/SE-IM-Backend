@@ -93,6 +93,12 @@ class MyConsumerTestCase(TestCase):
             'from': USERNAME_0
         })
 
+        await communicator_0.disconnect()
+        await communicator_1.disconnect()
+
+        await communicator_1.connect()
+        assert connected
+
         await communicator_1.send_json_to({
             "function": "confirm",
             "username": USERNAME_1,
@@ -103,8 +109,6 @@ class MyConsumerTestCase(TestCase):
         response = await communicator_1.receive_from()
         assert response.json()["function"] == 'friendlist'
 
-        await communicator_0.disconnect()
-        await communicator_1.disconnect()
         """
 
         # 接收 Consumer 的响应
