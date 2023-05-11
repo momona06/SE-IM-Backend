@@ -70,13 +70,13 @@ class MyConsumerTestCase(TestCase):
         response = await communicator_0.receive_from()
         assert json.loads(response)["cur_user"] == USERNAME_0
 
+        await communicator_0.disconnect()
         # await communicator_0.send_json_to({
         #     "function": "apply",
         #     "username": USERNAME_0,
         #     'to': USERNAME_1,
         #     'from': USERNAME_0
         # })
-        await communicator_0.disconnect()
 
         # communicator_1 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
         #
