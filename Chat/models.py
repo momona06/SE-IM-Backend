@@ -36,10 +36,6 @@ class ChatTimeLine(models.Model):
     )
 
 
-async def delete_chat_timeline():
-    pass
-
-
 # Design philosophy: all the info about the room should be put here
 class ChatRoom(models.Model):
     chatroom_id = models.BigAutoField(primary_key=True)
@@ -120,18 +116,25 @@ class Message(models.Model):
     # related msg for {reply}
     reply_id = models.BigIntegerField(default=0)
 
+    # list for those who read this message
+    read_list = ArrayField(
+        models.BooleanField(default=False)
+    )
+
+    # list for combined message
+    combine_list = ArrayField(
+        models.BigIntegerField(default=0)
+    )
+
     time = models.CharField(max_length=100)
+
     sender = models.CharField(max_length=100)
 
 
-def user_directory_path(instance, filename):
-    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
-    return "user_{0}/{1}".format(instance.user.id)
-
-
-async def create_message(type, body, time, sender, reply_id=0, answer=-1):
+async def create_message(type, body, time, sender, reply_id=0, answer=-1, read_list=[], combine_list=[]):
     new_message = await database_sync_to_async(Message)(type=type, body=body, time=time,
-                                                        sender=sender, reply_id=reply_id, answer=answer)
+                                                        sender=sender, reply_id=reply_id, answer=answer,
+                                                        read_list=read_list, combine_list=combine_list)
     await database_sync_to_async(new_message.save)()
     return new_message
 

@@ -41,15 +41,17 @@ def revise(req: HttpRequest):
             else:
                 if revise_field == "username":
                     for room in ChatRoom.objects.all()[::-1]:
+                        # chatroom revise
+                        # mem_list, manager_list, master_name revise
                         for index, user in enumerate(room.mem_list):
                             if user == username:
-                                room.mem_list[index]= revise_content
+                                room.mem_list[index] = revise_content
                                 for index_, user_ in enumerate(room.manager_list):
                                     if user_ == username:
                                         room.manager_list[index_] = revise_content
                                         break
-                                if room.master_name==username:
-                                    room.master_name=revise_content
+                                if room.master_name == username:
+                                    room.master_name = revise_content
                                 room.save()
                                 break
 
@@ -57,6 +59,7 @@ def revise(req: HttpRequest):
 
                 elif revise_field == "password":
                     user_rev.set_password(revise_content)
+
                 elif revise_field == "email":
                     user_rev.email = revise_content
                 else:
@@ -140,13 +143,13 @@ def cancel(req: HttpRequest):
             user_list = []
 
             for reply_name in user_add_list.reply_list:
-                if not reply_name in user_list:
+                if reply_name not in user_list:
                     user_list.append(reply_name)
 
                     delete_user_in_other_add_list(reply_name, username)
 
             for apply_name in user_add_list.apply_list:
-                if not apply_name in user_list:
+                if apply_name not in user_list:
                     user_list.append(apply_name)
 
                     delete_user_in_other_add_list(apply_name, username)
@@ -176,7 +179,6 @@ def cancel(req: HttpRequest):
                 "code": -1,
                 "info": "User not Exists"
             })
-
     else:
         return BAD_METHOD
 
@@ -186,7 +188,7 @@ def delete_user_in_other_add_list(reply_name, username):
     l = len(other_add_list.reply_list)
     for i, other_name in enumerate(other_add_list.reply_list[::-1]):
         if other_name == username:
-            index =  l - i - 1
+            index = l - i - 1
             del other_add_list.reply_list[index]
             del other_add_list.reply_ensure[index]
             del other_add_list.reply_answer[index]
@@ -219,42 +221,44 @@ def check_email_valid(email):
 
 def user_register(request: HttpRequest):
     if request.method == 'POST':
-        # try:
-            body = json.loads(request.body.decode("utf-8"))
-            username = str(body["username"])
-            password = str(body["password"])
+        body = json.loads(request.body.decode("utf-8"))
+        username = str(body["username"])
+        password = str(body["password"])
 
-            # check
-            if check_user_data_valid(username, password):
-                user = User.objects.filter(username=username).first()
+        # check
+        if check_user_data_valid(username, password):
+            user = User.objects.filter(username=username).first()
 
-                # unique
-                if user is not None:
-                    return JsonResponse({"code": -3, "info": "User already exists"})
-
-                tem_user = User.objects.create_user(username=username, password=password)
-
-                tem_im_user = create_im_user(tem_user, get_new_token())
-                tem_im_user.save()
-
-                group = ['我的好友']
-                friend_list = FriendList(user_name=username, group_list=group, friend_list=list())
-                friend_list.save()
-
-                add_list = AddList(user_name=username,
-                                   reply_list=list(), reply_answer=list(), reply_ensure=list(),
-                                   apply_list=list(), apply_answer=list(), apply_ensure=list())
-                add_list.save()
-
+            # unique
+            if user is not None:
                 return JsonResponse({
-                    "code": 0,
-                    "info": "Register Succeed",
+                    "code": -3,
+                    "info": "User already exists"
                 })
-            else:
-                return JsonResponse({
-                    "code": -2,
-                    "info": "Invalid Userdata",
-                })
+
+            tem_user = User.objects.create_user(username=username, password=password)
+
+            tem_im_user = create_im_user(tem_user, get_new_token())
+            tem_im_user.save()
+
+            group = ['我的好友']
+            friend_list = FriendList(user_name=username, group_list=group, friend_list=list())
+            friend_list.save()
+
+            add_list = AddList(user_name=username,
+                               reply_list=list(), reply_answer=list(), reply_ensure=list(),
+                               apply_list=list(), apply_answer=list(), apply_ensure=list())
+            add_list.save()
+
+            return JsonResponse({
+                "code": 0,
+                "info": "Register Succeed",
+            })
+        else:
+            return JsonResponse({
+                "code": -2,
+                "info": "Invalid Userdata",
+            })
     else:
         return BAD_METHOD
 
@@ -327,15 +331,20 @@ def user_login(request, identity, password, login_filter):
             if tem_user:
                 tem_im_user = IMUser.objects.filter(user=tem_user).first()
                 if tem_im_user is not None:
-                    tem_im_user.token = get_new_token()
-                    tem_im_user.save()
+                    if not tem_im_user.is_login:
+                        tem_im_user.token = get_new_token()
+                        tem_im_user.is_login = True
+                        tem_im_user.save()
+                    else:
+                        return JsonResponse({
+                            "code": -7,
+                            "info": "User already login",
+                        })
                 else:
                     return JsonResponse({
                         "code": -1,
                         "info": "Unexpected error"
                     })
-                    # tem_im_user = create_im_user(tem_user,get_new_token())
-                    # tem_im_user.save()
 
                 return JsonResponse({
                     "username": tem_im_user.user.username,
@@ -356,33 +365,35 @@ def user_login(request, identity, password, login_filter):
         })
 
 
-def send_email(request:HttpRequest):
+def send_email(request: HttpRequest):
     if request.method == 'GET':
         return HttpResponse("send_email")
     if request.method == 'POST':
         try:
             body = json.loads(request.body.decode("utf-8"))
-            send_list = []
+            send_list = list()
             send_list.append(str(body['email']))
             sms_code = '%06d' % random.randint(0, 999999)
             cur_email = EmailCode(email=str(body['email']), code=sms_code)
             cur_email.save()
             mail.send_mail(
-                subject = '邮箱验证',
-                message = '您的验证码为：{0}'.format(sms_code),
-                from_email = '2840206224@qq.com',
-                recipient_list = send_list
+                subject='邮箱验证',
+                message='您的验证码为：{0}'.format(sms_code),
+                from_email='2840206224@qq.com',
+                recipient_list=send_list
             )
             return JsonResponse({
-                "code" : 0,
-                "info" : "验证码已发送"
+                "code": 0,
+                "info": "验证码已发送"
             })
         except Exception as e:
             print(e)
             return JsonResponse({
-                "code" : -1,
-                "info" : "发送失败"
+                "code": -1,
+                "info": "发送失败"
             })
+
+
 def bind_email(request):
     if request.method == 'GET':
         return HttpResponse('bind_email')
@@ -399,7 +410,7 @@ def bind_email(request):
                 user.save()
                 return JsonResponse({
                     "code": 0,
-                    "info":"绑定成功"
+                    "info": "绑定成功"
                 })
         except Exception as e:
             print(e)

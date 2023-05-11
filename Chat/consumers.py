@@ -5,7 +5,9 @@ import time
 from channels.db import database_sync_to_async
 from asgiref.sync import sync_to_async
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, get_user_model
 
+from UserManage.models import *
 from Chat.models import *
 from FriendRelation.models import *
 from utils.utils_database import *
@@ -121,6 +123,12 @@ class UserConsumer(AsyncWebsocketConsumer):
         async for chatroom in ChatRoom.objects.all():
             if username in chatroom.mem_list:
                 await self.channel_layer.group_discard("chat_" + str(chatroom.chatroom_id), self.channel_name)
+
+        user_model = await sync_to_async(get_user_model)()
+        user = await database_sync_to_async(user_model.objects.get)(username=username)
+        im_user = await database_sync_to_async(IMUser.objects.get)(user=user)
+        im_user.is_login = False
+        await sync_to_async(im_user.save)()
 
         CONSUMER_OBJECT_LIST.remove(self)
         raise StopConsumer()
@@ -400,6 +408,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
 
 
+
     async def add_channel(self, json_info):
         """
         json_info = {
@@ -439,36 +448,52 @@ class UserConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_send(chatroom_name, return_field)
 
     async def message_diffuse(self, event):
-        # msg_id = event["msg_id"]
-        # msg_body = event["msg_body"]
-        # msg_time = event['msg_time']
-        # sender = event['sender']
-        # room_id = event['room_id']
-        #
-        # return_field = {
-        #     'function': 'Msg',
-        #     'msg_id': msg_id,
-        #     "msg_body": msg_body,
-        #     'msg_time': msg_time,
-        #     'sender': sender,
-        #     'room_id': room_id
-        # }
-        #
-        # await self.send(text_data=json.dumps(return_field))
+        msg_id = event["msg_id"]
+        msg_body = event["msg_body"]
+        msg_time = event['msg_time']
+        msg_type = event['msg_type']
+        sender = event['sender']
+        room_id = event['room_id']
 
-        event['function'] = 'Msg'
-        await self.send(text_data=json.dumps(event))
+        return_field = {
+            'function': 'Msg',
+            'msg_id': msg_id,
+            "msg_body": msg_body,
+            'msg_time': msg_time,
+            'msg_type': msg_type,
+            'sender': sender,
+            'room_id': room_id
+        }
+
+        await self.send(text_data=json.dumps(return_field))
 
     async def withdraw_diffuse(self, event):
-        event['function'] = 'withdraw_message'
-        await self.send(text_data=json.dumps(event))
+        msg_id = event["msg_id"]
+
+        return_field = {
+            'function': 'withdraw',
+            'msg_id': msg_id
+        }
+
+        await self.send(text_data=json.dumps(return_field))
 
     async def send_message(self, json_info):
         """
-        json_info = {
+        text: json_info = {
             'msg_type': 'text',
             'msg_body': 'hello',
+        }
+
+        reply: json_info = {
+            'msg_type': 'reply',
+            'msg_body': 'hello',
             'reply_id': 16,
+        }
+
+        combine: json_info = {
+            'msg_type': 'combine',
+            'combine_list': [16, 17],
+            'transroom_list': [14, 5, 86],
         }
         """
 
@@ -497,7 +522,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         Msg_field = {
             "type": "message_diffuse",
             'msg_id': msg_id,
-            # 'msg_type': msg_type,
+            'msg_type': msg_type,
             'msg_body': msg_body,
             'msg_time': msg_time,
             'sender': username,
@@ -510,10 +535,45 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
 
         # type = {text, image, file, video, audio, combine, reply, invite}
-        if msg_type == 'text' or msg_type == 'reply':
+        if msg_type == 'text' or msg_type == 'reply' or msg_type == 'combine' or msg_type == 'invite':
             if msg_type == 'reply':
                 reply_id = json_info['reply_id']
                 Msg_field['reply_id'] = reply_id
+
+            elif msg_type == 'combine':
+                pass
+
+            elif msg_type == 'invite':
+                function_name = 'send_message_invite'
+
+                if chatroom is not None:
+                    invited_name = msg_body
+                    invited_user = await self.check_user_exist(function_name, invited_name)
+
+                    if invited_user is not None:
+                        if invited_name in chatroom.mem_list:
+                            await self.send(text_data=json.dumps({
+                                'function': function_name,
+                                'message': 'User is already in the group'
+                            }))
+                        else:
+                            username = await self.get_cur_username()
+                            user = await get_user(username)
+
+                            message = await database_sync_to_async(create_message)(type='invite', body=invited_name,
+                                                                                   time=msg_time, sender=username)
+
+                            await sync_to_async(message.save)()
+                            if get_power(chatroom, username) != 0:
+                                message.answer = 1
+                                await sync_to_async(message.save)()
+
+                                await chatroom_add_member(chatroom, username)
+
+                            await self.send(text_data=json.dumps({
+                                'function': function_name,
+                                'message': 'Success',
+                            }))
 
             # Msg R3 for online case
             await self.group_send(chatroom_name, Msg_field)
@@ -524,42 +584,6 @@ class UserConsumer(AsyncWebsocketConsumer):
 
             # Ack 2
             await self.send(text_data=json.dumps(Ack_field))
-
-
-        elif msg_type == 'combine':
-            pass
-
-        elif msg_type == 'invite':
-            function_name = 'send_message_invite'
-
-            if chatroom is not None:
-                invited_name = msg_body
-                invited_user = await self.check_user_exist(function_name, invited_name)
-
-                if invited_user is not None:
-                    if invited_name in chatroom.mem_list:
-                        await self.send(text_data=json.dumps({
-                            'function': function_name,
-                            'message': 'User is already in the group'
-                        }))
-                    else:
-                        username = await self.get_cur_username()
-                        user = await get_user(username)
-
-                        message = await database_sync_to_async(create_message)(type='invite', body=invited_name,
-                                                                               time=msg_time, sender=username)
-
-                        await sync_to_async(message.save)()
-                        if get_power(chatroom, username) != 0:
-                            message.answer = 1
-                            await sync_to_async(message.save)()
-
-                            await chatroom_add_member(chatroom, username)
-
-                        await self.send(text_data=json.dumps({
-                            'function': function_name,
-                            'message': 'Success',
-                        }))
 
         elif msg_type == 'image' or msg_type == 'video' or msg_type == 'audio' or msg_type == 'file':
             pass
@@ -618,12 +642,8 @@ class UserConsumer(AsyncWebsocketConsumer):
         room_name = self.room_name
         chatroom_name = self.chatroom_name
 
-        chatroom = filter_first_chatroom(chatroom_id=room_id)
-        timeline = filter_first_timeline(chatroom_id=room_id)
-
-        # 删除Timeline的消息
-        # message = filter_first_message(msg_id=msg_id)
-        # await sync_to_async(message.delete)()
+        chatroom = await filter_first_chatroom(chatroom_id=room_id)
+        timeline = await filter_first_timeline(chatroom_id=room_id)
 
         lis = await sync_to_async(timeline.msg_line.index)(msg_id)
         await sync_to_async(timeline.msg_line).pop(lis)
@@ -635,7 +655,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         withdraw_field = {
             'type': 'withdraw_diffuse',
-            'msg_id': 'msg_id'
+            'msg_id': msg_id
         }
         # 发送给在线用户
         await self.group_send(chatroom_name, withdraw_field)
@@ -749,7 +769,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             'manager_name': 'ashitemaru'
         }
         """
-
         function_name = 'appoint_manager'
 
         chatroom_id = json_info['chatroom_id']
@@ -1046,9 +1065,9 @@ class UserConsumer(AsyncWebsocketConsumer):
                         cur_message1 = await sync_to_async(Message.objects.filter)(msg_id=msg)
                         cur_message = await sync_to_async(cur_message1.first)()
                         message_list.append({
-                            "body": cur_message.body,
-                            "id": cur_message.msg_id,
-                            "time": cur_message.time,
+                            "msg_body": cur_message.body,
+                            "msg_id": cur_message.msg_id,
+                            "msg_time": cur_message.time,
                             "sender": cur_message.sender
                         })
                     return_field.append({
