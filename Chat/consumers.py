@@ -115,7 +115,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         return self.cur_user
 
     async def connect(self):
-        CONSUMER_OBJECT_LIST.append(self)
         await self.accept()
 
     async def disconnect(self, code):
@@ -337,7 +336,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         await sync_to_async(friend1.save)()
         await sync_to_async(friend2.save)()
 
-        await create_chatroom('private_chat', [username, apply_from], username, is_private=True)
+        chatroom = await create_chatroom('private_chat', [username, apply_from], username, is_private=True)
 
         # 若applyer在线结果发送到applyer
         return_field = {
@@ -347,13 +346,26 @@ class UserConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(return_field))
         for user in CONSUMER_OBJECT_LIST:
             if user.cur_user == apply_to:
-                # await user.fetch_room(json.dumps({"username": user.cur_user}))
                 await user.fetch_friend_list({"username": user.cur_user})
                 break
 
-        # await self.fetch_room(json.dumps({"username": username}))
         await self.fetch_friend_list({"username": username})
         await self.fetch_reply_list({"username": username})
+
+
+
+
+        await self.channel_layer.group_add("chat_" + str(chatroom.chatroom_id), self.channel_name)
+
+        for user in CONSUMER_OBJECT_LIST:
+            if user.cur_user == apply_from:
+                await user.channel_layer.group_add("chat_" + str(chatroom.chatroom_id), user.channel_name)
+                await user.fetch_friend_list({"username": user.cur_user})
+                await user.fetch_apply_list({"username": user.cur_user})
+                await user.fetch_room({"username": user.cur_user})
+
+
+
 
     async def decline_friend(self, json_info):
         # 修改数据库
@@ -417,7 +429,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
         username = json_info['username']
         self.cur_user = username
-
+        CONSUMER_OBJECT_LIST.append(self)
         async for chatroom in ChatRoom.objects.all():
             if username in chatroom.mem_list:
                 await self.channel_layer.group_add("chat_" + str(chatroom.chatroom_id), self.channel_name)
