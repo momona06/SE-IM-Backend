@@ -13,7 +13,6 @@ from FriendRelation.models import *
 from utils.utils_database import *
 
 CONSUMER_OBJECT_LIST = []
-USER_NAME_LIST = []
 
 
 async def modify_add_request_list_with_username(other_username, add_list, answer, mode=0):
@@ -344,10 +343,10 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
 
         await self.send(text_data=json.dumps(return_field))
-        for user in CONSUMER_OBJECT_LIST:
-            if user.cur_user == apply_to:
-                await user.fetch_friend_list({"username": user.cur_user})
-                break
+        # for user in CONSUMER_OBJECT_LIST:
+        #     if user.cur_user == apply_to:
+        #         await user.fetch_friend_list({"username": user.cur_user})
+        #         break
 
         await self.fetch_friend_list({"username": username})
         await self.fetch_reply_list({"username": username})
@@ -547,17 +546,19 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
 
         # type = {text, image, file, video, audio, combine, reply, invite}
-        if msg_type == 'text' or msg_type == 'reply' or msg_type == 'combine' or msg_type == 'invite':
+        if msg_type == 'text' or msg_type == 'reply' or msg_type == 'combine' or msg_type == 'invite' or msg_type == notice:
             if msg_type == 'reply':
                 reply_id = json_info['reply_id']
                 Msg_field['reply_id'] = reply_id
 
             elif msg_type == 'combine':
-                pass
+                combine_list = json_info['combine_list']
+                transroom_list = json_info['transroom_list']
+                Msg_field['combine_list'] = combine_list
+                Msg_field['transroom_list'] = transroom_list
 
             elif msg_type == 'invite':
                 function_name = 'send_message_invite'
-
                 if chatroom is not None:
                     invited_name = msg_body
                     invited_user = await self.check_user_exist(function_name, invited_name)
@@ -587,6 +588,10 @@ class UserConsumer(AsyncWebsocketConsumer):
                                 'message': 'Success',
                             }))
 
+            elif msg_type == 'notice':
+                pass
+
+
             # Msg R3 for online case
             await self.group_send(chatroom_name, Msg_field)
 
@@ -598,9 +603,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps(Ack_field))
 
         elif msg_type == 'image' or msg_type == 'video' or msg_type == 'audio' or msg_type == 'file':
-            pass
-
-        elif msg_type == 'notice':
             pass
 
 
@@ -655,10 +657,10 @@ class UserConsumer(AsyncWebsocketConsumer):
         chatroom_name = self.chatroom_name
 
         chatroom = await filter_first_chatroom(chatroom_id=room_id)
-        timeline = await filter_first_timeline(chatroom_id=room_id)
+        timeline = await get_timeline(chatroom_id=room_id)
 
         lis = await sync_to_async(timeline.msg_line.index)(msg_id)
-        await sync_to_async(timeline.msg_line).pop(lis)
+        await sync_to_async(timeline.msg_line.pop)(lis)
         await sync_to_async(timeline.save)()
 
         # 移动用户的cursor
@@ -671,7 +673,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
         # 发送给在线用户
         await self.group_send(chatroom_name, withdraw_field)
-
 
 
     async def find_chatroom(self, function_name, chatroom_id):
