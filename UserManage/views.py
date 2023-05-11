@@ -331,15 +331,15 @@ def user_login(request, identity, password, login_filter):
             if tem_user:
                 tem_im_user = IMUser.objects.filter(user=tem_user).first()
                 if tem_im_user is not None:
-                    if not tem_im_user.is_login:
+                    # if not tem_im_user.is_login:
                         tem_im_user.token = get_new_token()
                         tem_im_user.is_login = True
                         tem_im_user.save()
-                    else:
-                        return JsonResponse({
-                            "code": -7,
-                            "info": "User already login",
-                        })
+                    # else:
+                    #     return JsonResponse({
+                    #         "code": -7,
+                    #         "info": "User already login",
+                    #     })
                 else:
                     return JsonResponse({
                         "code": -1,
