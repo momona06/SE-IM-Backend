@@ -304,9 +304,9 @@ class UserConsumer(AsyncWebsocketConsumer):
                     "make_sure": add_list.apply_ensure[li]
                 })
 
-            for user in CONSUMER_OBJECT_LIST:
+            for index,user in enumerate(CONSUMER_OBJECT_LIST):
                 if user.cur_user == apply_to:
-                    await user.send(text_data=json.dumps({
+                    await CONSUMER_OBJECT_LIST[index].send(text_data=json.dumps({
                         'function': 'applylist',
                         'applylist': return_field
                     }))
