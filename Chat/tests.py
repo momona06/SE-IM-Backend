@@ -41,13 +41,13 @@ class MyConsumerTestCase(TestCase):
         }
         return self.client.post("/user/login", data=payload, content_type="application/json")
 
-    @pytest.mark.django_db(transaction=True)
+    # @pytest.mark.django_db(transaction=True)
     async def test_consumer(self):
         await self.register(USERNAME_0,PASSWORD_0)
         await self.register(USERNAME_1,PASSWORD_1)
 
         a = await filter_first_addlist(USERNAME_0)
-        print(a)
+        print(a.username)
 
         communicator_0 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
         communicator_1 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
