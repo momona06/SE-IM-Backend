@@ -23,6 +23,7 @@ PASSWORD_0 = "123456"
 USERNAME_1 = "test01"
 PASSWORD_1 = "123456"
 
+
 class MyConsumerTestCase(TestCase):
     @sync_to_async
     def register(self, username, password):
@@ -33,7 +34,7 @@ class MyConsumerTestCase(TestCase):
         return self.client.post("/user/register", data=payload, content_type="application/json")
 
     @sync_to_async
-    def login(self,username, password, email=""):
+    def login(self, username, password, email=""):
         payload = {
             "username": username,
             "password": password,
@@ -43,8 +44,8 @@ class MyConsumerTestCase(TestCase):
 
     # @pytest.mark.django_db(transaction=True)
     async def test_consumer(self):
-        await self.register(USERNAME_0,PASSWORD_0)
-        await self.register(USERNAME_1,PASSWORD_1)
+        await self.register(USERNAME_0, PASSWORD_0)
+        await self.register(USERNAME_1, PASSWORD_1)
 
         communicator_0 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
         communicator_1 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
@@ -123,4 +124,3 @@ class MyConsumerTestCase(TestCase):
         self.assertEqual(response, {"type": "my_message", "content": "Goodbye world!"})
 
         """
-
