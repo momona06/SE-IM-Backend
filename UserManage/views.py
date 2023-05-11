@@ -337,11 +337,14 @@ def user_login(request, identity, password, login_filter):
                     })
                     # tem_im_user = create_im_user(tem_user,get_new_token())
                     # tem_im_user.save()
+                avatar = ""
+                if tem_im_user.avatar is not None:
+                    avatar = os.path.join("/static/media/pic/", str(tem_im_user.avatar))
 
                 return JsonResponse({
                     "username": tem_im_user.user.username,
                     "token": tem_im_user.token,
-                    "avatar": os.path.join("/static/media/pic/", tem_im_user.avatar),
+                    "avatar": avatar,
                     "code": 0,
                     "info": "Login Succeed",
                 })
@@ -411,6 +414,28 @@ def bind_email(request):
             })
         return None
 
+def upload_avatar(request):
+    if request.method == 'GET':
+        return HttpResponse('upload')
+    if request.method == 'POST':
+        try:
+            cur_pic = request.FILES.get("avatar")
+            body = json.loads(request.body.decode("utf-8"))
+            cur_user = str(body["username"])
+            user = IMUser.objects.filter(username=cur_user).first()
+            user.avatar = cur_pic
+            user.save()
+            return JsonResponse({
+                "code": 0,
+                "info": "successfully upload",
+                "avatar": os.path.join("/static/media/pic/", user.avatar)
+            })
+        except Exception as e:
+            print(e)
+            return JsonResponse({
+                "code": -1,
+                "info": "Unexpected error"
+            })
 def upload_avatar(request):
     if request.method == 'GET':
         return HttpResponse('upload')
