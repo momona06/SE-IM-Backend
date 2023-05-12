@@ -73,39 +73,39 @@ class MyConsumerTestCase(TestCase):
         response = await communicator_0.receive_from()
         assert json.loads(response)["cur_user"] == USERNAME_0
 
-        await communicator_0.disconnect()
-        # await communicator_0.send_json_to({
-        #     "function": "apply",
-        #     "username": USERNAME_0,
-        #     'to': USERNAME_1,
-        #     'from': USERNAME_0
-        # })
+        # await communicator_0.disconnect()
+        await communicator_0.send_json_to({
+            "function": "apply",
+            "username": USERNAME_0,
+            'to': USERNAME_1,
+            'from': USERNAME_0
+        })
 
-        # communicator_1 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
-        #
-        # connected, _ = await communicator_1.connect()
-        # assert connected
-        # await communicator_1.send_json_to({
-        #     "function": "add_channel",
-        #     "username": USERNAME_1
-        # })
-        #
-        # await communicator_1.send_json_to({
-        #     "function": "heartbeat",
-        # })
-        # response = await communicator_1.receive_from()
-        # assert json.loads(response)["cur_user"] == USERNAME_1
-        #
-        # # await communicator_1.send_json_to({
-        # #     "function": "confirm",
-        # #     "username": USERNAME_1,
-        # #     'to': USERNAME_0,
-        # #     'from': USERNAME_1
-        # # })
-        #
-        # response = await communicator_1.receive_from()
-        # assert response.json()["function"] == 'friendlist'
-        #
+        communicator_1 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
+
+        connected, _ = await communicator_1.connect()
+        assert connected
+        await communicator_1.send_json_to({
+            "function": "add_channel",
+            "username": USERNAME_1
+        })
+
+        await communicator_1.send_json_to({
+            "function": "heartbeat",
+        })
+        response = await communicator_1.receive_from()
+        assert json.loads(response)["cur_user"] == USERNAME_1
+
+        await communicator_1.send_json_to({
+            "function": "confirm",
+            "username": USERNAME_1,
+            'to': USERNAME_0,
+            'from': USERNAME_1
+        })
+
+        response = await communicator_1.receive_from()
+        assert response.json()["function"] == 'friendlist'
+
         # await communicator_1.disconnect()
 
         """
