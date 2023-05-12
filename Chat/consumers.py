@@ -716,8 +716,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         return manager_user
 
     async def check_user_in_chatroom(self, function_name, chatroom, username, message='User is not in the group'):
-        user_id = await get_user_id(username)
-        if user_id in chatroom.mem_list:
+        if username in chatroom.mem_list:
             return True
         else:
             await self.send(text_data=json.dumps({
