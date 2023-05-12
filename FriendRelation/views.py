@@ -39,7 +39,7 @@ def delete_friend(req: HttpRequest):
                 name_list = [username, friend_name]
                 friend = Friend.objects.filter(user_name=name_list[i], friend_name=name_list[1 - i]).first()
 
-                if not friend is None:
+                if friend is not None:
                     flist = FriendList.objects.get(user_name=name_list[i])
                     for name in flist.friend_list:
                         if friend.friend_name == name:
@@ -48,7 +48,7 @@ def delete_friend(req: HttpRequest):
                     flist.save()
                     friend.delete()
             for room in ChatRoom.objects.all():
-                if room.is_private == True and (username in room.mem_list) and (friend_name in room.mem_list):
+                if room.is_private and (username in room.mem_list) and (friend_name in room.mem_list):
                     timeline = ChatTimeLine.objects.filter(chatroom_id=room.chatroom_id).first()
                     timeline.delete()
                     room.delete()
@@ -64,7 +64,6 @@ def delete_friend(req: HttpRequest):
                 "code": -5,
                 "info": e
             })
-
 
     else:
         return BAD_METHOD
@@ -166,7 +165,6 @@ def create_friend_group(req: HttpRequest):
                     })
 
             flist.group_list.append(fgroup_name)
-            # flist.friend_list.append([])
             flist.save()
 
             return JsonResponse({
