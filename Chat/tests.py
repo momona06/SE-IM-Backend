@@ -39,7 +39,7 @@ class MyConsumerTestCase(TestCase):
                                apply_list=list(), apply_answer=list(), apply_ensure=list())
         add_list.save()
 
-        addlist = AddList.objects.get(username=USERNAME_0)
+        addlist = AddList.objects.get(user_name=USERNAME_0)
         print(addlist)
 
     # @sync_to_async
@@ -60,7 +60,7 @@ class MyConsumerTestCase(TestCase):
 
         print(user.password)
 
-        addlist = await sync_to_async(AddList.objects.get)(username=USERNAME_0)
+        addlist = await sync_to_async(AddList.objects.get)(user_name=USERNAME_0)
         print(addlist)
 
         communicator_0 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
