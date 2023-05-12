@@ -923,11 +923,15 @@ class UserConsumer(AsyncWebsocketConsumer):
                         'message': 'You are group master'
                     }))
                 else:
+                    tem = chatroom.mem_list.copy()
+
                     await chatroom_delete_member(chatroom, username)
 
                     await self.send(text_data=json.dumps({
                         'function': 'leave_group',
-                        'message': 'Success'
+                        'message': 'Success',
+                        'test_mem1': "pre"+";".join(tem),
+                        'test_mem2': "after"+";".join(chatroom.mem_list),
                     }))
 
                     for i in range(len(chatroom.mem_list)):
