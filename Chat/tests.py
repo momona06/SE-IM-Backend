@@ -25,7 +25,7 @@ PASSWORD_1 = "123456"
 
 
 class MyConsumerTestCase(TestCase):
-    @dsync_to_async
+    @sync_to_async
     def register(self, username, password):
         tem = User.objects.create_user(username=username, password=password)
         tem.save()
