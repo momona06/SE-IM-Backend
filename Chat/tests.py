@@ -30,8 +30,6 @@ class MyConsumerTestCase(TestCase):
         tem = User.objects.create_user(username=username, password=password)
         tem.save()
 
-        tem_user = User.objects.create_user(username=username, password=password)
-
         group = ['我的好友']
         friend_list = FriendList(user_name=username, group_list=group, friend_list=list())
         friend_list.save()
