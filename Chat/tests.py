@@ -27,20 +27,16 @@ PASSWORD_1 = "123456"
 class MyConsumerTestCase(TestCase):
     @sync_to_async
     def register(self, username, password):
-        payload = {
-            "username": username,
-            "password": password
-        }
-        return self.client.post("/user/register", data=payload, content_type="application/json")
-
-    @sync_to_async
-    def login(self, username, password, email=""):
-        payload = {
-            "username": username,
-            "password": password,
-            "email": email
-        }
-        return self.client.post("/user/login", data=payload, content_type="application/json")
+        User.objects.create(username=username, password=password).save()
+    #
+    # @sync_to_async
+    # def login(self, username, password, email=""):
+    #     payload = {
+    #         "username": username,
+    #         "password": password,
+    #         "email": email
+    #     }
+    #     return self.client.post("/user/login", data=payload, content_type="application/json")
 
     @pytest.mark.django_db(transaction=True)
     async def test_consumer(self):
