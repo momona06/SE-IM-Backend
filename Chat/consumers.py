@@ -942,6 +942,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                         for index, username in enumerate(CONSUMER_OBJECT_LIST):
                             if i==username:
                                 await CONSUMER_OBJECT_LIST[index].fetch_roominfo(json_info)
+                                await CONSUMER_OBJECT_LIST[index].fetch_room(json_info)
                                 break
 
 
