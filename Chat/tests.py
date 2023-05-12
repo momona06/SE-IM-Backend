@@ -29,7 +29,17 @@ class MyConsumerTestCase(TestCase):
     def register(self, username, password):
         tem = User.objects.create_user(username=username, password=password)
         tem.save()
-        sb = User.objects.get(username=USERNAME_0)
+
+        tem_user = User.objects.create_user(username=username, password=password)
+
+        group = ['我的好友']
+        friend_list = FriendList(user_name=username, group_list=group, friend_list=list())
+        friend_list.save()
+
+        add_list = AddList(user_name=username,
+                               reply_list=list(), reply_answer=list(), reply_ensure=list(),
+                               apply_list=list(), apply_answer=list(), apply_ensure=list())
+        add_list.save()
 
     # @sync_to_async
     # def login(self, username, password, email=""):
