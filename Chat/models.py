@@ -137,11 +137,3 @@ async def create_message(type, body, time, sender, reply_id=0, answer=-1, read_l
                                                         read_list=read_list, combine_list=combine_list)
     await database_sync_to_async(new_message.save)()
     return new_message
-
-
-async def delete_message():
-    """
-    json_info = {
-    }
-    """
-    pass
