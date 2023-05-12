@@ -49,31 +49,31 @@ class MyConsumerTestCase(TestCase):
 
         print(user.password)
 
-        # communicator_0 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
-        #
-        # # 连接 WebSocket
-        # connected, _ = await communicator_0.connect()
-        # assert connected
-        #
-        # # 发送消息到 Consumer
-        # await communicator_0.send_json_to({
-        #     "function": "add_channel",
-        #     "username": USERNAME_0
-        # })
-        #
-        # await communicator_0.send_json_to({
-        #     "function": "heartbeat",
-        # })
-        # response = await communicator_0.receive_from()
-        # assert json.loads(response)["cur_user"] == USERNAME_0
-        #
-        # await communicator_0.send_json_to({
-        #     "function": "heartbeat",
-        # })
-        # response = await communicator_0.receive_from()
-        # assert json.loads(response)["cur_user"] == USERNAME_0
-        #
-        # await communicator_0.disconnect()
+        communicator_0 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
+
+        # 连接 WebSocket
+        connected, _ = await communicator_0.connect()
+        assert connected
+
+        # 发送消息到 Consumer
+        await communicator_0.send_json_to({
+            "function": "add_channel",
+            "username": USERNAME_0
+        })
+
+        await communicator_0.send_json_to({
+            "function": "heartbeat",
+        })
+        response = await communicator_0.receive_from()
+        assert json.loads(response)["cur_user"] == USERNAME_0
+
+        await communicator_0.send_json_to({
+            "function": "heartbeat",
+        })
+        response = await communicator_0.receive_from()
+        assert json.loads(response)["cur_user"] == USERNAME_0
+
+        await communicator_0.disconnect()
         # await communicator_0.send_json_to({
         #     "function": "apply",
         #     "username": USERNAME_0,
