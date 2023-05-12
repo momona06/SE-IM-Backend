@@ -931,6 +931,9 @@ class UserConsumer(AsyncWebsocketConsumer):
                         'message': 'Success'
                     }))
 
+                    for i in range(len(chatroom.mem_list)):
+                        await chatroom.mem_list[i].fetch_roominfo(json_info)
+
 
 
     async def reply_add_group(self, json_info):
