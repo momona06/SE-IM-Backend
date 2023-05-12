@@ -913,7 +913,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         chatroom_id = json_info['chatroom_id']
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
-        if chatroom is not None:
+        if chatroom is not None and not chatroom.is_private:
             username = await self.get_cur_username()
             user = await get_user(username)
 
