@@ -27,7 +27,10 @@ PASSWORD_1 = "123456"
 class MyConsumerTestCase(TestCase):
     @database_sync_to_async
     def register(self, username, password):
-        User.objects.create(username=username, password=password).save()
+        tem = User.objects.create_user(username=username, password=password)
+        tem.save()
+        sb = User.objects.get(username=USERNAME_0)
+        print(sb.password)
 
     # @sync_to_async
     # def login(self, username, password, email=""):
