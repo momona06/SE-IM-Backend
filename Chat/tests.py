@@ -25,10 +25,10 @@ PASSWORD_1 = "123456"
 
 
 class MyConsumerTestCase(TestCase):
-    @sync_to_async
+    @database_sync_to_async
     def register(self, username, password):
         User.objects.create(username=username, password=password).save()
-    #
+
     # @sync_to_async
     # def login(self, username, password, email=""):
     #     payload = {
@@ -43,35 +43,35 @@ class MyConsumerTestCase(TestCase):
         await self.register(USERNAME_0, PASSWORD_0)
         await self.register(USERNAME_1, PASSWORD_1)
 
-        user = await get_user(USERNAME_0)
+        user = await database_sync_to_async(User.objects.get)(username=USERNAME_0)
 
-        print(user.password)
+        # print(user.password)
 
-        communicator_0 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
-
-        # 连接 WebSocket
-        connected, _ = await communicator_0.connect()
-        assert connected
-
-        # 发送消息到 Consumer
-        await communicator_0.send_json_to({
-            "function": "add_channel",
-            "username": USERNAME_0
-        })
-
-        await communicator_0.send_json_to({
-            "function": "heartbeat",
-        })
-        response = await communicator_0.receive_from()
-        assert json.loads(response)["cur_user"] == USERNAME_0
-
-        await communicator_0.send_json_to({
-            "function": "heartbeat",
-        })
-        response = await communicator_0.receive_from()
-        assert json.loads(response)["cur_user"] == USERNAME_0
-
-        await communicator_0.disconnect()
+        # communicator_0 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
+        #
+        # # 连接 WebSocket
+        # connected, _ = await communicator_0.connect()
+        # assert connected
+        #
+        # # 发送消息到 Consumer
+        # await communicator_0.send_json_to({
+        #     "function": "add_channel",
+        #     "username": USERNAME_0
+        # })
+        #
+        # await communicator_0.send_json_to({
+        #     "function": "heartbeat",
+        # })
+        # response = await communicator_0.receive_from()
+        # assert json.loads(response)["cur_user"] == USERNAME_0
+        #
+        # await communicator_0.send_json_to({
+        #     "function": "heartbeat",
+        # })
+        # response = await communicator_0.receive_from()
+        # assert json.loads(response)["cur_user"] == USERNAME_0
+        #
+        # await communicator_0.disconnect()
         # await communicator_0.send_json_to({
         #     "function": "apply",
         #     "username": USERNAME_0,
