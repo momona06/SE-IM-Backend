@@ -95,7 +95,7 @@ class MyConsumerTestCase(TestCase):
             'from': USERNAME_0
         })
         addlist = await sync_to_async(AddList.objects.get)(user_name=USERNAME_0)
-        print(addlist)
+        print(addlist.apply_list)
 
         communicator_1 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
 
