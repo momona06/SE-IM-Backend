@@ -30,7 +30,6 @@ class MyConsumerTestCase(TestCase):
         tem = User.objects.create_user(username=username, password=password)
         tem.save()
         sb = User.objects.get(username=USERNAME_0)
-        print(sb.password)
 
     # @sync_to_async
     # def login(self, username, password, email=""):
@@ -46,9 +45,9 @@ class MyConsumerTestCase(TestCase):
         await self.register(USERNAME_0, PASSWORD_0)
         await self.register(USERNAME_1, PASSWORD_1)
 
-        user = await database_sync_to_async(User.objects.get)(username=USERNAME_0)
+        user = await sync_to_async(User.objects.get)(username=USERNAME_0)
 
-        # print(user.password)
+        print(user.password)
 
         # communicator_0 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
         #
