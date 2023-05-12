@@ -39,7 +39,7 @@ class MyConsumerTestCase(TestCase):
                                apply_list=list(), apply_answer=list(), apply_ensure=list())
         add_list.save()
 
-        addlist = await sync_to_async(AddList.objects.get)(username=USERNAME_0)
+        addlist = AddList.objects.get(username=USERNAME_0)
         print(addlist)
 
     # @sync_to_async
