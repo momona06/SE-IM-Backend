@@ -80,6 +80,8 @@ class MyConsumerTestCase(TestCase):
             'to': USERNAME_1,
             'from': USERNAME_0
         })
+        addlist = await sync_to_async(AddList.objects.get)(username=USERNAME_0)
+        print(addlist)
 
         communicator_1 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
 
@@ -103,8 +105,6 @@ class MyConsumerTestCase(TestCase):
             'from': USERNAME_1
         })
 
-        addlist = await sync_to_async(AddList.objects.get)(username=USERNAME_0)
-        print(addlist)
 
         # await communicator_1.disconnect()
 
