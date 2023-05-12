@@ -85,7 +85,7 @@ async def chatroom_delete_member(chatroom, member_name):
             chatroom.is_top.pop(index)
             chatroom.is_notice.pop(index)
 
-            if username in chatroom.manage_list:
+            if username in chatroom.manager_list:
                 chatroom.magage_list.remove(username)
             break
     await database_sync_to_async(chatroom.save)()
