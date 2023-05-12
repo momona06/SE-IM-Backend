@@ -9,6 +9,6 @@ urlpatterns = [
     path('cancel', views.cancel),
     path('logout', views.logout),
     path('revise', views.revise),
-    path('upload', views.upload_avatar)
+    path('upload', views.upload_avatar),
     path('uploadpic', views.upload_avatar)
 ]
