@@ -85,7 +85,7 @@ def logout(req: HttpRequest):
         user_model = get_user_model()
         user = user_model.objects.get(username=username)
         im_user = IMUser.objects.filter(user=user).first()
-
+        print(username)
         if im_user.token == token:
             poll_token = TokenPoll.objects.filter(token=token).first()
             poll_token.delete()
