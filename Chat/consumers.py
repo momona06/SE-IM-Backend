@@ -87,6 +87,8 @@ async def chatroom_delete_member(chatroom, member_name):
 
             if username in chatroom.manager_list:
                 chatroom.manager_list.remove(username)
+
+            chatroom.mem_count-=1
             break
     await database_sync_to_async(chatroom.save)()
 
@@ -95,6 +97,8 @@ async def chatroom_add_member(chatroom, member_name):
     chatroom.mem_list.append(member_name)
     chatroom.is_top.append(False)
     chatroom.is_notice.append(True)
+
+    chatroom.mem_count += 1
     await database_sync_to_async(chatroom.save)()
 
 
