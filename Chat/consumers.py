@@ -516,7 +516,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
 
         # type = {text, image, file, video, audio, combine, reply, invite}
-        if msg_type == 'text' or msg_type == 'reply' or msg_type == 'combine' or msg_type == 'invite':
+        if msg_type == 'text' or msg_type == 'reply' or msg_type == 'combine' or msg_type == 'invite' or msg_type == 'media':
             if msg_type == 'reply':
                 reply_id = json_info['reply_id']
                 Msg_field['reply_id'] = reply_id
