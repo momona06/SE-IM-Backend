@@ -341,13 +341,15 @@ def user_login(request, identity, password, login_filter):
                 if tem_im_user.avatar is not None:
                     avatar = os.path.join("/static/media/", str(tem_im_user.avatar))
 
-                return JsonResponse({
+                response = JsonResponse({
                     "username": tem_im_user.user.username,
                     "token": tem_im_user.token,
                     "avatar": avatar,
                     "code": 0,
                     "info": "Login Succeed",
                 })
+                response.headers["X-Frame-Options"] = "SAMEORIGIN"
+                return response
             else:
                 return JsonResponse({
                     "code": -2,
@@ -425,11 +427,13 @@ def upload_avatar(request):
             user = IMUser.objects.filter(username=cur_user).first()
             user.avatar = cur_pic
             user.save()
-            return JsonResponse({
+            response = JsonResponse({
                 "code": 0,
                 "info": "successfully upload",
-                "avatar": os.path.join("/static/media/pic/", user.avatar)
+                "avatar": os.path.join("/static/media/", str(user.avatar))
             })
+            response.headers["X-Frame-Options"] = "SAMEORIGIN"
+            return response
         except Exception as e:
             print(e)
             return JsonResponse({
@@ -458,7 +462,7 @@ def upload_avatar(request):
 #                 "code": -1,
 #                 "info": "Unexpected error"
 #             })
-def upload_avatar(request):
+def upload(request):
     if request.method == 'GET':
         return HttpResponse('upload')
     if request.method == 'POST':
@@ -470,11 +474,13 @@ def upload_avatar(request):
             user = IMUser.objects.filter(user=cur_user).first()
             user.avatar = cur_pic
             user.save()
-            return JsonResponse({
+            response = JsonResponse({
                 "code": 0,
                 "info": "successfully upload",
                 "avatar": os.path.join("/static/media/", str(user.avatar))
             })
+            response.headers["X-Frame-Options"] = "SAMEORIGIN"
+            return response
         except Exception as e:
             print(e)
             return JsonResponse({
