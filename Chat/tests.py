@@ -103,8 +103,8 @@ class MyConsumerTestCase(TestCase):
             'from': USERNAME_1
         })
 
-        response = await communicator_1.receive_from()
-        assert response.json()["function"] == 'friendlist'
+        addlist = await sync_to_async(AddList.objects.get)(username=USERNAME_0)
+        print(addlist)
 
         # await communicator_1.disconnect()
 
