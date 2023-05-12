@@ -16,7 +16,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait
 
-from utils.utils_database import filter_first_addlist
+from utils.utils_database import *
 
 USERNAME_0 = "test00"
 PASSWORD_0 = "123456"
@@ -47,6 +47,10 @@ class MyConsumerTestCase(TestCase):
         await self.register(USERNAME_0, PASSWORD_0)
         await self.register(USERNAME_1, PASSWORD_1)
 
+        user = await get_user(USERNAME_0)
+
+        print(user.password)
+
         communicator_0 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
 
         # 连接 WebSocket
@@ -65,15 +69,11 @@ class MyConsumerTestCase(TestCase):
         response = await communicator_0.receive_from()
         assert json.loads(response)["cur_user"] == USERNAME_0
 
-        print(response)
-
         await communicator_0.send_json_to({
             "function": "heartbeat",
         })
         response = await communicator_0.receive_from()
         assert json.loads(response)["cur_user"] == USERNAME_0
-
-        print(response)
 
         await communicator_0.disconnect()
         # await communicator_0.send_json_to({
