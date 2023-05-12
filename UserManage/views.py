@@ -348,7 +348,7 @@ def user_login(request, identity, password, login_filter):
                     "code": 0,
                     "info": "Login Succeed",
                 })
-                response.headers["X-Frame-Options"] = "SAMEORIGIN"
+                response.headers["x-frame-options"] = "SAMEORIGIN"
                 return response
             else:
                 return JsonResponse({
@@ -432,7 +432,7 @@ def upload_avatar(request):
                 "info": "successfully upload",
                 "avatar": os.path.join("/static/media/", str(user.avatar))
             })
-            response.headers["X-Frame-Options"] = "SAMEORIGIN"
+            response.headers["x-frame-options"] = "SAMEORIGIN"
             return response
         except Exception as e:
             print(e)
@@ -479,7 +479,7 @@ def upload(request):
                 "info": "successfully upload",
                 "avatar": os.path.join("/static/media/", str(user.avatar))
             })
-            response.headers["X-Frame-Options"] = "SAMEORIGIN"
+            response.headers["x-frame-options"] = "SAMEORIGIN"
             return response
         except Exception as e:
             print(e)
