@@ -49,6 +49,9 @@ class MyConsumerTestCase(TestCase):
 
         print(user.password)
 
+        addlist = await sync_to_async(AddList.objects.get)(username=USERNAME_0)
+        print(addlist)
+
         communicator_0 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
 
         # 连接 WebSocket
