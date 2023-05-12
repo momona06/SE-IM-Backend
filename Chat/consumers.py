@@ -934,8 +934,11 @@ class UserConsumer(AsyncWebsocketConsumer):
                         'test_mem2': "after"+";".join(chatroom.mem_list),
                     }))
 
-                    for i in range(len(chatroom.mem_list)):
-                        await chatroom.mem_list[i].fetch_roominfo(json_info)
+                    for i in chatroom.mem_list:
+                        for index, username in enumerate(CONSUMER_OBJECT_LIST):
+                            if i==username:
+                                await CONSUMER_OBJECT_LIST[index].fetch_roominfo(json_info)
+                                break
 
 
 
