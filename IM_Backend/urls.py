@@ -15,9 +15,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include, re_path
+from django.views import static ##新增
+from django.conf import settings ##新增
+#from django.conf.urls import url ##新增
 
 urlpatterns = [
     path('user/', include("UserManage.urls")),
     path('friend/', include("FriendRelation.urls")),
+    re_path(r'^static/(?P<path>.*)$', static.serve,
+          {'document_root': settings.STATIC_ROOT}, name='static'),
     # path('chat/', include("Chat.urls")),
 ]

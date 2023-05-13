@@ -11,8 +11,9 @@ import time
 from UserManage.models import *
 from Chat.models import *
 from FriendRelation.models import *
+from UserManage.models import *
 from utils.utils_database import *
-
+import os
 CONSUMER_OBJECT_LIST = []
 
 
@@ -322,7 +323,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             for index,user in enumerate(CONSUMER_OBJECT_LIST):
                 if user.cur_user == apply_from:
                     await CONSUMER_OBJECT_LIST[index].send(text_data=json.dumps({
-                        'function': 'applylist' + "index: "+str(index) +"cur_: " + user.cur_user + "from: " + apply_from + "to: " +apply_to,
+                        'function': 'applylist',
                         'applylist': from_return_field
                     }))
 
@@ -558,6 +559,11 @@ class UserConsumer(AsyncWebsocketConsumer):
         msg_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
         message = await create_message(type=msg_type, body=msg_body, time=msg_time, sender=username)
         msg_id = message.msg_id
+        users = await sync_to_async(User.objects.filter)(username=username)
+        user = await sync_to_async(users.first)()
+        imusers = await sync_to_async(IMUser.objects.filter)(user=user)
+        imuser = await sync_to_async(imusers.first)()
+
 
         # Move Here
         # 修改数据库
@@ -582,6 +588,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             'msg_time': msg_time,
             'sender': username,
             'room_id': room_id,
+            'avatar': os.path.join('/static/media/', str(imuser.avatar))
             # Fix: READ
             # 'read_list': read_list
         }
@@ -592,7 +599,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
 
         # type = {text, image, file, video, audio, combine, reply, invite}
-        if msg_type == 'text' or msg_type == 'reply' or msg_type == 'combine' or msg_type == 'invite' or msg_type == 'notice':
+        if msg_type == 'text' or msg_type == 'reply' or msg_type == 'combine' or msg_type == 'invite' or msg_type == 'media'or msg_type == 'notice':
             if msg_type == 'reply':
                 reply_id = json_info['reply_id']
                 Msg_field['reply_id'] = reply_id
@@ -811,7 +818,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
         """
         function_name = 'delete_chat_group'
-        
+
         chatroom_id = json_info['chatroom_id']
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
@@ -1092,7 +1099,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             'type': 'read_diffuse',
 
         }
-        self.group_send(chatroom_name, read_field)
+        await self.group_send(chatroom_name, read_field)
 
 
 
@@ -1154,11 +1161,17 @@ class UserConsumer(AsyncWebsocketConsumer):
                     for msg in timeline.msg_line:
                         cur_message1 = await sync_to_async(Message.objects.filter)(msg_id=msg)
                         cur_message = await sync_to_async(cur_message1.first)()
+                        users = await sync_to_async(User.objects.filter)(username=cur_message.sender)
+                        user = await sync_to_async(users.first)()
+                        imusers = await sync_to_async(IMUser.objects.filter)(user=user)
+                        imuser = await sync_to_async(imusers.first)()
                         message_list.append({
                             "msg_body": cur_message.body,
                             "msg_id": cur_message.msg_id,
                             "msg_time": cur_message.time,
                             "sender": cur_message.sender,
+                            "avatar": os.path.join('/static/media/', str(imuser.avatar))
+
                             # Fix: READ
                             # "read_list": cur_message.read_list
                         })
@@ -1167,7 +1180,8 @@ class UserConsumer(AsyncWebsocketConsumer):
                         "roomname": roomname,
                         "is_notice": room.is_notice[li],
                         "is_top": room.is_top[li],
-                        "message_list": message_list
+                        "message_list": message_list,
+                        "is_private": room.is_private
                     })
                     break
 
