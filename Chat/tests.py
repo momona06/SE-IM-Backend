@@ -66,3 +66,19 @@ class MyConsumerTestCase(TestCase):
         assert response['function'] == 'heartbeatconfirm'
 
         await communicator_0.disconnect()
+
+    @pytest.mark.asyncio
+    async def test_add_channel(self):
+        communicator = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
+
+        connected, _ = await communicator.connect()
+        assert connected
+
+        await communicator.send_json_to({
+            "function": "add_channel",
+            'username': 'default'
+        })
+
+        assert await communicator.receive_nothing() is True
+
+        await communicator.disconnect()
