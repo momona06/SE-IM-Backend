@@ -486,11 +486,13 @@ class UserConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(return_field))
 
     async def withdraw_diffuse(self, event):
+        room_id = event["room_id"]
         msg_id = event["msg_id"]
 
         return_field = {
             'function': 'withdraw_message',
-            'msg_id': msg_id
+            'msg_id': msg_id,
+            'room_id': room_id
         }
 
         await self.send(text_data=json.dumps(return_field))
@@ -701,7 +703,8 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         Withdraw_field = {
             'type': 'withdraw_diffuse',
-            'msg_id': msg_id
+            'msg_id': msg_id,
+            'room_id': room_id,
         }
         # 发送给在线用户
         await self.group_send(chatroom_name, Withdraw_field)
