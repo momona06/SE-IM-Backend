@@ -261,6 +261,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             'from': 'zj2'
         }
         """
+        function_name = "apply_friend"
+
         username = json_info['username']
         apply_from = json_info['from']
         apply_to = json_info['to']
@@ -270,11 +272,16 @@ class UserConsumer(AsyncWebsocketConsumer):
         # 确保被回复前不能重复发送
         # mode=1意为在applyer_add_list.applylist中寻找apply_to
         if not await search_ensure_false_request_index(apply_to, applyer_add_list, mode=1) == -1:
-            await self.send(text_data="Has Been Sent")
+            await self.send(text_data=json.dumps({
+            'function': function_name,
+            'message':"Has Been Sent"
+        }))
 
         elif apply_to in (await sync_to_async(FriendList.objects.get)(user_name=apply_from)).friend_list:
-            await self.send(text_data="Is Already a Friend")
-
+            await self.send(text_data=json.dumps({
+            'function': function_name,
+            'message':"Is Already a Friend"
+        }))
 
         else:
             applyer_add_list.apply_list.append(apply_to)
