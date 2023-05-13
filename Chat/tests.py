@@ -1,41 +1,28 @@
-import json
-
-import pytest
-from asgiref.sync import sync_to_async
-from django.contrib.auth import get_user_model
-
-from django.contrib.auth.models import User
 
 from Chat.consumers import UserConsumer
 from django.test import TestCase
 
 from channels.testing import WebsocketCommunicator
-from selenium import webdriver
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.wait import WebDriverWait
 
-from utils.utils_database import *
 
 USERNAME_0 = "test00"
 PASSWORD_0 = "123456"
 USERNAME_1 = "test01"
 PASSWORD_1 = "123456"
-
-
-async def register(username, password):
-    tem = await sync_to_async(User.objects.create_user)(username=username, password=password)
-    await sync_to_async(tem.save)()
-
-    group = ['我的好友']
-    friend_list = await sync_to_async(FriendList)(user_name=username, group_list=group, friend_list=list())
-    await sync_to_async(friend_list.save)()
-
-    add_list = await sync_to_async(AddList)(user_name=username,
-                           reply_list=list(), reply_answer=list(), reply_ensure=list(),
-                           apply_list=list(), apply_answer=list(), apply_ensure=list())
-    await sync_to_async(add_list.save)()
+#
+#
+# async def register(username, password):
+#     tem = await sync_to_async(User.objects.create_user)(username=username, password=password)
+#     await sync_to_async(tem.save)()
+#
+#     group = ['我的好友']
+#     friend_list = await sync_to_async(FriendList)(user_name=username, group_list=group, friend_list=list())
+#     await sync_to_async(friend_list.save)()
+#
+#     add_list = await sync_to_async(AddList)(user_name=username,
+#                            reply_list=list(), reply_answer=list(), reply_ensure=list(),
+#                            apply_list=list(), apply_answer=list(), apply_ensure=list())
+#     await sync_to_async(add_list.save)()
 
 
 class MyConsumerTestCase(TestCase):
