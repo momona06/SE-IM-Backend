@@ -429,8 +429,8 @@ def upload_avatar(request):
             user.save()
             response = JsonResponse({
                 "code": 0,
-                "info": "successfully upload",
-                "avatar": os.path.join("/static/media/", str(user.avatar))
+                "info": "successfully upload"
+                #"avatar": os.path.join("/static/media/", str(user.avatar))
             })
             #response.headers["x-frame-options"] = "SAMEORIGIN"
             return response
