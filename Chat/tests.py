@@ -85,3 +85,12 @@ class MyConsumerTestCase(TestCase):
         connected, _ = await communicator.connect()
         assert connected
 
+    async def test_consumer(self):
+        communicator = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
+
+        # 连接 WebSocket
+        connected, _ = await communicator.connect()
+
+        assert connected
+
+        await communicator.disconnect()
