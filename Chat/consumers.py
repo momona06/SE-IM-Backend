@@ -1026,6 +1026,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                             "msg_body": cur_message.body,
                             "msg_id": cur_message.msg_id,
                             "msg_time": cur_message.time,
+                            "msg_type": cur_message.type,
                             "sender": cur_message.sender,
                             "avatar": os.path.join('/static/media/', str(imuser.avatar))
                         })
