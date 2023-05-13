@@ -439,7 +439,7 @@ def upload_avatar(request):
                 "code": -1,
                 "info": "Unexpected error"
             })
-
+#聊天文件
 def upload(request):
     if request.method == 'GET':
         return HttpResponse('upload')
