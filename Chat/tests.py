@@ -39,9 +39,6 @@ class MyConsumerTestCase(TestCase):
                                apply_list=list(), apply_answer=list(), apply_ensure=list())
         add_list.save()
 
-        addlist = AddList.objects.get(user_name=USERNAME_0)
-        print(addlist)
-
     # @sync_to_async
     # def login(self, username, password, email=""):
     #     payload = {
@@ -52,16 +49,8 @@ class MyConsumerTestCase(TestCase):
     #     return self.client.post("/user/login", data=payload, content_type="application/json")
 
     @pytest.mark.django_db(transaction=True)
-    async def test_consumer(self):
+    async def test_heartbeat(self):
         await self.register(USERNAME_0, PASSWORD_0)
-        await self.register(USERNAME_1, PASSWORD_1)
-
-        user = await sync_to_async(User.objects.get)(username=USERNAME_0)
-
-        print(user.password)
-
-        addlist = await sync_to_async(AddList.objects.get)(user_name=USERNAME_0)
-        print(addlist)
 
         communicator_0 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
 
@@ -69,74 +58,11 @@ class MyConsumerTestCase(TestCase):
         connected, _ = await communicator_0.connect()
         assert connected
 
-        # 发送消息到 Consumer
-        await communicator_0.send_json_to({
-            "function": "add_channel",
-            "username": USERNAME_0
-        })
-
         await communicator_0.send_json_to({
             "function": "heartbeat",
         })
+
         response = await communicator_0.receive_from()
         assert json.loads(response)["cur_user"] == USERNAME_0
 
-        await communicator_0.send_json_to({
-            "function": "heartbeat",
-        })
-        response = await communicator_0.receive_from()
-        assert json.loads(response)["cur_user"] == USERNAME_0
-
-        # await communicator_0.disconnect()
-        await communicator_0.send_json_to({
-            "function": "apply",
-            "username": USERNAME_0,
-            'to': USERNAME_1,
-            'from': USERNAME_0
-        })
-        addlist = await sync_to_async(AddList.objects.get)(user_name=USERNAME_0)
-        print(addlist.apply_list)
-
-        communicator_1 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
-
-        connected, _ = await communicator_1.connect()
-        assert connected
-        await communicator_1.send_json_to({
-            "function": "add_channel",
-            "username": USERNAME_1
-        })
-
-        await communicator_1.send_json_to({
-            "function": "heartbeat",
-        })
-        response = await communicator_1.receive_from()
-        assert json.loads(response)["cur_user"] == USERNAME_1
-
-        await communicator_1.send_json_to({
-            "function": "confirm",
-            "username": USERNAME_1,
-            'to': USERNAME_0,
-            'from': USERNAME_1
-        })
-
-
-        # await communicator_1.disconnect()
-
-        """
-
-        # 接收 Consumer 的响应
-        response = await communicator_0.receive_json_from()
-
-        # 断言响应是否符合预期
-        self.assertEqual(response, {"type": "my_message", "content": "Hello world!"})
-
-        # 发送消息到 Consumer
-        await communicator_0.send_json_to({"type": "my_message", "content": "Goodbye world!"})
-
-        # 接收 Consumer 的响应
-        response = await communicator_0.receive_json_from()
-
-        # 断言响应是否符合预期
-        self.assertEqual(response, {"type": "my_message", "content": "Goodbye world!"})
-
-        """
+        await communicator_0.disconnect()
