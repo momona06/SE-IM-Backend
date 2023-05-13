@@ -64,7 +64,6 @@ class MyConsumerTestCase(TestCase):
         response = await communicator_0.receive_json_from()
         assert response['function'] == 'heartbeatconfirm'
 
-        await communicator_0.disconnect()
 
     async def test_add_channel(self):
         communicator = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
@@ -79,13 +78,10 @@ class MyConsumerTestCase(TestCase):
 
         assert await communicator.receive_nothing() is True
 
-        await communicator.disconnect()
 
-    @pytest.mark.asyncio
     async def test_connect(self):
         communicator = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
 
         connected, _ = await communicator.connect()
         assert connected
 
-        await communicator.disconnect()
