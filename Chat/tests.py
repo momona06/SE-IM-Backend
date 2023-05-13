@@ -65,6 +65,8 @@ class MyConsumerTestCase(TestCase):
         response = await communicator_0.receive_json_from()
         assert response['function'] == 'heartbeatconfirm'
 
+        await communicator_0.disconnect()
+
 
     async def test_add_channel(self):
         communicator = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
