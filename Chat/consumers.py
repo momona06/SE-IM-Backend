@@ -591,7 +591,7 @@ class UserConsumer(AsyncWebsocketConsumer):
     async def withdraw_message(self, json_info):
         """
         json_info = {
-            msg_id: 114514
+            msg_id: 1145141
         }
         """
         username = await self.get_cur_username()
