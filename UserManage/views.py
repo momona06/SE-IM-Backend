@@ -339,7 +339,7 @@ def user_login(request, identity, password, login_filter):
                     # tem_im_user.save()
                 avatar = ""
                 if tem_im_user.avatar is not None:
-                    avatar = os.path.join("/static/media/", str(tem_im_user.avatar))
+                    avatar = os.path.join("se-im-backend-overflowlab.app.secoder.net/static/media/", str(tem_im_user.avatar))
 
                 response = JsonResponse({
                     "username": tem_im_user.user.username,
@@ -431,7 +431,7 @@ def upload_avatar(request):
             return JsonResponse({
                 "code": 0,
                 "info": "successfully upload",
-                "avatar": os.path.join("/static/media/", str(user.avatar))
+                "avatar": os.path.join("se-im-backend-overflowlab.app.secoder.net/static/media/", str(user.avatar))
             })
         except Exception as e:
             print(e)
@@ -449,7 +449,7 @@ def upload(request):
             response = JsonResponse({
                 "code": 0,
                 "info": "successfully upload",
-                "avatar": os.path.join("/static/media/", str(cur_pic))
+                "avatar": os.path.join("se-im-backend-overflowlab.app.secoder.net/static/media/", str(cur_pic))
             })
             response.headers["x-frame-options"] = "SAMEORIGIN"
             return response
