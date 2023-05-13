@@ -427,13 +427,16 @@ def upload_avatar(request):
             user = IMUser.objects.filter(username=cur_user).first()
             user.avatar = cur_pic
             user.save()
-            response = JsonResponse({
+            # response = JsonResponse({
+            #     "code": 0,
+            #     "info": "successfully upload"
+            #     #"avatar": os.path.join("/static/media/", str(user.avatar))
+            # })
+            #response.headers["x-frame-options"] = "SAMEORIGIN"
+            return JsonResponse({
                 "code": 0,
                 "info": "successfully upload"
-                #"avatar": os.path.join("/static/media/", str(user.avatar))
             })
-            #response.headers["x-frame-options"] = "SAMEORIGIN"
-            return response
         except Exception as e:
             print(e)
             return JsonResponse({
