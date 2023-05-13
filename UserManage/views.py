@@ -432,7 +432,7 @@ def upload_avatar(request):
                 "info": "successfully upload",
                 "avatar": os.path.join("/static/media/", str(user.avatar))
             })
-            response.headers["x-frame-options"] = "SAMEORIGIN"
+            #response.headers["x-frame-options"] = "SAMEORIGIN"
             return response
         except Exception as e:
             print(e)
