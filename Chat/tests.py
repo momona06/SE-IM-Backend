@@ -81,9 +81,11 @@ class MyConsumerTestCase(TestCase):
 
         await communicator.disconnect()
 
+    @pytest.mark.asyncio
     async def test_connect(self):
         communicator = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
 
         connected, _ = await communicator.connect()
+        assert connected
 
         await communicator.disconnect()
