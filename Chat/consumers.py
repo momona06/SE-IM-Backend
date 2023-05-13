@@ -322,7 +322,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             for index,user in enumerate(CONSUMER_OBJECT_LIST):
                 if user.cur_user == apply_from:
                     await CONSUMER_OBJECT_LIST[index].send(text_data=json.dumps({
-                        'function': 'applylist',
+                        'function': 'applylist' + "index: "+str(index) +"cur_: " + user.cur_user + "from: " + apply_from + "to: " +apply_to,
                         'applylist': from_return_field
                     }))
 
