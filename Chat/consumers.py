@@ -8,8 +8,9 @@ from django.contrib.auth.models import User
 
 from Chat.models import *
 from FriendRelation.models import *
+from UserManage.models import *
 from utils.utils_database import *
-
+import os
 CONSUMER_OBJECT_LIST = []
 USER_NAME_LIST = []
 
@@ -500,6 +501,11 @@ class UserConsumer(AsyncWebsocketConsumer):
         msg_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
         message = await create_message(type=msg_type, body=msg_body, time=msg_time, sender=username)
         msg_id = message.msg_id
+        users = await sync_to_async(User.objects.filter)(username=username)
+        user = await sync_to_async(users.first)()
+        imusers = await sync_to_async(IMUser.objects.filter)(user=user)
+        imuser = await sync_to_async(imusers.first)()
+
 
         Msg_field = {
             "type": "message_diffuse",
@@ -509,6 +515,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             'msg_time': msg_time,
             'sender': username,
             'room_id': room_id,
+            'avatar': os.path.join('/static/media/', str(imuser.avatar))
         }
 
         Ack_field = {
@@ -1008,11 +1015,16 @@ class UserConsumer(AsyncWebsocketConsumer):
                     for msg in timeline.msg_line:
                         cur_message1 = await sync_to_async(Message.objects.filter)(msg_id=msg)
                         cur_message = await sync_to_async(cur_message1.first)()
+                        users = await sync_to_async(User.objects.filter)(username=cur_message.sender)
+                        user = await sync_to_async(users.first)()
+                        imusers = await sync_to_async(IMUser.objects.filter)(user=user)
+                        imuser = await sync_to_async(imusers.first)()
                         message_list.append({
                             "msg_body": cur_message.body,
                             "msg_id": cur_message.msg_id,
                             "msg_time": cur_message.time,
-                            "sender": cur_message.sender
+                            "sender": cur_message.sender,
+                            "avatar": os.path.join('/static/media/', str(imuser.avatar))
                         })
                     return_field.append({
                         "roomid": room.chatroom_id,
