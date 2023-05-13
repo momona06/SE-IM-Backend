@@ -62,7 +62,7 @@ class MyConsumerTestCase(TestCase):
             "function": "heartbeat",
         })
 
-        response = await communicator_0.receive_from()
-        assert json.loads(response)["cur_user"] == USERNAME_0
+        response = await communicator_0.receive_json_from()
+        assert response['function'] == 'heartbeatconfirm'
 
         await communicator_0.disconnect()
