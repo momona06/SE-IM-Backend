@@ -131,7 +131,7 @@ class Message(models.Model):
     sender = models.CharField(max_length=100)
 
 
-async def create_message(type, body, time, sender, reply_id=0, answer=-1, read_list=[], combine_list=[]):
+async def create_message(type, body, time, sender, reply_id=0, answer=-1, read_list=list(), combine_list=list()):
     new_message = await database_sync_to_async(Message)(type=type, body=body, time=time,
                                                         sender=sender, reply_id=reply_id, answer=answer,
                                                         read_list=read_list, combine_list=combine_list)
