@@ -700,13 +700,11 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
         json_info = {
             'msg_id': 114514,
-            'now_time': '2022-01-03 13:06:14'
         }
         """
         # 初始化
         username = await self.get_cur_username()
         msg_id = json_info['msg_id']
-        now_time = json_info['now_time']
 
         room_id = self.room_id
         room_name = self.room_name
@@ -718,6 +716,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         # 判断是否超时
         message = await filter_first_message(msg_id=msg_id)
         msg_time = message.time
+        now_time = await sync_to_async(time.strftime)('%Y-%m-%d %H:%M:%S', time.localtime())
 
         msg_datetime = datetime.strptime(msg_time, "%Y-%m-%d %H:%M:%S")
         now_datetime = datetime.strptime(now_time, "%Y-%m-%d %H:%M:%S")
