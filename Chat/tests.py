@@ -29,13 +29,8 @@ async def register(username, password):
 
 
 class MyConsumerTestCase(TestCase):
-    def __init__(self, methodName: str = ...):
-        super().__init__(methodName)
-        await register(USERNAME_0, PASSWORD_0)
-
     async def test_heartbeat(self):
-
-
+        await register(USERNAME_0, PASSWORD_0)
         communicator_0 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
 
         # 连接 WebSocket
