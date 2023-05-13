@@ -822,7 +822,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         chatroom_id = json_info['chatroom_id']
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
-        if chatroom is not None:
+        if chatroom is not None and not chatroom.is_private:
             username = await self.get_cur_username()
 
             if await self.check_chatroom_master(function_name, chatroom, username):
@@ -848,7 +848,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         chatroom_id = json_info['chatroom_id']
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
-        if chatroom is not None:
+        if chatroom is not None and not chatroom.is_private:
             username = await self.get_cur_username()
             manager_name = json_info['manager_name']
 
@@ -882,7 +882,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         chatroom_id = json_info['chatroom_id']
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
-        if chatroom is not None:
+        if chatroom is not None and not chatroom.is_private:
             username = await self.get_cur_username()
 
             if await self.check_chatroom_master(function_name, chatroom, username):
@@ -1005,7 +1005,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         invited_name = json_info['body']
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
-        if chatroom is not None:
+        if chatroom is not None and not chatroom.is_private:
             if await self.message_pre_treat(function_name,message_type,answer):
 
                 invited_user = await self.check_user_exist(function_name, invited_name)
@@ -1043,7 +1043,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         chatroom_id = json_info['chatroom_id']
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
-        if chatroom is not None:
+        if chatroom is not None and not chatroom.is_private:
             username = await self.get_cur_username()
             member_name = json_info['member_name']
 
