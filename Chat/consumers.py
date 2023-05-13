@@ -84,7 +84,7 @@ async def chatroom_delete_member(chatroom, member_name):
             chatroom.is_notice.pop(index)
 
             if username in chatroom.manage_list:
-                chatroom.magage_list.remove(username)
+                chatroom.manager_list.remove(username)
             break
 
     await database_sync_to_async(chatroom.save)()
@@ -332,6 +332,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                 # await user.fetch_room(json.dumps({"username": user.cur_user}))
                 await user.fetch_friend_list({"username": user.cur_user})
                 break
+
 
         # await self.fetch_room(json.dumps({"username": username}))
         await self.fetch_friend_list({"username": username})
