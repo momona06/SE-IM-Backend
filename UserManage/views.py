@@ -422,21 +422,16 @@ def upload_avatar(request):
     if request.method == 'POST':
         try:
             cur_pic = request.FILES.get("avatar")
-            body = json.loads(request.body.decode("utf-8"))
+            #body = json.loads(request.body.decode("utf-8"))
             name = request.POST['username']
             cur_user = User.objects.filter(username=name).first()
             user = IMUser.objects.filter(user=cur_user).first()
             user.avatar = cur_pic
             user.save()
-            # response = JsonResponse({
-            #     "code": 0,
-            #     "info": "successfully upload"
-            #     #"avatar": os.path.join("/static/media/", str(user.avatar))
-            # })
-            #response.headers["x-frame-options"] = "SAMEORIGIN"
             return JsonResponse({
                 "code": 0,
-                "info": "successfully upload"
+                "info": "successfully upload",
+                "avatar": os.path.join("/static/media/", str(user.avatar))
             })
         except Exception as e:
             print(e)
