@@ -438,7 +438,10 @@ class UserConsumer(AsyncWebsocketConsumer):
         msg_type = event['msg_type']
         sender = event['sender']
         room_id = event['room_id']
-
+        users = await sync_to_async(User.objects.filter)(username=sender)
+        user = await sync_to_async(users.first)()
+        imusers = await sync_to_async(IMUser.objects.filter)(user=user)
+        imuser = await sync_to_async(imusers.first)()
         return_field = {
             'function': 'Msg',
             'msg_id': msg_id,
@@ -446,7 +449,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             'msg_time': msg_time,
             'msg_type': msg_type,
             'sender': sender,
-            'room_id': room_id
+            'room_id': room_id,
+            'avatar': os.path.join('/static/media/', str(imuser.avatar))
         }
 
         await self.send(text_data=json.dumps(return_field))
