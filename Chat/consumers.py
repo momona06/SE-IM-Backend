@@ -244,7 +244,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == "revise_is_top":
             await self.revise_is_top(json_info)
 
-        elif functon == 'read_message':
+        elif function == 'read_message':
             await self.read_message(json_info)
 
 
