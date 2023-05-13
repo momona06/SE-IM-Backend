@@ -10,9 +10,9 @@ def create_im_user(user, token):
 
 class IMUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    # is_login = models.BooleanField(default=False)
     token = models.CharField(max_length=100)
-    avatar = models.ImageField(upload_to='pic/')
+    is_login = models.BooleanField(default=False)
+    avatar = models.ImageField(upload_to='pic/', default='pic/default.jpg')
 
 
 class TokenPoll(models.Model):

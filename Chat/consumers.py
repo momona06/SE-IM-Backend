@@ -710,9 +710,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         room_name = self.room_name
         chatroom_name = self.chatroom_name
 
-        chatroom = await filter_first_chatroom(chatroom_id=room_id)
-        timeline = await get_timeline(chatroom_id=room_id)
-
         # 判断是否超时
         message = await filter_first_message(msg_id=msg_id)
         msg_time = message.time
@@ -726,12 +723,15 @@ class UserConsumer(AsyncWebsocketConsumer):
         delta_hours = delta.seconds // 3600
         delta_minutes = (delta.seconds % 3600) // 60
 
-        if delta_days != 0  or delta_hours != 0 or delta_minutes > 5:
+        if delta_days != 0 or delta_hours != 0 or delta_minutes > 5:
             self.send(text_data=json.dumps({
                 'function': 'withdraw_overtime',
                 'msg_id': msg_id,
             }))
             return
+
+        chatroom = await filter_first_chatroom(chatroom_id=room_id)
+        timeline = await get_timeline(chatroom_id=room_id)
 
         lis = await sync_to_async(timeline.msg_line.index)(msg_id)
 
@@ -741,7 +741,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         # 移动用户的cursor
         for i in range(len(timeline.cursor_list)):
             timeline.cursor_list[i] -= 1
-
 
         # 发送给在线用户
         Withdraw_field = {
