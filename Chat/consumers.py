@@ -366,8 +366,8 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         await self.send(text_data=json.dumps(return_field))
 
-        await self.fetch_friend_list(json.dumps({"username": username}))
-        await self.fetch_reply_list(json.dumps({"username": username}))
+        await self.fetch_friend_list({"username": username})
+        await self.fetch_reply_list({"username": username})
 
 
         await self.channel_layer.group_add("chat_" + str(chatroom.chatroom_id), self.channel_name)
@@ -375,9 +375,9 @@ class UserConsumer(AsyncWebsocketConsumer):
         for index,user in enumerate(CONSUMER_OBJECT_LIST):
             if user.cur_user == apply_from:
                 await CONSUMER_OBJECT_LIST[index].channel_layer.group_add("chat_" + str(chatroom.chatroom_id), user.channel_name)
-                await CONSUMER_OBJECT_LIST[index].fetch_friend_list(json.dumps({"username": user.cur_user}))
-                await CONSUMER_OBJECT_LIST[index].fetch_apply_list(json.dumps({"username": user.cur_user}))
-                await CONSUMER_OBJECT_LIST[index].fetch_room(json.dumps({"username": user.cur_user}))
+                await CONSUMER_OBJECT_LIST[index].fetch_friend_list({"username": user.cur_user})
+                await CONSUMER_OBJECT_LIST[index].fetch_apply_list({"username": user.cur_user})
+                await CONSUMER_OBJECT_LIST[index].fetch_room({"username": user.cur_user})
 
 
 
@@ -397,9 +397,9 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
         await self.send(text_data=json.dumps(return_field))
         username = await self.get_cur_username()
-        await self.fetch_reply_list(json.dumps({
+        await self.fetch_reply_list({
             "username": username
-        }))
+        })
 
     async def fetch_apply_list(self, json_info):
         username = json_info['username']
@@ -799,7 +799,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             for li, onliner in enumerate(CONSUMER_OBJECT_LIST):
                 if onliner.cur_user == membername:
                     await CONSUMER_OBJECT_LIST[li].channel_layer.group_add(chatroom_name, onliner.channel_name)
-                    await CONSUMER_OBJECT_LIST[li].fetch_room(json.dumps({'username': onliner.cur_user}))
+                    await CONSUMER_OBJECT_LIST[li].fetch_room({'username': onliner.cur_user})
                     break
 
 
