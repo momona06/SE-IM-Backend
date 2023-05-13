@@ -337,9 +337,9 @@ def user_login(request, identity, password, login_filter):
                     })
                     # tem_im_user = create_im_user(tem_user,get_new_token())
                     # tem_im_user.save()
-                avatar = ""
-                if str(tem_im_user.avatar) is not None:
-                    avatar = os.path.join("/static/media/", str(tem_im_user.avatar))
+                avatar = os.path.join("/static/media/", str(tem_im_user.avatar))
+                if avatar == "/static/media/":
+                    avatar += "pic/default.jpeg"
 
                 response = JsonResponse({
                     "username": tem_im_user.user.username,
