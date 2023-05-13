@@ -451,7 +451,7 @@ def upload(request):
             response = JsonResponse({
                 "code": 0,
                 "info": "successfully upload",
-                "file_url": os.path.join("/static/media/", str(cur_file))
+                "file_url": os.path.join("/static/media/", str(file1.file))
             })
             response.headers["x-frame-options"] = "SAMEORIGIN"
             return response
