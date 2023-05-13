@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, get_user_model
 
 import json
+from datetime import datetime
 import time
 
 from UserManage.models import *
@@ -698,11 +699,14 @@ class UserConsumer(AsyncWebsocketConsumer):
     async def withdraw_message(self, json_info):
         """
         json_info = {
-            msg_id: 114514
+            'msg_id': 114514,
+            'now_time': '2022-01-03 13:06:14'
         }
         """
+        # 初始化
         username = await self.get_cur_username()
         msg_id = json_info['msg_id']
+        now_time = json_info['now_time']
 
         room_id = self.room_id
         room_name = self.room_name
@@ -711,7 +715,27 @@ class UserConsumer(AsyncWebsocketConsumer):
         chatroom = await filter_first_chatroom(chatroom_id=room_id)
         timeline = await get_timeline(chatroom_id=room_id)
 
+        # 判断是否超时
+        message = await filter_first_message(msg_id=msg_id)
+        msg_time = message.time
+
+        msg_datetime = datetime.strptime(msg_time, "%Y-%m-%d %H:%M:%S")
+        now_datetime = datetime.strptime(now_time, "%Y-%m-%d %H:%M:%S")
+
+        delta = now_datetime - msg_datetime
+        delta_days = delta.days
+        delta_hours = delta.seconds // 3600
+        delta_minutes = (delta.seconds % 3600) // 60
+
+        if delta_days != 0  or delta_hours != 0 or delta_minutes > 5:
+            self.send(text_data=json.dumps({
+                'function': 'withdraw_overtime',
+                'msg_id': msg_id,
+            }))
+            return
+
         lis = await sync_to_async(timeline.msg_line.index)(msg_id)
+
         await sync_to_async(timeline.msg_line.pop)(lis)
         await sync_to_async(timeline.save)()
 
@@ -719,12 +743,13 @@ class UserConsumer(AsyncWebsocketConsumer):
         for i in range(len(timeline.cursor_list)):
             timeline.cursor_list[i] -= 1
 
+
+        # 发送给在线用户
         Withdraw_field = {
             'type': 'withdraw_diffuse',
             'msg_id': msg_id,
             'room_id': room_id,
         }
-        # 发送给在线用户
         await self.group_send(chatroom_name, Withdraw_field)
 
 
@@ -1076,30 +1101,30 @@ class UserConsumer(AsyncWebsocketConsumer):
         json_info = {
             'chatroom_id': 114514,
             'count': 5,
-            'read_list': [13, 234, 123]
+            'read_message_list': [13, 234, 123]
         }
         """
         username = self.cur_user
         chatroom_id = json_info['chatroom_id']
         chatroom_name = 'chat_' + str(chatroom_id)
         count = json_info['count']
-        read_list = json_info['read_list']
+        read_message_list = json_info['read_message_list']
 
         chatroom = await filter_first_chatroom(chatroom_id=chatroom_id)
         timeline = await filter_first_timeline(chatroom_id=chatroom_id)
 
         member_lis = chatroom.mem_list.index(username)
 
-        for read_msg_id in read_list:
+        for read_msg_id in read_message_list:
             message = await filter_first_message(msg_id=read_msg_id)
             message.read_list[member_lis] = True
             await sync_to_async(message.save)()
 
-        read_field = {
+        Read_field = {
             'type': 'read_diffuse',
 
         }
-        await self.group_send(chatroom_name, read_field)
+        await self.group_send(chatroom_name, Read_field)
 
 
 
