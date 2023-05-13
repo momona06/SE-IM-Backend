@@ -445,11 +445,11 @@ def upload(request):
         return HttpResponse('upload')
     if request.method == 'POST':
         try:
-            cur_pic = request.FILES.get("avatar")
+            cur_file = request.FILES.get("file")
             response = JsonResponse({
                 "code": 0,
                 "info": "successfully upload",
-                "avatar": os.path.join("se-im-backend-overflowlab.app.secoder.net/static/media/", str(cur_pic))
+                "avatar": os.path.join("se-im-backend-overflowlab.app.secoder.net/static/media/", str(cur_file))
             })
             response.headers["x-frame-options"] = "SAMEORIGIN"
             return response
