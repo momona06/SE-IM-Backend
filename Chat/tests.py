@@ -48,7 +48,7 @@ class MyConsumerTestCase(TestCase):
     #     }
     #     return self.client.post("/user/login", data=payload, content_type="application/json")
 
-    @pytest.mark.django_db(transaction=True)
+    @pytest.mark.asyncio
     async def test_heartbeat(self):
         await self.register(USERNAME_0, PASSWORD_0)
 
