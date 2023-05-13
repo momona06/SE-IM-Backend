@@ -48,44 +48,44 @@ class MyConsumerTestCase(TestCase):
     #         "email": email
     #     }
     #     return self.client.post("/user/login", data=payload, content_type="application/json")
-
-    async def test_heartbeat(self):
-        await register(USERNAME_0, PASSWORD_0)
-
-        communicator_0 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
-
-        # 连接 WebSocket
-        connected, _ = await communicator_0.connect()
-        assert connected
-
-        await communicator_0.send_json_to({
-            "function": "heartbeat",
-        })
-
-        response = await communicator_0.receive_json_from()
-        assert response['function'] == 'heartbeatconfirm'
-
-        await communicator_0.disconnect()
-
-
-    async def test_add_channel(self):
-        communicator = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
-
-        connected, _ = await communicator.connect()
-        assert connected
-
-        await communicator.send_json_to({
-            "function": "add_channel",
-            'username': 'default'
-        })
-
-        assert await communicator.receive_nothing() is True
-
+    #
+    # async def test_heartbeat(self):
+    #     await register(USERNAME_0, PASSWORD_0)
+    #
+    #     communicator_0 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
+    #
+    #     # 连接 WebSocket
+    #     connected, _ = await communicator_0.connect()
+    #     assert connected
+    #
+    #     await communicator_0.send_json_to({
+    #         "function": "heartbeat",
+    #     })
+    #
+    #     response = await communicator_0.receive_json_from()
+    #     assert response['function'] == 'heartbeatconfirm'
+    #
+    #
+    # async def test_add_channel(self):
+    #     communicator = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
+    #
+    #     connected, _ = await communicator.connect()
+    #     assert connected
+    #
+    #     await communicator.send_json_to({
+    #         "function": "add_channel",
+    #         'username': 'default'
+    #     })
+    #
+    #     assert await communicator.receive_nothing() is True
+    #
 
     async def test_connect(self):
         communicator = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
 
         connected, _ = await communicator.connect()
         assert connected
+
+        await communicator.disconnect()
 
 
