@@ -522,7 +522,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             "function": "Ack 2",
             'msg_id': msg_id,
         }
-
         # type = {text, image, file, video, audio, combine, reply, invite}
         #if msg_type == 'text' or msg_type == 'reply' or msg_type == 'combine' or msg_type == 'invite' or msg_type == 'media':
         if msg_type == 'reply':
