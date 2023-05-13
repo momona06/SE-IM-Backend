@@ -24,20 +24,21 @@ USERNAME_1 = "test01"
 PASSWORD_1 = "123456"
 
 
+async def register(username, password):
+    tem = await sync_to_async(User.objects.create_user)(username=username, password=password)
+    await sync_to_async(tem.save)()
+
+    group = ['我的好友']
+    friend_list = await sync_to_async(FriendList)(user_name=username, group_list=group, friend_list=list())
+    await sync_to_async(friend_list.save)()
+
+    add_list = await sync_to_async(AddList)(user_name=username,
+                           reply_list=list(), reply_answer=list(), reply_ensure=list(),
+                           apply_list=list(), apply_answer=list(), apply_ensure=list())
+    await sync_to_async(add_list.save)()
+
+
 class MyConsumerTestCase(TestCase):
-    @sync_to_async
-    def register(self, username, password):
-        tem = User.objects.create_user(username=username, password=password)
-        tem.save()
-
-        group = ['我的好友']
-        friend_list = FriendList(user_name=username, group_list=group, friend_list=list())
-        friend_list.save()
-
-        add_list = AddList(user_name=username,
-                               reply_list=list(), reply_answer=list(), reply_ensure=list(),
-                               apply_list=list(), apply_answer=list(), apply_ensure=list())
-        add_list.save()
 
     # @sync_to_async
     # def login(self, username, password, email=""):
@@ -49,7 +50,7 @@ class MyConsumerTestCase(TestCase):
     #     return self.client.post("/user/login", data=payload, content_type="application/json")
 
     async def test_heartbeat(self):
-        await self.register(USERNAME_0, PASSWORD_0)
+        await register(USERNAME_0, PASSWORD_0)
 
         communicator_0 = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
 
@@ -85,12 +86,4 @@ class MyConsumerTestCase(TestCase):
         connected, _ = await communicator.connect()
         assert connected
 
-    async def test_consumer(self):
-        communicator = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
 
-        # 连接 WebSocket
-        connected, _ = await communicator.connect()
-
-        assert connected
-
-        await communicator.disconnect()
