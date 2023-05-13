@@ -524,29 +524,29 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
 
         # type = {text, image, file, video, audio, combine, reply, invite}
-        if msg_type == 'text' or msg_type == 'reply' or msg_type == 'combine' or msg_type == 'invite' or msg_type == 'media':
-            if msg_type == 'reply':
-                reply_id = json_info['reply_id']
-                Msg_field['reply_id'] = reply_id
+        #if msg_type == 'text' or msg_type == 'reply' or msg_type == 'combine' or msg_type == 'invite' or msg_type == 'media':
+        if msg_type == 'reply':
+            reply_id = json_info['reply_id']
+            Msg_field['reply_id'] = reply_id
 
-            elif msg_type == 'combine':
-                pass
+        elif msg_type == 'combine':
+            pass
 
-            elif msg_type == 'invite':
-                pass
+        elif msg_type == 'invite':
+            pass
 
             # Msg R3 for online case
-            await self.group_send(chatroom_name, Msg_field)
+        await self.group_send(chatroom_name, Msg_field)
 
-            # Add to Database
-            await sync_to_async(timeline.msg_line.append)(msg_id)
-            await sync_to_async(timeline.save)()
+        # Add to Database
+        await sync_to_async(timeline.msg_line.append)(msg_id)
+        await sync_to_async(timeline.save)()
 
             # Ack 2
-            await self.send(text_data=json.dumps(Ack_field))
+        await self.send(text_data=json.dumps(Ack_field))
 
-        elif msg_type == 'image' or msg_type == 'video' or msg_type == 'audio' or msg_type == 'file':
-            pass
+        #elif msg_type == 'image' or msg_type == 'video' or msg_type == 'audio' or msg_type == 'file':
+        #    pass
 
     async def acknowledge_message(self, json_info):
         """
