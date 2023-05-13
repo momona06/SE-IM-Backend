@@ -1212,7 +1212,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             "manager_list": manager_list,
             "master": master,
             "mem_count": mem_count,
-            "notice_list": notice_list
+            "notice_list": notice_list,
+            "is_private": room.is_private
         }))
 
 
