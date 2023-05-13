@@ -442,6 +442,9 @@ class UserConsumer(AsyncWebsocketConsumer):
         user = await sync_to_async(users.first)()
         imusers = await sync_to_async(IMUser.objects.filter)(user=user)
         imuser = await sync_to_async(imusers.first)()
+        avatar = os.path.join("/static/media/", str(imuser.avatar))
+        if avatar == "/static/media/":
+            avatar += "pic/default.jpeg"
         return_field = {
             'function': 'Msg',
             'msg_id': msg_id,
@@ -450,7 +453,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             'msg_type': msg_type,
             'sender': sender,
             'room_id': room_id,
-            'avatar': os.path.join('/static/media/', str(imuser.avatar))
+            'avatar': avatar
         }
 
         await self.send(text_data=json.dumps(return_field))
@@ -510,7 +513,9 @@ class UserConsumer(AsyncWebsocketConsumer):
         imusers = await sync_to_async(IMUser.objects.filter)(user=user)
         imuser = await sync_to_async(imusers.first)()
 
-
+        avatar = os.path.join("/static/media/", str(imuser.avatar))
+        if avatar == "/static/media/":
+            avatar += "pic/default.jpeg"
         Msg_field = {
             "type": "message_diffuse",
             'msg_id': msg_id,
@@ -519,7 +524,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             'msg_time': msg_time,
             'sender': username,
             'room_id': room_id,
-            'avatar': os.path.join('/static/media/', str(imuser.avatar))
+            'avatar': avatar
         }
 
         Ack_field = {
@@ -1022,13 +1027,16 @@ class UserConsumer(AsyncWebsocketConsumer):
                         user = await sync_to_async(users.first)()
                         imusers = await sync_to_async(IMUser.objects.filter)(user=user)
                         imuser = await sync_to_async(imusers.first)()
+                        avatar = os.path.join("/static/media/", str(imuser.avatar))
+                        if avatar == "/static/media/":
+                            avatar += "pic/default.jpeg"
                         message_list.append({
                             "msg_body": cur_message.body,
                             "msg_id": cur_message.msg_id,
                             "msg_time": cur_message.time,
                             "msg_type": cur_message.type,
                             "sender": cur_message.sender,
-                            "avatar": os.path.join('/static/media/', str(imuser.avatar))
+                            "avatar": avatar
                         })
                     return_field.append({
                         "roomid": room.chatroom_id,
