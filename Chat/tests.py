@@ -48,7 +48,6 @@ class MyConsumerTestCase(TestCase):
     #     }
     #     return self.client.post("/user/login", data=payload, content_type="application/json")
 
-    @pytest.mark.asyncio
     async def test_heartbeat(self):
         await self.register(USERNAME_0, PASSWORD_0)
 
@@ -67,7 +66,6 @@ class MyConsumerTestCase(TestCase):
 
         await communicator_0.disconnect()
 
-    @pytest.mark.asyncio
     async def test_add_channel(self):
         communicator = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
 
@@ -80,5 +78,12 @@ class MyConsumerTestCase(TestCase):
         })
 
         assert await communicator.receive_nothing() is True
+
+        await communicator.disconnect()
+
+    async def test_connect(self):
+        communicator = WebsocketCommunicator(UserConsumer.as_asgi(), "/ws/")
+
+        connected, _ = await communicator.connect()
 
         await communicator.disconnect()
