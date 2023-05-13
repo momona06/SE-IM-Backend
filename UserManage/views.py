@@ -440,28 +440,7 @@ def upload_avatar(request):
                 "code": -1,
                 "info": "Unexpected error"
             })
-# def upload_avatar(request):
-#     if request.method == 'GET':
-#         return HttpResponse('upload')
-#     if request.method == 'POST':
-#         try:
-#             cur_pic = request.FILES.get("avatar")
-#             body = json.loads(request.body.decode("utf-8"))
-#             cur_user = str(body["username"])
-#             user = IMUser.objects.filter(username=cur_user).first()
-#             user.avatar = cur_pic
-#             user.save()
-#             return JsonResponse({
-#                 "code": 0,
-#                 "info": "successfully upload",
-#                 "avatar": os.path.join("/static/media/pic/", user.avatar)
-#             })
-#         except Exception as e:
-#             print(e)
-#             return JsonResponse({
-#                 "code": -1,
-#                 "info": "Unexpected error"
-#             })
+
 def upload(request):
     if request.method == 'GET':
         return HttpResponse('upload')
