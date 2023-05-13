@@ -10,7 +10,7 @@ from utils.utils_request import BAD_METHOD
 from django.contrib.auth import authenticate, get_user_model
 
 from django.contrib.auth.models import User
-from UserManage.models import IMUser, TokenPoll, create_im_user, EmailCode
+from UserManage.models import IMUser, TokenPoll, create_im_user, EmailCode, Fileload
 from django.core import mail
 
 from Chat.models import ChatRoom, ChatTimeLine
@@ -446,6 +446,8 @@ def upload(request):
     if request.method == 'POST':
         try:
             cur_file = request.FILES.get("file")
+            file1 = Fileload(file=cur_file)
+            file1.save()
             response = JsonResponse({
                 "code": 0,
                 "info": "successfully upload",
