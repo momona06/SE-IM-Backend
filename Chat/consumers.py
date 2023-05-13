@@ -826,6 +826,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             username = await self.get_cur_username()
 
             if await self.check_chatroom_master(function_name, chatroom, username):
+                mem_list = chatroom.memlist.copy()
+
                 chat_timeline = await get_timeline(timeline_id=chatroom.timeline_id)
                 await sync_to_async(chatroom.delete)()
                 await sync_to_async(chat_timeline.delete)()
@@ -834,6 +836,12 @@ class UserConsumer(AsyncWebsocketConsumer):
                     'function': 'delete_chat_group',
                     'message': 'Success'
                 }))
+
+                for i in mem_list:
+                    for index, user in enumerate(CONSUMER_OBJECT_LIST):
+                        if user.cur_user == i:
+                            await CONSUMER_OBJECT_LIST[index].fetch_room({'username': user.cur_user})
+
 
 
     async def appoint_manager(self, json_info):
