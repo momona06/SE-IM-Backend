@@ -594,7 +594,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
 
         Ack_field = {
-            "function": "Ack 2",
+            "function": "Ack2",
             'msg_id': msg_id,
         }
 
