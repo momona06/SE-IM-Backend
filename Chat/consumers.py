@@ -1099,7 +1099,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             'type': 'read_diffuse',
 
         }
-        self.group_send(chatroom_name, read_field)
+        await self.group_send(chatroom_name, read_field)
 
 
 
