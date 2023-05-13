@@ -8,5 +8,7 @@ urlpatterns = [
     path('send_email', views.send_email),
     path('cancel', views.cancel),
     path('logout', views.logout),
-    path('revise', views.revise)
+    path('revise', views.revise),
+    path('upload', views.upload_avatar),
+    path('uploadfile', views.upload)
 ]

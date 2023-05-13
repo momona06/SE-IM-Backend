@@ -1,6 +1,7 @@
 #!/bin/sh
 python3 manage.py makemigrations
 python3 manage.py migrate
+python3 manage.py collectstatic
 
 daphne IM_Backend.asgi:application -b 0.0.0.0 -p 80
 #python3 manage.py runserver 80
