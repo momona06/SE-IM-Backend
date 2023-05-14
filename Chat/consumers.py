@@ -485,6 +485,19 @@ class UserConsumer(AsyncWebsocketConsumer):
         msg_type = event['msg_type']
         sender = event['sender']
         room_id = event['room_id']
+        if msg_type == 'reply':
+            reply_id = event['reply_id']
+        else:
+            reply_id = -1
+
+        if msg_type == 'combine':
+            combine_list = event['combine_list']
+            transroom_id = event['transroom_id']
+        else:
+            combine_list = []
+            transroom_id = -1
+
+
 
         return_field = {
             'function': 'Msg',
@@ -493,7 +506,10 @@ class UserConsumer(AsyncWebsocketConsumer):
             'msg_time': msg_time,
             'msg_type': msg_type,
             'sender': sender,
-            'room_id': room_id
+            'room_id': room_id,
+            'reply_id': reply_id,
+            'combine_list': combine_list,
+            'transroom_id': transroom_id
         }
 
         await self.send(text_data=json.dumps(return_field))
@@ -535,7 +551,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         combine: json_info = {
             'msg_type': 'combine',
             'combine_list': [16, 17],
-            'transroom_list': [14, 5, 86],
+            'transroom_id': 36,
         }
         """
 
@@ -580,7 +596,6 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         read_list = message.read_list
 
-
         Msg_field = {
             "type": "message_diffuse",
             'msg_id': msg_id,
@@ -589,7 +604,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             'msg_time': msg_time,
             'sender': username,
             'room_id': room_id,
-            'avatar': os.path.join('/static/media/', str(imuser.avatar))
+            'avatar': os.path.join('/static/media/', str(imuser.avatar)),
+            'qqq': 'qwe'
             # Fix: READ
             # 'read_list': read_list
         }
@@ -624,9 +640,9 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         elif msg_type == 'combine':
             combine_list = json_info['combine_list']
-            transroom_list = json_info['transroom_list']
+            transroom_id = json_info['transroom_id']
             Msg_field['combine_list'] = combine_list
-            Msg_field['transroom_list'] = transroom_list
+            Msg_field['transroom_id'] = transroom_id
 
             # Msg R3 for online case
             await self.group_send(chatroom_name, Msg_field)
@@ -664,8 +680,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                             'function': function_name,
                             'message': 'Success',
                         }))
-
-
 
 
         elif msg_type == 'image' or msg_type == 'video' or msg_type == 'audio' or msg_type == 'file':
@@ -1204,6 +1218,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                         message_list.append({
                             "msg_body": cur_message.body,
                             "msg_id": cur_message.msg_id,
+                            "msg_type": cur_message.type,
                             "msg_time": cur_message.time,
                             "sender": cur_message.sender,
                             "avatar": os.path.join('/static/media/', str(imuser.avatar))
@@ -1247,7 +1262,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             "manager_list": manager_list,
             "master": master,
             "mem_count": mem_count,
-            "notice_list": notice_list
+            "notice_list": notice_list,
+            "is_private": room.is_private
         }))
 
 
