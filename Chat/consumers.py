@@ -209,11 +209,11 @@ class UserConsumer(AsyncWebsocketConsumer):
             await self.leave_group(json_info)
 
         # 群主任命管理员
-        elif function == 'appoint_manage':
+        elif function == 'appoint_manager':
             await self.appoint_manager(json_info)
 
         # 群主卸任管理员
-        elif function == 'remove_manage':
+        elif function == 'remove_manager':
             await self.remove_manager(json_info)
 
         # 群主转让
