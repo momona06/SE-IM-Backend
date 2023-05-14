@@ -485,6 +485,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         msg_type = event['msg_type']
         sender = event['sender']
         room_id = event['room_id']
+
         if msg_type == 'reply':
             reply_id = event['reply_id']
         else:
@@ -492,12 +493,8 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         if msg_type == 'combine':
             combine_list = event['combine_list']
-            transroom_id = event['transroom_id']
         else:
             combine_list = []
-            transroom_id = -1
-
-
 
         return_field = {
             'function': 'Msg',
@@ -509,7 +506,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             'room_id': room_id,
             'reply_id': reply_id,
             'combine_list': combine_list,
-            'transroom_id': transroom_id
         }
 
         await self.send(text_data=json.dumps(return_field))
@@ -567,8 +563,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         room_name = self.room_name
         chatroom_name = self.chatroom_name
 
-        chatroom = await filter_first_chatroom(chatroom_id=room_id)
-        timeline = await get_timeline(chatroom_id=room_id)
 
         # 添加消息
         msg_type = json_info['msg_type']
@@ -581,12 +575,22 @@ class UserConsumer(AsyncWebsocketConsumer):
         imusers = await sync_to_async(IMUser.objects.filter)(user=user)
         imuser = await sync_to_async(imusers.first)()
 
+        if msg_type == 'combine':
+            transroom_id = json_info['transroom_id']
+            chatroom = await filter_first_chatroom(chatroom_id=transroom_id)
+            timeline = await get_timeline(chatroom_id=transroom_id)
+        else:
+            chatroom = await filter_first_chatroom(chatroom_id=room_id)
+            timeline = await get_timeline(chatroom_id=room_id)
+
 
         # Move Here
         # 修改数据库
-        # Fix: READ
+
         await sync_to_async(timeline.msg_line.append)(msg_id)
         await sync_to_async(timeline.save)()
+
+        # is_read
         for membername in chatroom.mem_list:
             if membername == username:
                 message.read_list.append(True)
@@ -603,9 +607,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             'msg_body': msg_body,
             'msg_time': msg_time,
             'sender': username,
-            'room_id': room_id,
+            'room_id': room_id if msg_type != 'combine' else transroom_id,
             'avatar': os.path.join('/static/media/', str(imuser.avatar)),
-            'qqq': 'qwe'
             # Fix: READ
             # 'read_list': read_list
         }
@@ -629,6 +632,8 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif msg_type == 'reply':
             reply_id = json_info['reply_id']
             Msg_field['reply_id'] = reply_id
+            message.reply_id = reply_id
+            await sync_to_async(message.save)()
 
             # Msg R3 for online case
             await self.group_send(chatroom_name, Msg_field)
@@ -640,9 +645,9 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         elif msg_type == 'combine':
             combine_list = json_info['combine_list']
-            transroom_id = json_info['transroom_id']
             Msg_field['combine_list'] = combine_list
-            Msg_field['transroom_id'] = transroom_id
+            message.combine_list = combine_list
+            await sync_to_async(message.save)()
 
             # Msg R3 for online case
             await self.group_send(chatroom_name, Msg_field)

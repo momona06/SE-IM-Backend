@@ -125,6 +125,7 @@ class Message(models.Model):
         models.BigIntegerField(default=0)
     )
 
+
     time = models.CharField(max_length=100)
 
     sender = models.CharField(max_length=100)
