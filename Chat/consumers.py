@@ -1159,7 +1159,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         for i in range(flist_len):
             return_list.append({
                 "groupname": flist.group_list[i],
-                "username": []
+                "username": list()
             })
             for friend_name in flist.friend_list:
                 friend = await filter_first_friend(username, friend_name)
@@ -1287,7 +1287,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                         await database_sync_to_async(chatroom.save)()
                         await self.send(text_data=json.dumps({
                             'function': function_name,
-                            'message': 'Success'
+                            'message': 'Is_Notice Revise Success'
                         }))
 
     async def revise_is_top(self, json_info):
@@ -1304,7 +1304,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
         is_top = json_info['is_top']
-
         if chatroom is not None:
             username = await self.get_cur_username()
 
@@ -1318,5 +1317,5 @@ class UserConsumer(AsyncWebsocketConsumer):
                         await database_sync_to_async(chatroom.save)()
                         await self.send(text_data=json.dumps({
                             'function': function_name,
-                            'message': 'Success'
+                            'message': 'Is_Top Revise Success'
                         }))
