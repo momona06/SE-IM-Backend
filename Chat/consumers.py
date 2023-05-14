@@ -139,14 +139,10 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data=None, bytes_data=None):
 
-        # Data
-        # 1) self: self.scope/self.channel_name...
-        # 2) text_data: original data from frontend
-
         json_info = json.loads(text_data)
         function = json_info["function"]
 
-        # friendlist zone
+        # Friend Function
         if function == 'heartbeat':
             await self.heat_beat()
 
@@ -168,22 +164,23 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == 'fetchfriendlist':
             await self.fetch_friend_list(json_info)
 
-        # chat zone
-        # 连接私聊/群聊
+        # Chat Function
+        # 初始化所有私聊/群聊
         elif function == 'add_channel':
             await self.add_channel(json_info)
 
-        # 连接私聊/群聊
+        # 连接某个私聊/群聊
         elif function == 'add_chat':
             await self.add_chat(json_info)
 
-        # 断开私聊/群聊连接
+        # 离开某个私聊/群聊
         elif function == 'leave_chat':
             await self.leave_chat(json_info)
 
         # 发送各种消息
         # {text}: 直接处理
         # {rel}: 添加
+        # {combine}: 转发
         # {image, audio, file}: 采用下载链接处理
         elif function == 'send_message':
             await self.send_message(json_info)
@@ -204,6 +201,10 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == 'apply_add_group':
             await self.apply_add_group(json_info)
 
+        # 群主/管理员处理申请用户加入群聊信息
+        elif function == 'reply_add_group':
+            await self.reply_add_group(json_info)
+
         # 用户自己退出群聊
         elif function == 'leave_group':
             await self.leave_group(json_info)
@@ -212,19 +213,15 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == 'appoint_manage':
             await self.appoint_manager(json_info)
 
-        # 群主转让
+        # 群主转让给他人
         elif function == 'transfer_master':
             await self.transfer_master(json_info)
-
-        # 群主/管理员处理申请用户加入群聊信息
-        elif function == 'reply_add_group':
-            await self.reply_add_group(json_info)
 
         # 群主/管理员直接添加用户到群聊
         elif function == 'add_group_member':
            await self.add_group_member(json_info)
 
-        # 群主/管理员移除群成员
+        # 群主/管理员直接移除群成员
         elif function == 'remove_group_member':
             await self.remove_group_member(json_info)
 
@@ -232,7 +229,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == "fetch_room":
             await self.fetch_room(json_info)
 
-        # 获取私聊/群聊信息
+        # 获取某一个私聊/群聊的具体信息
         elif function == "fetch_roominfo":
             await self.fetch_roominfo(json_info)
 
@@ -244,7 +241,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == "revise_is_top":
             await self.revise_is_top(json_info)
 
-        # 已读消息
+        # 设置已读消息
         elif function == 'read_message':
             await self.read_message(json_info)
 
@@ -254,7 +251,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         json_info = {}
         """
         await self.send(text_data=json.dumps({
-            'function': 'heartbeatconfirm',
+            'function': 'heartbeat confirm',
         }))
 
     async def apply_friend(self, json_info):
@@ -320,7 +317,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                     "make_sure": to_add_list.reply_ensure[li]
                 })
 
-            for index,user in enumerate(CONSUMER_OBJECT_LIST):
+            for index, user in enumerate(CONSUMER_OBJECT_LIST):
                 if user.cur_user == apply_from:
                     await CONSUMER_OBJECT_LIST[index].send(text_data=json.dumps({
                         'function': 'applylist',
