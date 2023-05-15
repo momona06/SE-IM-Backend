@@ -520,6 +520,13 @@ class UserConsumer(AsyncWebsocketConsumer):
         else:
             combine_list = list()
 
+        users = await sync_to_async(User.objects.filter)(username=sender)
+        user = await sync_to_async(users.first)()
+        imusers = await sync_to_async(IMUser.objects.filter)(user=user)
+        imuser = await sync_to_async(imusers.first)()
+        avatar = os.path.join("/static/media/", str(imuser.avatar))
+        if avatar == "/static/media/":
+            avatar += "pic/default.jpeg"
         return_field = {
             'function': 'Msg',
             'msg_id': msg_id,
@@ -527,9 +534,10 @@ class UserConsumer(AsyncWebsocketConsumer):
             'msg_time': msg_time,
             'msg_type': msg_type,
             'sender': sender,
-            'room_id': room_id,
             'reply_id': reply_id,
             'combine_list': combine_list,
+            'room_id': room_id,
+            'avatar': avatar
         }
 
         await self.send(text_data=json.dumps(return_field))
@@ -621,6 +629,9 @@ class UserConsumer(AsyncWebsocketConsumer):
         await sync_to_async(message.save)()
         read_list = message.read_list
 
+        avatar = os.path.join("/static/media/", str(imuser.avatar))
+        if avatar == "/static/media/":
+            avatar += "pic/default.jpeg"
         Msg_field = {
             "type": "message_diffuse",
             'msg_id': msg_id,
@@ -629,7 +640,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             'msg_time': msg_time,
             'sender': username,
             'room_id': room_id if msg_type != 'combine' else transroom_id,
-            'avatar': os.path.join('/static/media/', str(imuser.avatar)),
+            'avatar': avatar,
             'read_list': read_list
         }
 
@@ -1255,13 +1266,16 @@ class UserConsumer(AsyncWebsocketConsumer):
                         user = await sync_to_async(users.first)()
                         imusers = await sync_to_async(IMUser.objects.filter)(user=user)
                         imuser = await sync_to_async(imusers.first)()
+                        avatar = os.path.join("/static/media/", str(imuser.avatar))
+                        if avatar == "/static/media/":
+                            avatar += "pic/default.jpeg"
                         message_list.append({
                             "msg_body": cur_message.body,
                             "msg_id": cur_message.msg_id,
                             "msg_type": cur_message.type,
                             "msg_time": cur_message.time,
                             "sender": cur_message.sender,
-                            "avatar": os.path.join('/static/media/', str(imuser.avatar)),
+                            "avatar": avatar,
                             "combine_list": cur_message.combine_list,
                             # "read_list": cur_message.read_list
                         })
