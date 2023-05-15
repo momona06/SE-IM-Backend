@@ -44,6 +44,20 @@ def get_timeline(chatroom_id=None, timeline_id=None):
 
 
 @database_sync_to_async
+def get_invite_list(chatroom_id=None, invite_list_id=None):
+    """
+    只填一个即可
+    """
+    if chatroom_id is None:
+        if invite_list_id is None:
+            return None
+        else:
+            return InviteList.objects.get(invite_list_id=invite_list_id)
+    else:
+        return InviteList.objects.get(chatroom_id=chatroom_id)
+
+
+@database_sync_to_async
 def filter_first_addlist(username):
     return AddList.objects.filter(user_name=username).first()
 
