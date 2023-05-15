@@ -522,10 +522,14 @@ class UserConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(return_field))
 
     async def read_diffuse(self, event):
-        read_list = event['read_list']
+        read_message_list = event['read_list']
+        chatroom_id = event['chatroom_id']
+        read_user = event['read_user']
         return_field = {
             'function': 'read_message',
-
+            'read_user': read_user,
+            'chatroom_id': chatroom_id,
+            'read_message_list': read_message_list
         }
         await self.send(text_data=json.dumps(return_field))
 
@@ -1155,8 +1159,9 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         Read_field = {
             'type': 'read_diffuse',
+            'read_message_list': read_message_list,
+            'read_user': username,
             'chatroom_id': chatroom_id,
-
         }
         await self.group_send(chatroom_name, Read_field)
 
