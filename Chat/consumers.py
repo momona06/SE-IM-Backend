@@ -15,6 +15,7 @@ from FriendRelation.models import *
 from UserManage.models import *
 from utils.utils_database import *
 import os
+
 CONSUMER_OBJECT_LIST = []
 
 
@@ -80,6 +81,7 @@ async def get_power(chatroom, username):
     else:
         return 0
 
+
 async def chatroom_delete_member(chatroom, member_name):
     for index, username in enumerate(chatroom.mem_list):
         if username == member_name:
@@ -90,7 +92,7 @@ async def chatroom_delete_member(chatroom, member_name):
             if username in chatroom.manager_list:
                 chatroom.manager_list.remove(username)
 
-            chatroom.mem_count-=1
+            chatroom.mem_count -= 1
             break
     await database_sync_to_async(chatroom.save)()
 
@@ -102,8 +104,6 @@ async def chatroom_add_member(chatroom, member_name):
     chatroom.mem_count += 1
 
     await database_sync_to_async(chatroom.save)()
-
-
 
 
 class UserConsumer(AsyncWebsocketConsumer):
@@ -135,7 +135,6 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         CONSUMER_OBJECT_LIST.remove(self)
         raise StopConsumer()
-
 
     async def receive(self, text_data=None, bytes_data=None):
 
@@ -210,8 +209,12 @@ class UserConsumer(AsyncWebsocketConsumer):
             await self.leave_group(json_info)
 
         # 群主任命管理员
-        elif function == 'appoint_manage':
+        elif function == 'appoint_manager':
             await self.appoint_manager(json_info)
+
+        # 群主卸任管理员
+        elif function == 'remove_manager':
+            await self.remove_manager(json_info)
 
         # 群主转让给他人
         elif function == 'transfer_master':
@@ -244,11 +247,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         # 设置已读消息
         elif function == 'read_message':
             await self.read_message(json_info)
-
-        # 获取某条消息
-        elif function == 'fetch_message':
-            await self.fetch_message(json_info)
-
 
     async def heart_beat(self):
         """
@@ -284,9 +282,9 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         elif apply_to in (await sync_to_async(FriendList.objects.get)(user_name=apply_from)).friend_list:
             await self.send(text_data=json.dumps({
-            'function': function_name,
-            'message':"Is Already a Friend"
-        }))
+                'function': function_name,
+                'message': "Is Already a Friend"
+            }))
 
         else:
             applyer_add_list.apply_list.append(apply_to)
@@ -371,18 +369,15 @@ class UserConsumer(AsyncWebsocketConsumer):
         await self.fetch_friend_list({"username": username})
         await self.fetch_reply_list({"username": username})
 
-
         await self.channel_layer.group_add("chat_" + str(chatroom.chatroom_id), self.channel_name)
 
-        for index,user in enumerate(CONSUMER_OBJECT_LIST):
+        for index, user in enumerate(CONSUMER_OBJECT_LIST):
             if user.cur_user == apply_from:
-                await CONSUMER_OBJECT_LIST[index].channel_layer.group_add("chat_" + str(chatroom.chatroom_id), user.channel_name)
+                await CONSUMER_OBJECT_LIST[index].channel_layer.group_add("chat_" + str(chatroom.chatroom_id),
+                                                                          user.channel_name)
                 await CONSUMER_OBJECT_LIST[index].fetch_friend_list({"username": user.cur_user})
                 await CONSUMER_OBJECT_LIST[index].fetch_apply_list({"username": user.cur_user})
                 await CONSUMER_OBJECT_LIST[index].fetch_room({"username": user.cur_user})
-
-
-
 
     async def decline_friend(self, json_info):
         # 修改数据库
@@ -435,10 +430,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             'function': attribute_name,
             attribute_name: return_field
         }))
-
-
-
-
 
     async def add_channel(self, json_info):
         """
@@ -496,6 +487,13 @@ class UserConsumer(AsyncWebsocketConsumer):
         else:
             combine_list = list()
 
+        users = await sync_to_async(User.objects.filter)(username=sender)
+        user = await sync_to_async(users.first)()
+        imusers = await sync_to_async(IMUser.objects.filter)(user=user)
+        imuser = await sync_to_async(imusers.first)()
+        avatar = os.path.join("/static/media/", str(imuser.avatar))
+        if avatar == "/static/media/":
+            avatar += "pic/default.jpeg"
         return_field = {
             'function': 'Msg',
             'msg_id': msg_id,
@@ -503,9 +501,10 @@ class UserConsumer(AsyncWebsocketConsumer):
             'msg_time': msg_time,
             'msg_type': msg_type,
             'sender': sender,
-            'room_id': room_id,
             'reply_id': reply_id,
             'combine_list': combine_list,
+            'room_id': room_id,
+            'avatar': avatar
         }
 
         await self.send(text_data=json.dumps(return_field))
@@ -529,7 +528,6 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         }
         await self.send(text_data=json.dumps(return_field))
-
 
     async def send_message(self, json_info):
         """
@@ -584,6 +582,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             timeline = await get_timeline(chatroom_id=room_id)
 
 
+        # Move Here
         # 修改数据库
         await sync_to_async(timeline.msg_line.append)(msg_id)
         await sync_to_async(timeline.save)()
@@ -597,6 +596,9 @@ class UserConsumer(AsyncWebsocketConsumer):
         await sync_to_async(message.save)()
         read_list = message.read_list
 
+        avatar = os.path.join("/static/media/", str(imuser.avatar))
+        if avatar == "/static/media/":
+            avatar += "pic/default.jpeg"
         Msg_field = {
             "type": "message_diffuse",
             'msg_id': msg_id,
@@ -605,7 +607,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             'msg_time': msg_time,
             'sender': username,
             'room_id': room_id if msg_type != 'combine' else transroom_id,
-            'avatar': os.path.join('/static/media/', str(imuser.avatar)),
+            'avatar': avatar,
             'read_list': read_list
         }
 
@@ -687,7 +689,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif msg_type == 'image' or msg_type == 'video' or msg_type == 'audio' or msg_type == 'file':
             pass
 
-
     async def acknowledge_message(self, json_info):
         """
         json_info = {
@@ -724,7 +725,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         else:
             timeline.cursor_list[lis] += 1
 
-
     async def withdraw_message(self, json_info):
         """
         json_info = {
@@ -753,7 +753,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         delta_minutes = (delta.seconds % 3600) // 60
 
         if delta_days != 0 or delta_hours != 0 or delta_minutes > 5:
-            self.send(text_data=json.dumps({
+            await self.send(text_data=json.dumps({
                 'function': 'withdraw_overtime',
                 'msg_id': msg_id,
             }))
@@ -779,7 +779,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
         await self.group_send(chatroom_name, Withdraw_field)
 
-
     async def find_chatroom(self, function_name, chatroom_id):
         chatroom_list_tem = await sync_to_async(ChatRoom.objects.filter)(chatroom_id=chatroom_id)
         chatroom = await sync_to_async(chatroom_list_tem.first)()
@@ -791,7 +790,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             }))
         return chatroom
 
-
     async def check_chatroom_master(self, function_name, chatroom, username):
         if chatroom.master_name != username:
             await self.send(text_data=json.dumps({
@@ -800,7 +798,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             }))
             return False
         return True
-
 
     async def check_user_exist(self, function_name, username, message='User not found'):
         manager_user = await get_user(username)
@@ -811,7 +808,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             }))
         return manager_user
 
-
     async def check_user_in_chatroom(self, function_name, chatroom, username, message='User is not in the group'):
         if username in chatroom.mem_list:
             return True
@@ -821,7 +817,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                 'message': message
             }))
             return False
-
 
     async def message_pre_treat(self, function_name, message_type, answer):
         if message_type != 'invite':
@@ -838,7 +833,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             return False
         else:
             return True
-
 
     async def create_group(self, json_info):
         """
@@ -863,8 +857,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                     })
                     break
 
-
-
     async def delete_chat_group(self, json_info):
         """
         json_info = {
@@ -876,10 +868,12 @@ class UserConsumer(AsyncWebsocketConsumer):
         chatroom_id = json_info['chatroom_id']
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
-        if chatroom is not None:
+        if chatroom is not None and not chatroom.is_private:
             username = await self.get_cur_username()
 
             if await self.check_chatroom_master(function_name, chatroom, username):
+                mem_list = chatroom.memlist.copy()
+
                 chat_timeline = await get_timeline(timeline_id=chatroom.timeline_id)
                 await sync_to_async(chatroom.delete)()
                 await sync_to_async(chat_timeline.delete)()
@@ -889,6 +883,10 @@ class UserConsumer(AsyncWebsocketConsumer):
                     'message': 'Delete Group Success'
                 }))
 
+                for i in mem_list:
+                    for index, user in enumerate(CONSUMER_OBJECT_LIST):
+                        if user.cur_user == i:
+                            await CONSUMER_OBJECT_LIST[index].fetch_room({'username': user.cur_user})
 
     async def appoint_manager(self, json_info):
         """
@@ -902,7 +900,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         chatroom_id = json_info['chatroom_id']
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
-        if chatroom is not None:
+        if chatroom is not None and not chatroom.is_private:
             username = await self.get_cur_username()
             manager_name = json_info['manager_name']
 
@@ -923,7 +921,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                             'message': 'Appoint Manager Success'
                         }))
 
-
     async def transfer_master(self, json_info):
         """
         json_info = {
@@ -936,7 +933,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         chatroom_id = json_info['chatroom_id']
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
-        if chatroom is not None:
+        if chatroom is not None and not chatroom.is_private:
             username = await self.get_cur_username()
 
             if await self.check_chatroom_master(function_name, chatroom, username):
@@ -1104,7 +1101,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         chatroom_id = json_info['chatroom_id']
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
-        if chatroom is not None:
+        if chatroom is not None and not chatroom.is_private:
             username = await self.get_cur_username()
             member_name = json_info['member_name']
 
@@ -1223,13 +1220,16 @@ class UserConsumer(AsyncWebsocketConsumer):
                         user = await sync_to_async(users.first)()
                         imusers = await sync_to_async(IMUser.objects.filter)(user=user)
                         imuser = await sync_to_async(imusers.first)()
+                        avatar = os.path.join("/static/media/", str(imuser.avatar))
+                        if avatar == "/static/media/":
+                            avatar += "pic/default.jpeg"
                         message_list.append({
                             "msg_body": cur_message.body,
                             "msg_id": cur_message.msg_id,
                             "msg_type": cur_message.type,
                             "msg_time": cur_message.time,
                             "sender": cur_message.sender,
-                            "avatar": os.path.join('/static/media/', str(imuser.avatar)),
+                            "avatar": avatar,
                             "combine_list": cur_message.combine_list,
                             "read_list": cur_message.read_list
                         })
@@ -1356,3 +1356,39 @@ class UserConsumer(AsyncWebsocketConsumer):
                             'message': 'Is_Top Revise Success'
                         }))
 
+
+    async def remove_manager(self, json_info):
+        """
+        json_info = {
+            'chatroom_id': 114514,
+            'manager_name': 'ashitemaru'
+        }
+        """
+        function_name = 'remove_manager'
+
+        chatroom_id = json_info['chatroom_id']
+        chatroom = await self.find_chatroom(function_name, chatroom_id)
+
+        if chatroom is not None and not chatroom.is_private:
+            username = await self.get_cur_username()
+            manager_name = json_info['manager_name']
+
+            if await self.check_chatroom_master(function_name, chatroom, username):
+                manager_user = await self.check_user_exist(function_name, manager_name)
+
+                if manager_user is not None and \
+                        await self.check_user_in_chatroom(function_name, chatroom, manager_name):
+                    if manager_name in chatroom.manager_list:
+                        chatroom.manager_list.remove(manager_name)
+                        await database_sync_to_async(chatroom.save)()
+
+                        await self.send(text_data=json.dumps({
+                            'function': function_name,
+                            'message': 'Success'
+                        }))
+                    else:
+                        chatroom.manager_list.append(manager_name)
+                        await self.send(text_data=json.dumps({
+                            'function': function_name,
+                            'message': 'User is not a manager'
+                        }))

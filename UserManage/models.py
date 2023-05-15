@@ -18,6 +18,9 @@ class IMUser(models.Model):
 class TokenPoll(models.Model):
     token = models.CharField(max_length=100)
 
+class Fileload(models.Model):
+    file = models.ImageField(upload_to='file/')
+
 
 class EmailCode(models.Model):
     email = models.EmailField(max_length=50, verbose_name="邮箱")

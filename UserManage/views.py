@@ -10,7 +10,7 @@ from utils.utils_request import BAD_METHOD
 from django.contrib.auth import authenticate, get_user_model
 
 from django.contrib.auth.models import User
-from UserManage.models import IMUser, TokenPoll, create_im_user, EmailCode
+from UserManage.models import IMUser, TokenPoll, create_im_user, EmailCode, Fileload
 from django.core import mail
 
 from Chat.models import ChatRoom, ChatTimeLine
@@ -344,9 +344,9 @@ def user_login(request, identity, password, login_filter):
                     })
                     # tem_im_user = create_im_user(tem_user,get_new_token())
                     # tem_im_user.save()
-                avatar = ""
-                if tem_im_user.avatar is not None:
-                    avatar = os.path.join("/static/media/", str(tem_im_user.avatar))
+                avatar = os.path.join("/static/media/", str(tem_im_user.avatar))
+                if avatar == "/static/media/":
+                    avatar += "pic/default.jpeg"
 
                 response = JsonResponse({
                     "username": tem_im_user.user.username,
@@ -446,17 +446,19 @@ def upload_avatar(request):
                 "code": -1,
                 "info": "Unexpected error"
             })
-
+#聊天文件上传
 def upload(request):
     if request.method == 'GET':
         return HttpResponse('upload')
     if request.method == 'POST':
         try:
             cur_file = request.FILES.get("file")
+            file1 = Fileload(file=cur_file)
+            file1.save()
             response = JsonResponse({
                 "code": 0,
                 "info": "successfully upload",
-                "avatar": os.path.join("/static/media/", str(cur_file))
+                "file_url": os.path.join("/static/media/", str(file1.file))
             })
             response.headers["x-frame-options"] = "SAMEORIGIN"
             return response
