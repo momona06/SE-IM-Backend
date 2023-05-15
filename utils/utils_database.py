@@ -75,6 +75,19 @@ def filter_first_timeline(chatroom_id=None, timeline_id=None):
     else:
         return ChatTimeLine.objects.filter(chatroom_id=chatroom_id).first()
 
+@database_sync_to_async
+def filter_first_invite_list(chatroom_id=None, invite_list_id=None):
+    """
+    只填一个即可
+    """
+    if chatroom_id is None:
+        if invite_list_id is None:
+            return None
+        else:
+            return InviteList.objects.filter(invite_list_id=invite_list_id).first()
+    else:
+        return InviteList.objects.filter(chatroom_id=chatroom_id).first()
+
 
 @database_sync_to_async
 def filter_first_message(msg_id):
