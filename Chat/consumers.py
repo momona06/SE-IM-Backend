@@ -1225,9 +1225,16 @@ class UserConsumer(AsyncWebsocketConsumer):
                     message_list = list()
 
                     timeline = await get_timeline(chatroom_id=room.chatroom_id)
+
+                    # power = await get_power(room,username)
+
                     for msg in timeline.msg_line:
                         cur_message1 = await sync_to_async(Message.objects.filter)(msg_id=msg)
                         cur_message = await sync_to_async(cur_message1.first)()
+
+                        if cur_message.type=='invite':
+                            continue
+
                         users = await sync_to_async(User.objects.filter)(username=cur_message.sender)
                         user = await sync_to_async(users.first)()
                         imusers = await sync_to_async(IMUser.objects.filter)(user=user)
