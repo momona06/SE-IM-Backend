@@ -36,6 +36,15 @@ async def modify_add_request_list_with_username(other_username, add_list, answer
     await sync_to_async(add_list.save)()
     return True
 
+async def manager_fetch_invite_list(chatroom):
+    l = chatroom.mem_list.copy()
+    l.append(chatroom.master_name)
+
+    for username in l:
+        for index, onliner_name in enumerate(CONSUMER_OBJECT_LIST):
+            if username == onliner_name:
+                CONSUMER_OBJECT_LIST[index].fetch_invite_list({"username": username})
+
 
 async def search_ensure_false_request_index(other_username, add_list, mode=0):
     if mode == 0:
@@ -699,6 +708,8 @@ class UserConsumer(AsyncWebsocketConsumer):
 
                         # Ack 2
                         await self.send(text_data=json.dumps(Ack_field))
+
+
 
 
         elif msg_type == 'image' or msg_type == 'video' or msg_type == 'audio' or msg_type == 'file':
