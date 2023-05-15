@@ -1333,6 +1333,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                             'function': function_name,
                             'message': 'Is_Notice Revise Success'
                         }))
+                        break
 
     async def revise_is_top(self, json_info):
         """
@@ -1363,6 +1364,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                             'function': function_name,
                             'message': 'Is_Top Revise Success'
                         }))
+                        break
 
 
     async def remove_manager(self, json_info):
