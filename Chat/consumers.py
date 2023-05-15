@@ -252,6 +252,10 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == "fetch_room":
             await self.fetch_room(json_info)
 
+        # 获取用户作为群主/管理对应群的入群申请
+        elif function == "fetch_invite_list":
+            await self.fetch_invite_list(json_info)
+
         # 获取某一个私聊/群聊的具体信息
         elif function == "fetch_roominfo":
             await self.fetch_roominfo(json_info)
@@ -1055,7 +1059,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             'chatroom_id': 114514,
         }
         """
-        # TODO: Fix Leave Group
         function_name = 'leave_group'
 
         chatroom_id = json_info['chatroom_id']
@@ -1409,3 +1412,63 @@ class UserConsumer(AsyncWebsocketConsumer):
                             'function': function_name,
                             'message': 'User is not a manager'
                         }))
+
+    async def fetch_invite_list(self, json_info):
+        """
+        json_info = {
+            'username': 'Alice'
+        }
+        """
+        username = json_info['username']
+        return_field = []
+        async for room in ChatRoom.objects.all():
+            if room.is_private:
+                continue
+            for li, user in enumerate(room.mem_list):
+                if user == username:
+                    roomname = room.room_name
+                    chatroom_id = room.chatroom_id
+                    room1 = await sync_to_async(ChatRoom.objects.filter)(chatroom_id=chatroom_id)
+                    room = await sync_to_async(room1.first)()
+
+                    power = await get_power(room,username)
+
+                    if power == 0:
+                        break
+
+                    message_list = list()
+
+                    invite_list = await get_invite_list(chatroom_id=room.chatroom_id)
+
+                    for msg in invite_list.msg_list:
+                        cur_message1 = await sync_to_async(Message.objects.filter)(msg_id=msg)
+                        cur_message = await sync_to_async(cur_message1.first)()
+
+                        users = await sync_to_async(User.objects.filter)(username=cur_message.body)
+                        user = await sync_to_async(users.first)()
+                        imusers = await sync_to_async(IMUser.objects.filter)(user=user)
+                        imuser = await sync_to_async(imusers.first)()
+                        message_list.append({
+                            "msg_body": cur_message.body,
+                            "msg_id": cur_message.msg_id,
+                            "msg_type": cur_message.type,
+                            "msg_time": cur_message.time,
+                            "sender": cur_message.sender,
+                            "avatar": os.path.join('/static/media/', str(imuser.avatar)),
+                            "combine_list": cur_message.combine_list,
+                            # "read_list": cur_message.read_list
+                        })
+                    return_field.append({
+                        "roomid": room.chatroom_id,
+                        "roomname": roomname,
+                        "is_notice": room.is_notice[li],
+                        "is_top": room.is_top[li],
+                        "message_list": message_list,
+                        "is_private": room.is_private
+                    })
+                    break
+
+        await self.send(text_data=json.dumps({
+                    "function": "fetchinvitelist",
+                    "roomlist": return_field
+                }))
