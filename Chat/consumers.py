@@ -1233,6 +1233,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                             "avatar": avatar,
                             "combine_list": cur_message.combine_list,
                             # "read_list": cur_message.read_list
+                        })
                     return_field.append({
                         "roomid": room.chatroom_id,
                         "roomname": roomname,
