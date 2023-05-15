@@ -144,7 +144,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         # Friend Function
         if function == 'heartbeat':
-            await self.heat_beat()
+            await self.heart_beat()
 
         elif function == 'apply':
             await self.apply_friend(json_info)
@@ -219,7 +219,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         # 群主/管理员直接添加用户到群聊
         elif function == 'add_group_member':
-           await self.add_group_member(json_info)
+            await self.add_group_member(json_info)
 
         # 群主/管理员直接移除群成员
         elif function == 'remove_group_member':
@@ -245,13 +245,17 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == 'read_message':
             await self.read_message(json_info)
 
+        # 获取某条消息
+        elif function == 'fetch_message':
+            await self.fetch_message(json_info)
 
-    async def heat_beat(self):
+
+    async def heart_beat(self):
         """
         json_info = {}
         """
         await self.send(text_data=json.dumps({
-            'function': 'heartbeat confirm',
+            'function': 'heartbeatconfirm',
         }))
 
     async def apply_friend(self, json_info):
@@ -1226,8 +1230,8 @@ class UserConsumer(AsyncWebsocketConsumer):
                             "msg_type": cur_message.type,
                             "msg_time": cur_message.time,
                             "sender": cur_message.sender,
-                            "avatar": os.path.join('/static/media/', str(imuser.avatar))
-                            # Fix: READ
+                            "avatar": os.path.join('/static/media/', str(imuser.avatar)),
+                            "combine_list": cur_message.combine_list,
                             # "read_list": cur_message.read_list
                         })
                     return_field.append({
@@ -1244,6 +1248,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             "function": "fetchroom",
             "roomlist": return_field
         }))
+
 
     async def fetch_roominfo(self, json_info):
         chatroom_id = json_info['roomid']
@@ -1271,6 +1276,26 @@ class UserConsumer(AsyncWebsocketConsumer):
             "is_private": room.is_private
         }))
 
+    async def fetch_message(self, json_info):
+        """
+        json_info = {
+            'msg_id': 124
+        }
+        """
+        msg_id = json_info['msg_id']
+        message = await filter_first_message(msg_id=msg_id)
+        await self.send(text_data=json.dumps({
+            "function": "fetchmessage",
+            'msg_id': message.msg_id,
+            'msg_type': message.type,
+            'msg_time': message.time,
+            'msg_body': message.body,
+            'sender': message.sender,
+            'read_list': message.read_list,
+            'combine_list': message.combine_list
+        }))
+
+
     async def revise_is_notice(self, json_info):
         """
         json_info = {
@@ -1278,7 +1303,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             is_notice: True
         }
         """
-
         function_name = 'revise_is_notice'
 
         chatroom_id = json_info['chatroom_id']
@@ -1331,3 +1355,4 @@ class UserConsumer(AsyncWebsocketConsumer):
                             'function': function_name,
                             'message': 'Is_Top Revise Success'
                         }))
+
