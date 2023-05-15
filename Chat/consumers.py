@@ -1337,9 +1337,10 @@ class UserConsumer(AsyncWebsocketConsumer):
         function_name = 'revise_is_top'
 
         chatroom_id = json_info['chatroom_id']
+        is_top = json_info['is_top']
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
-        is_top = json_info['is_top']
+
         if chatroom is not None:
             username = await self.get_cur_username()
 
