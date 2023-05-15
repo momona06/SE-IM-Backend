@@ -41,6 +41,8 @@ class ChatRoom(models.Model):
 
     timeline_id = models.BigIntegerField(default=0)
 
+    invite_list_id = models.BigIntegerField(default=0)
+
     room_name = models.CharField(max_length=30, default='private_chat')
     is_private = models.BooleanField(default=True)
 
@@ -85,8 +87,14 @@ async def create_chatroom(room_name, mem_list, master_name, is_private=False):
     timeline.cursor_list = [0 for _ in range(mem_len)]
     await database_sync_to_async(timeline.save)()
 
+    invite_list = await database_sync_to_async(InviteList)(chatroom_id=new_chatroom.chatroom_id, msg_list=[])
+    await database_sync_to_async(invite_list.save)()
+
     new_chatroom.timeline_id = timeline.timeline_id
     timeline.chatroom_id = new_chatroom.chatroom_id
+
+    new_chatroom.invite_list_id = invite_list.invite_list_id
+
     await database_sync_to_async(new_chatroom.save)()
     await database_sync_to_async(timeline.save)()
     return new_chatroom
@@ -129,6 +137,15 @@ class Message(models.Model):
 
     sender = models.CharField(max_length=100)
 
+class InviteList(models.Model):
+    invite_list_id = models.BigAutoField(primary_key=True)
+
+    chatroom_id = models.BigIntegerField(default=0)
+
+    # list for invite msg id
+    msg_list = ArrayField(
+        models.BigIntegerField(default=0)
+    )
 
 async def create_message(type, body, time, sender, reply_id=0, answer=-1, read_list=list(), combine_list=list()):
     new_message = await database_sync_to_async(Message)(type=type, body=body, time=time,
@@ -136,3 +153,4 @@ async def create_message(type, body, time, sender, reply_id=0, answer=-1, read_l
                                                         read_list=read_list, combine_list=combine_list)
     await database_sync_to_async(new_message.save)()
     return new_message
+
