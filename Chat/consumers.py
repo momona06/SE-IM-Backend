@@ -107,12 +107,23 @@ async def chatroom_delete_member(chatroom, member_name):
 
 
 async def chatroom_add_member(chatroom, member_name):
+    index = len(chatroom.mem_list)
+    timeline = await get_timeline(chatroom.timeline_id)
+
     chatroom.mem_list.append(member_name)
     chatroom.is_top.append(False)
     chatroom.is_notice.append(True)
     chatroom.mem_count += 1
 
+    timeline.cursor_list.append(0)
+
+    for message_id in timeline.msg_line:
+        message = await get_message(message_id)
+        message.read_list.append(False)
+        await database_sync_to_async(message.save)()
+
     await database_sync_to_async(chatroom.save)()
+    await database_sync_to_async(timeline.save)()
 
 
 class UserConsumer(AsyncWebsocketConsumer):
