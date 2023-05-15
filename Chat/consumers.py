@@ -83,18 +83,27 @@ async def get_power(chatroom, username):
 
 
 async def chatroom_delete_member(chatroom, member_name):
+    timeline = await get_timeline(chatroom.timeline_id)
+
     for index, username in enumerate(chatroom.mem_list):
         if username == member_name:
             chatroom.mem_list.pop(index)
             chatroom.is_top.pop(index)
             chatroom.is_notice.pop(index)
+            timeline.cursor_list.pop(index)
 
             if username in chatroom.manager_list:
                 chatroom.manager_list.remove(username)
 
+            for message_id in timeline.msg_line:
+                message = await get_message(message_id)
+                message.read_list.pop(index)
+                await database_sync_to_async(message.save)()
+
             chatroom.mem_count -= 1
             break
     await database_sync_to_async(chatroom.save)()
+    await database_sync_to_async(timeline.save)()
 
 
 async def chatroom_add_member(chatroom, member_name):
@@ -655,6 +664,8 @@ class UserConsumer(AsyncWebsocketConsumer):
                         message = await database_sync_to_async(create_message)(type='invite', body=invited_name,
                                                                                time=msg_time, sender=username)
 
+
+
                         # # 群主/管理员权限直接拉进群
                         # if get_power(chatroom, username) != 0:
                         #     message.answer = 1
@@ -742,7 +753,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         delta_minutes = (delta.seconds % 3600) // 60
 
         if delta_days != 0 or delta_hours != 0 or delta_minutes > 5:
-            self.send(text_data=json.dumps({
+            await self.send(text_data=json.dumps({
                 'function': 'withdraw_overtime',
                 'msg_id': msg_id,
             }))
