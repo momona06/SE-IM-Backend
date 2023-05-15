@@ -254,6 +254,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
         await self.send(text_data=json.dumps({
             'function': 'heartbeatconfirm',
+            'count': self.count
         }))
 
     async def apply_friend(self, json_info):
@@ -476,6 +477,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         msg_type = event['msg_type']
         sender = event['sender']
         room_id = event['room_id']
+        read_list = event['read_list']
 
         if msg_type == 'reply':
             reply_id = event['reply_id']
@@ -494,6 +496,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         avatar = os.path.join("/static/media/", str(imuser.avatar))
         if avatar == "/static/media/":
             avatar += "pic/default.jpeg"
+
         return_field = {
             'function': 'Msg',
             'msg_id': msg_id,
@@ -504,7 +507,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             'reply_id': reply_id,
             'combine_list': combine_list,
             'room_id': room_id,
-            'avatar': avatar
+            'avatar': avatar,
+            'read_list': read_list
         }
 
         await self.send(text_data=json.dumps(return_field))
@@ -522,7 +526,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(return_field))
 
     async def read_diffuse(self, event):
-        read_message_list = event['read_list']
+        read_message_list = event['read_message_list']
         chatroom_id = event['chatroom_id']
         read_user = event['read_user']
         return_field = {
@@ -591,8 +595,10 @@ class UserConsumer(AsyncWebsocketConsumer):
         await sync_to_async(timeline.msg_line.append)(msg_id)
         await sync_to_async(timeline.save)()
 
+        message.read_list = list()
         # message.read_list init (append)
         for membername in chatroom.mem_list:
+            self.count = len(message.read_list)
             if membername == username:
                 message.read_list.append(True)
             else:
