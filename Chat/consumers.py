@@ -1254,7 +1254,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                     timeline = await get_timeline(chatroom_id=room.chatroom_id)
 
                     # power = await get_power(room,username)
-                    unread = 0;
+                    unread = 0
                     for msg in timeline.msg_line:
                         cur_message1 = await sync_to_async(Message.objects.filter)(msg_id=msg)
                         cur_message = await sync_to_async(cur_message1.first)()
@@ -1278,7 +1278,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                             "msg_time": cur_message.time,
                             "sender": cur_message.sender,
                             "avatar": avatar,
-                            "combine_list": cur_message.combine_list,
+                            "combine_list": cur_message.combine_list
                             # "read_list": cur_message.read_list
                         })
                     return_field.append({
@@ -1288,7 +1288,8 @@ class UserConsumer(AsyncWebsocketConsumer):
                         "is_top": room.is_top[li],
                         "message_list": message_list,
                         "is_private": room.is_private,
-                        "unread": unread
+                        "unread": unread,
+                        "index": li
                     })
                     break
 
