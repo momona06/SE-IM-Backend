@@ -501,7 +501,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             'msg_time': msg_time,
             'msg_type': msg_type,
             'sender': sender,
-            'room_id': room_id,
             'reply_id': reply_id,
             'combine_list': combine_list,
             'room_id': room_id,
@@ -754,7 +753,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         delta_minutes = (delta.seconds % 3600) // 60
 
         if delta_days != 0 or delta_hours != 0 or delta_minutes > 5:
-            self.send(text_data=json.dumps({
+            await self.send(text_data=json.dumps({
                 'function': 'withdraw_overtime',
                 'msg_id': msg_id,
             }))
