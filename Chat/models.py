@@ -1,4 +1,3 @@
-from asgiref.sync import sync_to_async
 from channels.db import database_sync_to_async
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
@@ -101,7 +100,7 @@ async def delete_chatroom():
 class Message(models.Model):
     msg_id = models.BigAutoField(primary_key=True)
 
-    # type = {text, image, file, video, audio, combine, reply, invite}
+    # type = {text, image, file, video, audio, combine, reply, invite, notice}
     type = models.CharField(max_length=20)
 
     # invite type, -1: no answer 0: decline 1: confirm
@@ -131,17 +130,9 @@ class Message(models.Model):
     sender = models.CharField(max_length=100)
 
 
-async def create_message(type, body, time, sender, reply_id=0, answer=-1, read_list=[], combine_list=[]):
+async def create_message(type, body, time, sender, reply_id=0, answer=-1, read_list=list(), combine_list=list()):
     new_message = await database_sync_to_async(Message)(type=type, body=body, time=time,
                                                         sender=sender, reply_id=reply_id, answer=answer,
                                                         read_list=read_list, combine_list=combine_list)
     await database_sync_to_async(new_message.save)()
     return new_message
-
-
-async def delete_message():
-    """
-    json_info = {
-    }
-    """
-    pass

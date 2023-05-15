@@ -53,9 +53,9 @@ def filter_first_chatroom(chatroom_id=None, timeline_id=None):
         if timeline_id is None:
             return None
         else:
-            return ChatRoom.objects.filter(timeline_id=chatroom_id).first()
+            return ChatRoom.objects.filter(timeline_id=timeline_id).first()
     else:
-        return ChatRoom.objects.filter(chatroom_id=timeline_id).first()
+        return ChatRoom.objects.filter(chatroom_id=chatroom_id).first()
 
 
 @database_sync_to_async
@@ -67,9 +67,9 @@ def filter_first_timeline(chatroom_id=None, timeline_id=None):
         if timeline_id is None:
             return None
         else:
-            return ChatTimeLine.objects.filter(chatroom_id=chatroom_id).first()
+            return ChatTimeLine.objects.filter(timeline_id=timeline_id).first()
     else:
-        return ChatTimeLine.objects.filter(timeline_id=timeline_id).first()
+        return ChatTimeLine.objects.filter(chatroom_id=chatroom_id).first()
 
 
 @database_sync_to_async
@@ -77,5 +77,5 @@ def filter_first_message(msg_id):
     return Message.objects.filter(msg_id=msg_id).first()
 
 @database_sync_to_async
-def filter_first_friend(user_name,friend_name):
+def filter_first_friend(user_name, friend_name):
     return Friend.objects.filter(friend_name=friend_name, user_name=user_name).first()
