@@ -1138,15 +1138,13 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
         json_info = {
             'chatroom_id': 114514,
-            'count': 5,
             'read_message_list': [13, 234, 123]
         }
         """
         username = self.cur_user
         chatroom_id = json_info['chatroom_id']
-        chatroom_name = 'chat_' + str(chatroom_id)
-        count = json_info['count']
         read_message_list = json_info['read_message_list']
+        chatroom_name = 'chat_' + str(chatroom_id)
 
         chatroom = await filter_first_chatroom(chatroom_id=chatroom_id)
         timeline = await filter_first_timeline(chatroom_id=chatroom_id)
@@ -1160,6 +1158,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         Read_field = {
             'type': 'read_diffuse',
+            'chatroom_id': chatroom_id,
 
         }
         await self.group_send(chatroom_name, Read_field)
@@ -1232,7 +1231,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                             "sender": cur_message.sender,
                             "avatar": os.path.join('/static/media/', str(imuser.avatar)),
                             "combine_list": cur_message.combine_list,
-                            # "read_list": cur_message.read_list
+                            "read_list": cur_message.read_list
                         })
                     return_field.append({
                         "roomid": room.chatroom_id,
