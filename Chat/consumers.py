@@ -709,7 +709,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                         # Ack 2
                         await self.send(text_data=json.dumps(Ack_field))
 
-
+                        await manager_fetch_invite_list(chatroom)
 
 
         elif msg_type == 'image' or msg_type == 'video' or msg_type == 'audio' or msg_type == 'file':
@@ -1019,6 +1019,8 @@ class UserConsumer(AsyncWebsocketConsumer):
                         'time': msg_time,
                         'sender': username
                     }))
+
+                    await manager_fetch_invite_list(chatroom)
 
     async def reply_add_group(self, json_info):
         """
