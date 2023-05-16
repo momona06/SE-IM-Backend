@@ -18,7 +18,8 @@ class IMUser(models.Model):
 class TokenPoll(models.Model):
     token = models.CharField(max_length=100)
 
-class Fileload(models.Model):
+
+class FileLoad(models.Model):
     file = models.ImageField(upload_to='file/')
 
 

@@ -10,13 +10,16 @@ from utils.utils_request import BAD_METHOD
 from django.contrib.auth import authenticate, get_user_model
 
 from django.contrib.auth.models import User
-from UserManage.models import IMUser, TokenPoll, create_im_user, EmailCode, Fileload
+from UserManage.models import IMUser, TokenPoll, create_im_user, EmailCode, FileLoad
 from django.core import mail
 
 from Chat.models import ChatRoom, ChatTimeLine
 
 
 def revise(req: HttpRequest):
+    """
+    用户修改个人信息
+    """
     if req.method == "PUT":
         body = json.loads(req.body.decode("utf-8"))
         revise_field = str(body["revise_field"])
@@ -44,13 +47,13 @@ def revise(req: HttpRequest):
                     for room in ChatRoom.objects.all()[::-1]:
                         for index, user in enumerate(room.mem_list):
                             if user == username:
-                                room.mem_list[index]= revise_content
+                                room.mem_list[index] = revise_content
                                 for index_, user_ in enumerate(room.manager_list):
                                     if user_ == username:
                                         room.manager_list[index_] = revise_content
                                         break
-                                if room.master_name==username:
-                                    room.master_name=revise_content
+                                if room.master_name == username:
+                                    room.master_name = revise_content
                                 room.save()
                                 break
 
@@ -104,6 +107,9 @@ def logout(req: HttpRequest):
 
 
 def cancel(req: HttpRequest):
+    """
+    用户注销
+    """
     if req.method == "DELETE":
         body = json.loads(req.body.decode("utf-8"))
         username = str(body["username"])
@@ -460,7 +466,7 @@ def upload(request):
     if request.method == 'POST':
         try:
             cur_file = request.FILES.get("file")
-            file1 = Fileload(file=cur_file)
+            file1 = FileLoad(file=cur_file)
             file1.save()
             response = JsonResponse({
                 "code": 0,

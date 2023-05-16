@@ -11,12 +11,6 @@ from channels.auth import AuthMiddlewareStack
 from Chat.consumers import UserConsumer
 from django.urls import path
 
-# websocket_urlpatterns = [
-#     path('chat/group/<group_name>', UserConsumer.as_asgi()),
-#     path('chat/friend/<friend_name>', UserConsumer.as_asgi()),
-#     path('wsconnect', FriendConsumer.as_asgi())
-# ]
-
 websocket_urlpatterns = [
     path('wsconnect', UserConsumer.as_asgi()),
 ]
