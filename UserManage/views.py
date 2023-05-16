@@ -173,10 +173,17 @@ def cancel(req: HttpRequest):
                 "info": "User Canceled"
             })
         else:
-            return JsonResponse({
-                "code": -1,
-                "info": "User not Exists"
-            })
+            user_ = User.objects.filter(username=username).first()
+            if user_ is None:
+                return JsonResponse({
+                    "code": -1,
+                    "info": "User not Exists"
+                })
+            else:
+                return JsonResponse({
+                    "code": -1,
+                    "info": "Wrong Password"
+                })
 
     else:
         return BAD_METHOD

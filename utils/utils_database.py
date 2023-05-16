@@ -19,6 +19,10 @@ def get_user_id(username):
 def get_addlist(username):
     return AddList.objects.get(user_name=username)
 
+@database_sync_to_async
+def get_message(message_id):
+    return Message.objects.get(msg_id=message_id)
+
 
 @database_sync_to_async
 def get_friendlist(username):
@@ -37,6 +41,20 @@ def get_timeline(chatroom_id=None, timeline_id=None):
             return ChatTimeLine.objects.get(timeline_id=timeline_id)
     else:
         return ChatTimeLine.objects.get(chatroom_id=chatroom_id)
+
+
+@database_sync_to_async
+def get_invite_list(chatroom_id=None, invite_list_id=None):
+    """
+    只填一个即可
+    """
+    if chatroom_id is None:
+        if invite_list_id is None:
+            return None
+        else:
+            return InviteList.objects.get(invite_list_id=invite_list_id)
+    else:
+        return InviteList.objects.get(chatroom_id=chatroom_id)
 
 
 @database_sync_to_async
@@ -70,6 +88,19 @@ def filter_first_timeline(chatroom_id=None, timeline_id=None):
             return ChatTimeLine.objects.filter(timeline_id=timeline_id).first()
     else:
         return ChatTimeLine.objects.filter(chatroom_id=chatroom_id).first()
+
+@database_sync_to_async
+def filter_first_invite_list(chatroom_id=None, invite_list_id=None):
+    """
+    只填一个即可
+    """
+    if chatroom_id is None:
+        if invite_list_id is None:
+            return None
+        else:
+            return InviteList.objects.filter(invite_list_id=invite_list_id).first()
+    else:
+        return InviteList.objects.filter(chatroom_id=chatroom_id).first()
 
 
 @database_sync_to_async
