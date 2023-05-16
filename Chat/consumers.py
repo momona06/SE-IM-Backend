@@ -749,7 +749,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             'count': 1,
             'room_id': 6,
         }
-
         """
 
         # Pipeline
