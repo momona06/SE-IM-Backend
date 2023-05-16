@@ -13,8 +13,7 @@ from django.contrib.auth.models import User
 from UserManage.models import IMUser, TokenPoll, create_im_user, EmailCode, FileLoad
 from django.core import mail
 
-from Chat.models import ChatRoom, ChatTimeLine
-
+from Chat.models import ChatRoom, ChatTimeLine, Message
 
 
 def revise(req: HttpRequest):
@@ -57,6 +56,14 @@ def revise(req: HttpRequest):
                                     room.master_name = revise_content
                                 room.save()
                                 break
+
+                    for message in Message.objects.all()[::-1]:
+                        if message.sender == username:
+                            message.sender = revise_content
+                            message.save()
+                        if message.type == 'invite' and message.body == username:
+                            message.body = revise_content
+                            message.save()
 
                     user_rev.username = revise_content
 
