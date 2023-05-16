@@ -191,7 +191,6 @@ def cancel(req: HttpRequest):
                     "code": -1,
                     "info": "Wrong Password"
                 })
-
     else:
         return BAD_METHOD
 
