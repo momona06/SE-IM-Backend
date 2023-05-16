@@ -117,11 +117,22 @@ class Message(models.Model):
     # msg for {text, reply}
     body = models.CharField(max_length=500)
 
-    # src for image, file, video, audio
-    # src = models.FileField(upload_to=user_directory_path, blank=True, null=True)
+    # time when the message is created
+    time = models.CharField(max_length=100)
 
-    # related msg for {reply}
+    # sender name
+    sender = models.CharField(max_length=100)
+
+    # reply message
     reply_id = models.BigIntegerField(default=0)
+
+    # count replied by other message
+    reply_count = models.BigIntegerField(default=0)
+
+    # list for those who delete this message
+    delete_list = ArrayField(
+        models.BooleanField(default=False)
+    )
 
     # list for those who read this message
     read_list = ArrayField(
@@ -133,9 +144,6 @@ class Message(models.Model):
         models.BigIntegerField(default=0)
     )
 
-    time = models.CharField(max_length=100)
-
-    sender = models.CharField(max_length=100)
 
 class InviteList(models.Model):
     invite_list_id = models.BigAutoField(primary_key=True)
@@ -147,10 +155,17 @@ class InviteList(models.Model):
         models.BigIntegerField(default=0)
     )
 
-async def create_message(type, body, time, sender, reply_id=0, answer=-1, read_list=list(), combine_list=list()):
-    new_message = await database_sync_to_async(Message)(type=type, body=body, time=time,
-                                                        sender=sender, reply_id=reply_id, answer=answer,
-                                                        read_list=read_list, combine_list=combine_list)
+
+async def create_message(type, body, time, sender, reply_id=0, reply_count=0, answer=-1, read_list=None, combine_list=None,
+                         delete_list=None):
+    if combine_list is None:
+        combine_list = list()
+    if read_list is None:
+        read_list = list()
+    if delete_list is None:
+        delete_list = list()
+    new_message = await database_sync_to_async(Message)(type=type, body=body, time=time, sender=sender,
+                                                        reply_count=reply_count, reply_id=reply_id, answer=answer,
+                                                        delete_list=delete_list, read_list=read_list, combine_list=combine_list)
     await database_sync_to_async(new_message.save)()
     return new_message
-
