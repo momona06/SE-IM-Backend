@@ -709,7 +709,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                                                                                time=msg_time, sender=username)
 
 
-
                         # # 群主/管理员权限直接拉进群
                         # if get_power(chatroom, username) != 0:
                         #     message.answer = 1
