@@ -200,7 +200,7 @@ def delete_user_in_other_add_list(reply_name, username):
     l = len(other_add_list.reply_list)
     for i, other_name in enumerate(other_add_list.reply_list[::-1]):
         if other_name == username:
-            index =  l - i - 1
+            index = l - i - 1
             del other_add_list.reply_list[index]
             del other_add_list.reply_ensure[index]
             del other_add_list.reply_answer[index]
@@ -401,14 +401,14 @@ def send_email(request:HttpRequest):
                 recipient_list = send_list
             )
             return JsonResponse({
-                "code" : 0,
-                "info" : "验证码已发送"
+                "code": 0,
+                "info": "验证码已发送"
             })
         except Exception as e:
             print(e)
             return JsonResponse({
-                "code" : -1,
-                "info" : "发送失败"
+                "code": -1,
+                "info": "发送失败"
             })
 def bind_email(request):
     if request.method == 'GET':
@@ -426,7 +426,7 @@ def bind_email(request):
                 user.save()
                 return JsonResponse({
                     "code": 0,
-                    "info":"绑定成功"
+                    "info": "绑定成功"
                 })
         except Exception as e:
             print(e)
@@ -442,7 +442,7 @@ def upload_avatar(request):
     if request.method == 'POST':
         try:
             cur_pic = request.FILES.get("avatar")
-            #body = json.loads(request.body.decode("utf-8"))
+            # body = json.loads(request.body.decode("utf-8"))
             name = request.POST['username']
             cur_user = User.objects.filter(username=name).first()
             user = IMUser.objects.filter(user=cur_user).first()
@@ -459,8 +459,12 @@ def upload_avatar(request):
                 "code": -1,
                 "info": "Unexpected error"
             })
-#聊天文件上传
+
+
 def upload(request):
+    """
+    聊天文件上传
+    """
     if request.method == 'GET':
         return HttpResponse('upload')
     if request.method == 'POST':
