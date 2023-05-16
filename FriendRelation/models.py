@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
 
-# friend of a imuser
+# friend of an imuser
 class Friend(models.Model):
     # owner of the friend
     user_name = models.CharField(
@@ -16,7 +16,7 @@ class Friend(models.Model):
     )
 
 
-# friendlist of a imuser
+# friendlist of an imuser
 class FriendList(models.Model):
     user_name = models.CharField(
         max_length=100,
