@@ -678,6 +678,10 @@ class UserConsumer(AsyncWebsocketConsumer):
             message.reply_id = reply_id
             await sync_to_async(message.save)()
 
+            replied_message = await filter_first_message(msg_id=reply_id)
+            replied_message.reply_count += 1
+            await sync_to_async(replied_message.save)()
+
             # Msg R3 for online case
             await self.group_send(chatroom_name, Msg_field)
 
@@ -1295,7 +1299,8 @@ class UserConsumer(AsyncWebsocketConsumer):
                             "avatar": avatar,
                             "combine_list": cur_message.combine_list,
                             "read_list": cur_message.read_list,
-                            # "delete_list": cur_message.delete_list
+                            # "delete_list": cur_message.delete_list,
+                            # "reply_count": cur_message.reply_count
                         })
                     return_field.append({
                         "roomid": room.chatroom_id,
@@ -1505,7 +1510,8 @@ class UserConsumer(AsyncWebsocketConsumer):
                             "avatar": os.path.join('/static/media/', str(imuser.avatar)),
                             "combine_list": cur_message.combine_list,
                             "read_list": cur_message.read_list,
-                            # "delete_list": cur_message.delete_list
+                            # "delete_list": cur_message.delete_list,
+                            # "reply_count": cur_message.reply_count
                         })
                     return_field.append({
                         "roomid": room.chatroom_id,
