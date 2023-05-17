@@ -13,8 +13,7 @@ from django.contrib.auth.models import User
 from UserManage.models import IMUser, TokenPoll, create_im_user, EmailCode, FileLoad
 from django.core import mail
 
-from Chat.models import ChatRoom, ChatTimeLine
-
+from Chat.models import ChatRoom, ChatTimeLine, Message, InviteList
 
 
 def revise(req: HttpRequest):
@@ -57,6 +56,14 @@ def revise(req: HttpRequest):
                                     room.master_name = revise_content
                                 room.save()
                                 break
+
+                    for message in Message.objects.all()[::-1]:
+                        if message.sender == username:
+                            message.sender = revise_content
+                            message.save()
+                        if message.type == 'invite' and message.body == username:
+                            message.body = revise_content
+                            message.save()
 
                     user_rev.username = revise_content
 
@@ -143,6 +150,10 @@ def cancel(req: HttpRequest):
 
             # 以上三条废弃, 包含此用户名的信息全删
 
+            # message 中 用户名改为已停用 AccountSuspended
+
+            suspended_account_name = 'AccountSuspended'
+
             user_add_list = AddList.objects.filter(user_name=username).first()
 
             user_list = []
@@ -163,6 +174,8 @@ def cancel(req: HttpRequest):
 
             for room in ChatRoom.objects.all()[::-1]:
                 if username in room.mem_list:
+                    index = room.mem_list.index(username)
+
                     room.mem_list.remove(username)
 
                     if username in room.manager_list:
@@ -170,10 +183,26 @@ def cancel(req: HttpRequest):
 
                     room.save()
 
+                    timeline = ChatTimeLine.objects.filter(timeline_id=room.timeline_id).first()
+
                     if username == room.master_name:
-                        timeline = ChatTimeLine.objects.filter(timeline_id=room.timeline_id).first()
+                        invite_list = InviteList.objects.filter(invite_list_id=room.invite_list_id).first()
+                        invite_list.delete()
+
                         timeline.delete()
                         room.delete()
+                    else:
+                        for msg_id in timeline.msg_line:
+                            message = Message.objects.get(msg_id=msg_id)
+
+                            if message.sender == username:
+                                message.sender = suspended_account_name
+                                message.save()
+                            if message.type == 'invite' and message.body == username:
+                                message.body = suspended_account_name
+                                message.save()
+
+                            message.read_list.pop(index)
 
             return JsonResponse({
                 "code": 0,
