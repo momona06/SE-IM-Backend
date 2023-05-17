@@ -1298,7 +1298,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                             "avatar": avatar,
                             "combine_list": cur_message.combine_list,
                             "read_list": cur_message.read_list,
-                            # "delete_list": cur_message.delete_list,
+                            "delete_list": cur_message.delete_list,
                             # "reply_count": cur_message.reply_count
                         })
                     return_field.append({
@@ -1509,7 +1509,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                             "avatar": os.path.join('/static/media/', str(imuser.avatar)),
                             "combine_list": cur_message.combine_list,
                             "read_list": cur_message.read_list,
-                            # "delete_list": cur_message.delete_list,
+                            "delete_list": cur_message.delete_list,
                             # "reply_count": cur_message.reply_count
                         })
                     return_field.append({
