@@ -1046,21 +1046,24 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
         json_info = {
             'chatroom_id': 114514,
-            'message_type': 'invite',
-            'answer': -1,
-            'invited_name': 'ashitemaru'
+            'message_id': 114514,
+            'answer' : -1: 未处理 1: 同意 0: 拒绝
         }
         """
         function_name = 'reply_add_group'
 
         chatroom_id = json_info['chatroom_id']
-        message_type = json_info['message_type']
-        invited_name = json_info['invited_name']
+        message_id = json_info['message_id']
+
+        message = await get_message(message_id)
+        message_type = message.type
         answer = json_info['answer']
+        invited_name = await async_decode(message.body)
+
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
         if chatroom is not None:
-            if await self.message_pre_treat(function_name, message_type, answer):
+            if await self.message_pre_treat(function_name, message_type, message.answer):
 
                 invited_user = await self.check_user_exist(function_name, invited_name)
 
@@ -1079,7 +1082,13 @@ class UserConsumer(AsyncWebsocketConsumer):
                                 'message': 'Permission denied'
                             }))
                         else:
-                            await chatroom_add_member(chatroom_id, username)
+                            message.answer = answer
+                            await database_sync_to_async(message.save)()
+
+                            if answer == 1:
+                                await chatroom_add_member(chatroom_id, username)
+
+
                             await self.send(text_data=json.dumps({
                                 'function': function_name,
                                 'message': 'Reply Add Group Success'
@@ -1259,6 +1268,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
         username = json_info['username']
         return_field = []
+
         async for room in ChatRoom.objects.all():
             for li, user in enumerate(room.mem_list):
                 if user == username:
@@ -1311,10 +1321,14 @@ class UserConsumer(AsyncWebsocketConsumer):
                     })
                     break
 
+
         await self.send(text_data=json.dumps({
             "function": "fetchroom",
             "roomlist": return_field
         }))
+
+        await self.fetch_invite_list(json_info)
+
 
     async def fetch_roominfo(self, json_info):
         """
