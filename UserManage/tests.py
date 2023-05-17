@@ -9,6 +9,7 @@ import random
 PASSWORD = "123456"
 USERNAME = "test00"
 
+
 class UserManageTest(TestCase):
     def user_register(self, username, password):
         payload = {
@@ -49,25 +50,25 @@ class UserManageTest(TestCase):
         }
         return self.client.put("/user/revise", data=payload, content_type="application/json")
 
-    def userSendEmail(self,email):
+    def user_send_email(self, email):
         payload = {
-            "email":email
+            "email": email
         }
         return self.client.post("/user/send_email", data=payload, content_type="application/json")
 
-    def userBindEmail(self,email,code,username):
+    def user_bind_email(self, email, code, username):
         payload = {
-            "email":email,
-            "code":code,
-            "username":username
+            "email": email,
+            "code": code,
+            "username": username
         }
         return self.client.post("/user/email", data=payload, content_type="application/json")
 
     def test_register(self):
-        #username = secrets.token_hex(4)
-        #password = secrets.token_hex(4)
+        # username = secrets.token_hex(4)
+        # password = secrets.token_hex(4)
 
-        self.user_cancel(USERNAME,PASSWORD)
+        self.user_cancel(USERNAME, PASSWORD)
         res = self.user_register(USERNAME, PASSWORD)
 
         self.assertJSONEqual(res.content, {"code": 0, "info": "Register Succeed"})
@@ -78,11 +79,10 @@ class UserManageTest(TestCase):
         self.assertTrue(IMUser.objects.filter(user=user).exists())
 
     def test_login_logout(self):
+        # username = secrets.token_hex(10)
+        # password = secrets.token_hex(10)
 
-        #username = secrets.token_hex(10)
-        #password = secrets.token_hex(10)
-
-        self.user_cancel(USERNAME,PASSWORD)
+        self.user_cancel(USERNAME, PASSWORD)
         res_reg = self.user_register(USERNAME, PASSWORD)
         res_lin = self.user_login(USERNAME, PASSWORD)
         self.assertEqual(res_reg.json()["code"], 0)
@@ -99,9 +99,9 @@ class UserManageTest(TestCase):
         self.assertEqual(res_lout.json()["code"], 0)
 
     def test_cancel(self):
-        #username = secrets.token_hex(10)
-        #password = secrets.token_hex(10)
-        self.user_cancel(USERNAME,PASSWORD)
+        # username = secrets.token_hex(10)
+        # password = secrets.token_hex(10)
+        self.user_cancel(USERNAME, PASSWORD)
         input_password = PASSWORD
 
         res_reg = self.user_register(USERNAME, PASSWORD)
@@ -113,14 +113,12 @@ class UserManageTest(TestCase):
         user = user_model.objects.filter(username=USERNAME).first()
         im_user = IMUser.objects.filter(user=user).first()
 
-
         res_cel = self.user_cancel(USERNAME, input_password)
         self.assertFalse(user_model.objects.filter(username=USERNAME).exists())
 
-
     def test_revise(self):
-        #username = secrets.token_hex(10)
-        #password = secrets.token_hex(10)
+        # username = secrets.token_hex(10)
+        # password = secrets.token_hex(10)
 
         input_password = PASSWORD
         res_reg = self.user_register(USERNAME, PASSWORD)
@@ -138,20 +136,20 @@ class UserManageTest(TestCase):
         # no email yet
         revise_field_list = ["username", "password"]
         revise_content_list = ["test01", "1234567"]
-        #for field, content in zip(revise_field_list, revise_content_list):
+        # for field, content in zip(revise_field_list, revise_content_list):
         res_rev = self.user_revise(revise_field_list[1], revise_content_list[1], USERNAME, input_password, token)
         self.assertEqual(res_rev.json()["code"], 0)
-            #self.assertEqual(res_rev.json()["info"],"dd")
+        # self.assertEqual(res_rev.json()["info"],"dd")
 
         self.user_revise(revise_field_list[1], input_password, USERNAME, revise_content_list[1], token)
         token = res_lin.json()["token"]
         res_lout = self.user_logout(USERNAME, token)
 
-    def testEmail(self):
+    def test_email(self):
         username = random.randint(100_000_000_000, 999_999_999_999)
         password = random.randint(100_000_000_000, 999_999_999_999)
         self.user_register(username, password)
-        email="zhoujin@mails.tsinghua.edu.cn"
-        res= self.userSendEmail(email)
-        #res = self.userBindEmail(email,res_sms_code,username)
-        self.assertEqual(res.json()["code"],0)
+        email = "zhoujin@mails.tsinghua.edu.cn"
+        res = self.user_send_email(email)
+        # res = self.userBindEmail(email,res_sms_code,username)
+        self.assertEqual(res.json()["code"], 0)
