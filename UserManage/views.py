@@ -5,6 +5,7 @@ import json
 import re
 import random
 import os
+from aip import AipSpeech
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 
@@ -543,6 +544,35 @@ def upload(request):
             })
             response.headers["x-frame-options"] = "SAMEORIGIN"
             return response
+        except Exception as e:
+            print(e)
+            return JsonResponse({
+                "code": -1,
+                "info": "Unexpected error"
+            })
+
+def audio_to_text(request):
+    if request.method == 'GET':
+        return HttpResponse('a2t')
+    if request.method == 'POST':
+        try:
+            client = AipSpeech('33584366', 'XnMdNhg1mHCt64OZE4yPURVf', 'ZgFXLMRRvUQKnDEpvsHBu0T5ylV1aE7g')
+            body = json.loads(request.body.decode("utf-8"))
+            filepath = 'collect_static/media/'+str(body['url'])
+            with open('collect_static/media/pic/1.wav', 'rb') as fp:
+                result = client.asr(fp.read(), 'wav', 16000, {'dev_pid': 1537, })
+            if result['err_no'] != 0:
+                text = result['result'][0]
+                return JsonResponse({
+                    "code": 0,
+                    "result": text
+                })
+            else:
+                return JsonResponse({
+                    "code": 0,
+                    "result": 'error'
+                })
+
         except Exception as e:
             print(e)
             return JsonResponse({
