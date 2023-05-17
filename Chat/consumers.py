@@ -963,6 +963,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                         }))
                     else:
                         chatroom.manager_list.append(manager_name)
+                        await sync_to_async(chatroom.save)()
                         await self.send(text_data=json.dumps({
                             'function': 'appoint_manager',
                             'message': 'Appoint Manager Success'
