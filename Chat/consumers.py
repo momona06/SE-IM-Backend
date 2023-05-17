@@ -990,6 +990,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                 if new_master is not None and \
                         await self.check_user_in_chatroom(function_name, chatroom, new_master_name):
                     chatroom.master_name = new_master_name
+                    await sync_to_async(chatroom.save)()
                     await self.send(text_data=json.dumps({
                         'function': 'transfer_master',
                         'message': 'Transfer Master Success'
