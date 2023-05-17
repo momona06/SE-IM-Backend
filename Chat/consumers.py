@@ -546,7 +546,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             'combine_list': combine_list,
             'room_id': room_id,
             'avatar': avatar,
-            'read_list': read_list
+            'read_list': read_list,
+            'is_delete': False
         }
 
         await self.send(text_data=json.dumps(return_field))
@@ -657,7 +658,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             'sender': username,
             'room_id': room_id if msg_type != 'combine' else transroom_id,
             'avatar': avatar,
-            'read_list': read_list
+            'read_list': read_list,
         }
 
         Ack_field = {
@@ -1289,6 +1290,9 @@ class UserConsumer(AsyncWebsocketConsumer):
                         avatar = os.path.join("/static/media/", str(imuser.avatar))
                         if avatar == "/static/media/":
                             avatar += "pic/default.jpeg"
+
+                        is_delete = cur_message.delete_list[li]
+
                         message_list.append({
                             "msg_body": cur_message.body,
                             "msg_id": cur_message.msg_id,
@@ -1298,7 +1302,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                             "avatar": avatar,
                             "combine_list": cur_message.combine_list,
                             "read_list": cur_message.read_list,
-                            "delete_list": cur_message.delete_list,
+                            "is_delete": is_delete,
                             # "reply_count": cur_message.reply_count
                         })
                     return_field.append({
