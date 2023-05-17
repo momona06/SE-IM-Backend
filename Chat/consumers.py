@@ -713,10 +713,9 @@ class UserConsumer(AsyncWebsocketConsumer):
                         }))
                     else:
                         username = await self.get_cur_username()
-                        user = await get_user(username)
                         # Fix: Dumplication
-                        message = await database_sync_to_async(create_message)(type='invite', body=invited_name,
-                                                                               time=msg_time, sender=username)
+                        await database_sync_to_async(create_message)(type='invite', body=invited_name,
+                                                                     time=msg_time, sender=username)
 
                         # # 群主/管理员权限直接拉进群
                         # if get_power(chatroom, username) != 0:
@@ -779,7 +778,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
         """
         # 初始化
-        username = await self.get_cur_username()
         msg_id = json_info['msg_id']
 
         room_id = self.room_id

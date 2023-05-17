@@ -183,6 +183,9 @@ def create_friend_group(req: HttpRequest):
 
 
 def add_friend_group(req: HttpRequest):
+    """
+    添加好友分组
+    """
     if req.method == "PUT":
         try:
             body = json.loads(req.body.decode("utf-8"))
