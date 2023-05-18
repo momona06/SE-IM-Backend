@@ -12,7 +12,7 @@ class IMUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     token = models.CharField(max_length=100)
     is_login = models.BooleanField(default=False)
-    avatar = models.ImageField(upload_to='pic/', default='pic/default.jpg')
+    avatar = models.ImageField(upload_to='pic/', default='pic/default.jpeg')
 
 
 class TokenPoll(models.Model):

@@ -547,7 +547,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             'combine_list': combine_list,
             'room_id': room_id,
             'avatar': avatar,
-            'read_list': read_list
+            'read_list': read_list,
+            'is_delete': False
         }
 
         await self.send(text_data=json.dumps(return_field))
@@ -658,7 +659,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             'sender': username,
             'room_id': room_id if msg_type != 'combine' else transroom_id,
             'avatar': avatar,
-            'read_list': read_list
+            'read_list': read_list,
         }
 
         Ack_field = {
@@ -714,7 +715,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                         }))
                     else:
                         username = await self.get_cur_username()
-                        user = await get_user(username)
                         # Fix: Dumplication
                         # message = await database_sync_to_async(create_message)(type='invite', body=invited_name,
                         #                                                       time=msg_time, sender=username)
@@ -777,7 +777,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
         """
         # 初始化
-        username = await self.get_cur_username()
         msg_id = json_info['msg_id']
 
         room_id = self.room_id
@@ -961,6 +960,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                         }))
                     else:
                         chatroom.manager_list.append(manager_name)
+                        await sync_to_async(chatroom.save)()
                         await self.send(text_data=json.dumps({
                             'function': 'appoint_manager',
                             'message': 'Appoint Manager Success'
@@ -1298,6 +1298,9 @@ class UserConsumer(AsyncWebsocketConsumer):
                         avatar = os.path.join("/static/media/", str(imuser.avatar))
                         if avatar == "/static/media/":
                             avatar += "pic/default.jpeg"
+
+                        is_delete = cur_message.delete_list[li]
+
                         message_list.append({
                             "msg_body": await async_decode(cur_message.body),
                             "msg_id": cur_message.msg_id,
@@ -1307,7 +1310,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                             "avatar": avatar,
                             "combine_list": cur_message.combine_list,
                             "read_list": cur_message.read_list,
-                            # "delete_list": cur_message.delete_list,
+                            "is_delete": is_delete,
                             # "reply_count": cur_message.reply_count
                         })
                     return_field.append({
@@ -1522,7 +1525,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                             "avatar": os.path.join('/static/media/', str(imuser.avatar)),
                             "combine_list": cur_message.combine_list,
                             "read_list": cur_message.read_list,
-                            # "delete_list": cur_message.delete_list,
+                            "delete_list": cur_message.delete_list,
                             # "reply_count": cur_message.reply_count
                         })
                     return_field.append({

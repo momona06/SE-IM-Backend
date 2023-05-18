@@ -1,3 +1,6 @@
+"""
+用户管理模块
+"""
 import json
 import re
 import random
@@ -16,7 +19,7 @@ from django.core import mail
 from Chat.models import ChatRoom, ChatTimeLine, Message, InviteList
 
 
-def revise(req: HttpRequest):
+def user_revise(req: HttpRequest):
     """
     用户修改个人信息
     """
@@ -86,7 +89,10 @@ def revise(req: HttpRequest):
         return BAD_METHOD
 
 
-def logout(req: HttpRequest):
+def user_logout(req: HttpRequest):
+    """
+    用户登出
+    """
     if req.method == "DELETE":
         body = json.loads(req.body.decode("utf-8"))
         username = str(body["username"])
@@ -114,7 +120,7 @@ def logout(req: HttpRequest):
         return BAD_METHOD
 
 
-def cancel(req: HttpRequest):
+def user_cancel(req: HttpRequest):
     """
     用户注销
     """
@@ -159,13 +165,13 @@ def cancel(req: HttpRequest):
             user_list = []
 
             for reply_name in user_add_list.reply_list:
-                if not reply_name in user_list:
+                if reply_name not in user_list:
                     user_list.append(reply_name)
 
                     delete_user_in_other_add_list(reply_name, username)
 
             for apply_name in user_add_list.apply_list:
-                if not apply_name in user_list:
+                if apply_name not in user_list:
                     user_list.append(apply_name)
 
                     delete_user_in_other_add_list(apply_name, username)
@@ -225,23 +231,29 @@ def cancel(req: HttpRequest):
 
 
 def delete_user_in_other_add_list(reply_name, username):
+    """
+    删除其他用户的add_list中的此用户
+    """
     other_add_list = AddList.objects.filter(user_name=reply_name).first()
-    l = len(other_add_list.reply_list)
+    lis = len(other_add_list.reply_list)
     for i, other_name in enumerate(other_add_list.reply_list[::-1]):
         if other_name == username:
-            index = l - i - 1
+            index = lis - i - 1
             del other_add_list.reply_list[index]
             del other_add_list.reply_ensure[index]
             del other_add_list.reply_answer[index]
     for i, other_name in enumerate(other_add_list.apply_list[::-1]):
         if other_name == username:
-            index = l - i - 1
+            index = lis - i - 1
             del other_add_list.apply_list[index]
             del other_add_list.apply_ensure[index]
             del other_add_list.apply_answer[index]
 
 
 def check_user_data_valid(username=None, password=None):
+    """
+    检查用户名和密码是否合法
+    """
     pattern = r'^[a-zA-Z0-9]{6,20}$'
     if username is not None:
         if not re.match(pattern, username):
@@ -253,6 +265,9 @@ def check_user_data_valid(username=None, password=None):
 
 
 def check_email_valid(email):
+    """
+    检查邮箱是否合法
+    """
     pattern = r'^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,5}$'
     if re.match(pattern, email):
         return True
@@ -261,43 +276,45 @@ def check_email_valid(email):
 
 
 def user_register(request: HttpRequest):
+    """
+用户注册
+    """
     if request.method == 'POST':
-        # try:
-            body = json.loads(request.body.decode("utf-8"))
-            username = str(body["username"])
-            password = str(body["password"])
+        body = json.loads(request.body.decode("utf-8"))
+        username = str(body["username"])
+        password = str(body["password"])
 
-            # check
-            if check_user_data_valid(username, password):
-                user = User.objects.filter(username=username).first()
+        # check
+        if check_user_data_valid(username, password):
+            user = User.objects.filter(username=username).first()
 
-                # unique
-                if user is not None:
-                    return JsonResponse({"code": -3, "info": "User already exists"})
+            # unique
+            if user is not None:
+                return JsonResponse({"code": -3, "info": "User already exists"})
 
-                tem_user = User.objects.create_user(username=username, password=password)
+            tem_user = User.objects.create_user(username=username, password=password)
 
-                tem_im_user = create_im_user(tem_user, get_new_token())
-                tem_im_user.save()
+            tem_im_user = create_im_user(tem_user, get_new_token())
+            tem_im_user.save()
 
-                group = ['我的好友']
-                friend_list = FriendList(user_name=username, group_list=group, friend_list=list())
-                friend_list.save()
+            group = ['我的好友']
+            friend_list = FriendList(user_name=username, group_list=group, friend_list=list())
+            friend_list.save()
 
-                add_list = AddList(user_name=username,
-                                   reply_list=list(), reply_answer=list(), reply_ensure=list(),
-                                   apply_list=list(), apply_answer=list(), apply_ensure=list())
-                add_list.save()
+            add_list = AddList(user_name=username,
+                               reply_list=list(), reply_answer=list(), reply_ensure=list(),
+                               apply_list=list(), apply_answer=list(), apply_ensure=list())
+            add_list.save()
 
-                return JsonResponse({
-                    "code": 0,
-                    "info": "Register Succeed",
-                })
-            else:
-                return JsonResponse({
-                    "code": -2,
-                    "info": "Invalid Userdata",
-                })
+            return JsonResponse({
+                "code": 0,
+                "info": "Register Succeed",
+            })
+        else:
+            return JsonResponse({
+                "code": -2,
+                "info": "Invalid Userdata",
+            })
     else:
         return BAD_METHOD
 
@@ -339,6 +356,9 @@ def user_login_pre_treat(request: HttpRequest):
 
 
 def get_new_token():
+    """
+    获取新的token
+    """
     tem_token = random.randint(100_000_000_000, 999_999_999_999)
     while True:
         token_poll = TokenPoll.objects.filter(token=tem_token).first()
@@ -349,6 +369,9 @@ def get_new_token():
 
 
 def user_login(request, identity, password, login_filter):
+    """
+    用户登录
+    """
     try:
         if login_filter == "username":
             user = User.objects.filter(username=identity).first()
@@ -371,14 +394,14 @@ def user_login(request, identity, password, login_filter):
                 tem_im_user = IMUser.objects.filter(user=tem_user).first()
                 if tem_im_user is not None:
                     # if not tem_im_user.is_login:
-                        tem_im_user.token = get_new_token()
-                        tem_im_user.is_login = True
-                        tem_im_user.save()
-                    # else:
-                    #     return JsonResponse({
-                    #         "code": -7,
-                    #         "info": "User already login",
-                    #     })
+                    tem_im_user.token = get_new_token()
+                    tem_im_user.is_login = True
+                    tem_im_user.save()
+                # else:
+                #     return JsonResponse({
+                #         "code": -7,
+                #         "info": "User already login",
+                #     })
                 else:
                     return JsonResponse({
                         "code": -1,
@@ -412,22 +435,25 @@ def user_login(request, identity, password, login_filter):
         })
 
 
-def send_email(request:HttpRequest):
+def send_email(request: HttpRequest):
+    """
+    发送邮箱验证码
+    """
     if request.method == 'GET':
         return HttpResponse("send_email")
     if request.method == 'POST':
         try:
             body = json.loads(request.body.decode("utf-8"))
-            send_list = []
+            send_list = list()
             send_list.append(str(body['email']))
             sms_code = '%06d' % random.randint(0, 999999)
             cur_email = EmailCode(email=str(body['email']), code=sms_code)
             cur_email.save()
             mail.send_mail(
-                subject = '邮箱验证',
-                message = '您的验证码为：{0}'.format(sms_code),
-                from_email = '2840206224@qq.com',
-                recipient_list = send_list
+                subject='邮箱验证',
+                message='您的验证码为：{0}'.format(sms_code),
+                from_email='2840206224@qq.com',
+                recipient_list=send_list
             )
             return JsonResponse({
                 "code": 0,
@@ -439,7 +465,12 @@ def send_email(request:HttpRequest):
                 "code": -1,
                 "info": "发送失败"
             })
+
+
 def bind_email(request):
+    """
+    绑定邮箱
+    """
     if request.method == 'GET':
         return HttpResponse('bind_email')
     if request.method == 'POST':
@@ -465,7 +496,11 @@ def bind_email(request):
             })
         return None
 
+
 def upload_avatar(request):
+    """
+    上传头像
+    """
     if request.method == 'GET':
         return HttpResponse('upload')
     if request.method == 'POST':

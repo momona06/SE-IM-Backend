@@ -158,6 +158,8 @@ class InviteList(models.Model):
     )
 
 
+
+
 async def create_message(type, body, time, sender, reply_id=0, reply_count=0, answer=-1, read_list=None, combine_list=None,
                          delete_list=None):
     if combine_list is None:

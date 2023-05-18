@@ -6,9 +6,9 @@ urlpatterns = [
     path('register', views.user_register),
     path('email', views.bind_email),
     path('send_email', views.send_email),
-    path('cancel', views.cancel),
-    path('logout', views.logout),
-    path('revise', views.revise),
+    path('cancel', views.user_cancel),
+    path('logout', views.user_logout),
+    path('revise', views.user_revise),
     path('upload', views.upload_avatar),
     path('uploadfile', views.upload)
 ]
