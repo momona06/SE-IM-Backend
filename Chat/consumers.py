@@ -888,7 +888,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                 'message': 'Message Type Error'
             }))
             return False
-        elif answer != '-1':
+        elif answer != -1:
             await self.send(text_data=json.dumps({
                 'function': function_name,
                 'message': 'Message Already Replied'
