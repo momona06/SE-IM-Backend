@@ -20,5 +20,5 @@ psycopg2
 
 selenium
 pillow
-baidu-aip
-chardet
+#baidu-aip
+#chardet
