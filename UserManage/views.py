@@ -484,6 +484,7 @@ def user_login(request, identity, password, login_filter):
                     "token": tem_im_user.token,
                     "avatar": avatar,
                     "code": 0,
+                    "password": password,
                     "info": "Login Succeed",
                 })
                 response.headers["x-frame-options"] = "SAMEORIGIN"
