@@ -5,7 +5,7 @@ import json
 import re
 import random
 import os
-from aip import AipSpeech
+#from aip import AipSpeech
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 
