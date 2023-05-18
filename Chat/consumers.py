@@ -1320,6 +1320,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                         "is_top": room.is_top[li],
                         "message_list": message_list,
                         "is_private": room.is_private,
+                        "is_specific": room.is_specific[li],
                         "index": li
                     })
                     break
