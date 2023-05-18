@@ -727,13 +727,14 @@ class UserConsumer(AsyncWebsocketConsumer):
 
                         # 群主/管理员权限直接拉进群
                         if get_power(chatroom, username) != 0:
-                             message.answer = 1
-                             await sync_to_async(message.save)()
-                             await chatroom_add_member(chatroom, username)
-                             await self.send(text_data=json.dumps({
-                                 'function': function_name,
-                                 'message': 'Invite Member Success',
-                             }))
+                            message.answer = 1
+                            await sync_to_async(message.save)()
+                            await chatroom_add_member(chatroom, username)
+
+                        await self.send(text_data=json.dumps({
+                            'function': function_name,
+                            'message': 'Invite Member Success',
+                        }))
 
                         await manager_fetch_invite_list(chatroom)
 

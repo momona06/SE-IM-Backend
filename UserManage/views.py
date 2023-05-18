@@ -9,6 +9,7 @@ import os
 from django.http import HttpRequest, HttpResponse, JsonResponse
 
 from FriendRelation.models import FriendList, AddList, Friend
+from utils.utils_cryptogram import encode, decode
 from utils.utils_request import BAD_METHOD
 from django.contrib.auth import authenticate, get_user_model
 
@@ -204,8 +205,8 @@ def user_cancel(req: HttpRequest):
                             if message.sender == username:
                                 message.sender = suspended_account_name
                                 message.save()
-                            if message.type == 'invite' and message.body == username:
-                                message.body = suspended_account_name
+                            if message.type == 'invite' and decode(message.body) == username:
+                                message.body = encode(suspended_account_name)
                                 message.save()
 
                             message.read_list.pop(index)
