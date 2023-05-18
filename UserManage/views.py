@@ -61,6 +61,42 @@ def user_revise(req: HttpRequest):
                                 room.save()
                                 break
 
+                    friend_list = FriendList.objects.filter(user_name=username).first()
+                    if friend_list is not None:
+                        friend_list.user_name=revise_content
+                        friend_list.save()
+
+                    friend_user_list = Friend.objects.filter(user_name=username)
+                    for i in friend_user_list:
+                        if i is not None:
+                            i.user_name = revise_content
+                            i.save()
+
+                    friend_other_list = Friend.objects.filter(friend_name=username)
+                    for i in friend_other_list:
+                        if i is not None:
+                            i.user_name = revise_content
+                            i.save()
+
+                    user_add_list = AddList.objects.filter(user_name=username).first()
+
+                    user_list = []
+
+                    for reply_name in user_add_list.reply_list:
+                        if reply_name not in user_list:
+                            user_list.append(reply_name)
+
+                            revise_username_in_other_add_list(reply_name, username, revise_content)
+
+                    for apply_name in user_add_list.apply_list:
+                        if apply_name not in user_list:
+                            user_list.append(apply_name)
+
+                            revise_username_in_other_add_list(apply_name, username, revise_content)
+
+                    user_add_list.user_name = revise_content
+                    user_add_list.save()
+
                     for message in Message.objects.all()[::-1]:
                         if message.sender == username:
                             message.sender = revise_content
@@ -252,6 +288,30 @@ def delete_user_in_other_add_list(reply_name, username):
             del other_add_list.apply_list[index]
             del other_add_list.apply_ensure[index]
             del other_add_list.apply_answer[index]
+
+    other_add_list.save()
+
+def revise_username_in_other_add_list(reply_name, username, revise_content):
+    """
+    更改其他用户的add_list中的用户名
+    """
+    other_add_list = AddList.objects.filter(user_name=reply_name).first()
+    lis = len(other_add_list.reply_list)
+    for i, other_name in enumerate(other_add_list.reply_list[::-1]):
+        if other_name == username:
+            index = lis - i - 1
+            other_add_list.reply_list[index] = revise_content
+            other_add_list.reply_ensure[index]= revise_content
+            other_add_list.reply_answer[index]= revise_content
+    for i, other_name in enumerate(other_add_list.apply_list[::-1]):
+        if other_name == username:
+            index = lis - i - 1
+            other_add_list.apply_list[index]= revise_content
+            other_add_list.apply_ensure[index]= revise_content
+            other_add_list.apply_answer[index]= revise_content
+
+    other_add_list.save()
+
 
 
 def check_user_data_valid(username=None, password=None):
