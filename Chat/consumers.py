@@ -928,7 +928,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             username = await self.get_cur_username()
 
             if await self.check_chatroom_master(function_name, chatroom, username):
-                mem_list = chatroom.memlist.copy()
+                mem_list = chatroom.mem_list.copy()
 
                 chat_timeline = await get_timeline(timeline_id=chatroom.timeline_id)
                 await sync_to_async(chatroom.delete)()
