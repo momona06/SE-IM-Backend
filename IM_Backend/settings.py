@@ -4,10 +4,13 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-STATIC_URL = '/static/'  # 通过别名指向STATICFILES_DIRS目录，当然，别名也可以修改
+# 通过别名指向STATICFILES_DIRS目录，当然，别名也可以修改
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'collect_static')
-STATICFILES_DIRS = [  # 列表或者元组都行
-    os.path.join(BASE_DIR, 'static')  # 你也可以配置多个静态文件目录，只需拼上路径就好了
+# 列表或者元组都行
+STATICFILES_DIRS = [
+    # 你也可以配置多个静态文件目录，只需拼上路径就好了
+    os.path.join(BASE_DIR, 'static')
 ]
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(STATIC_ROOT, 'media')
@@ -26,7 +29,6 @@ ALLOWED_HOSTS = [
 
 
 # Application definition
-
 INSTALLED_APPS = [
     'channels',
     'channels_postgres',
@@ -169,7 +171,6 @@ AUTH_PASSWORD_VALIDATORS = [{
 
 
 # Internationalization
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'Asia/Shanghai'
@@ -180,5 +181,4 @@ USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
