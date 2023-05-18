@@ -14,7 +14,6 @@ MEDIA_ROOT = os.path.join(STATIC_ROOT, 'media')
 
 SECRET_KEY = 'django-insecure-xvv16d@^4vu6-_^8w73_wt+xqf-wfppqevn)_zgye!#7l^6=p$'
 
-
 envDep = os.getenv('DEPLOY')
 if envDep is None:
     DEBUG = True
