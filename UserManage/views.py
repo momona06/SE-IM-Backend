@@ -562,7 +562,7 @@ def audio_to_text(request):
             filepath = 'collect_static/media/pic/'+str(body[filename])
             with open(filepath, 'rb') as fp:
                 result = client.asr(fp.read(), 'wav', 16000, {'dev_pid': 1537, })
-            if result['err_no'] != 0:
+            if result['err_no'] == 0:
                 text = result['result'][0]
                 return JsonResponse({
                     "code": 0,
