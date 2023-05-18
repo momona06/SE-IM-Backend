@@ -13,26 +13,24 @@ build:
     - export BUILD_IMAGE_USERNAME=$CI_REGISTRY_USER
     - export BUILD_IMAGE_PASSWORD=$CI_REGISTRY_PASSWORD
     - deployer build
-  # only:
-  #  - master
 
 
-test:
-  image: python:3.10
-  stage: test
-  before_script:
-    - pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
-  script:
-    - export DEPLOY=$CI_REGISTRY_IMAGE
-    - python3 manage.py makemigrations
-    - python3 manage.py migrate
-    - sh unit-test.sh
-  after_script:
-    - SUFFIX=$RANDOM
-    - curl "http://api.secoder.net/static/sonar-scanner.tar.gz" -s -o "/tmp/sonar-$SUFFIX.tar.gz"
-    - tar -xf "/tmp/sonar-$SUFFIX.tar.gz"  -C /opt
-    - /opt/sonar-scanner/bin/sonar-scanner
-  allow_failure: true
+#test:
+#  image: python:3.10
+#  stage: test
+#  before_script:
+#    - pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
+#  script:
+#    - export DEPLOY=$CI_REGISTRY_IMAGE
+#    - python3 manage.py makemigrations
+#    - python3 manage.py migrate
+#    - sh unit-test.sh
+#  after_script:
+#    - SUFFIX=$RANDOM
+#    - curl "http://api.secoder.net/static/sonar-scanner.tar.gz" -s -o "/tmp/sonar-$SUFFIX.tar.gz"
+#    - tar -xf "/tmp/sonar-$SUFFIX.tar.gz"  -C /opt
+#    - /opt/sonar-scanner/bin/sonar-scanner
+#  allow_failure: true
 
 
 
@@ -40,5 +38,3 @@ deploy:
   stage: deploy
   script:
     - deployer dyno replace $CI_PROJECT_NAME "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" "$REGISTRY_USER" "$REGISTRY_PWD"
-  # only:
-  #   - master

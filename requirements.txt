@@ -22,3 +22,5 @@ selenium
 pillow
 baidu-aip
 chardet
+
+gunicorn
