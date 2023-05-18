@@ -100,6 +100,7 @@ async def chatroom_delete_member(chatroom, member_name):
             chatroom.mem_list.pop(index)
             chatroom.is_top.pop(index)
             chatroom.is_notice.pop(index)
+            chatroom.is_specific.pop(index)
             timeline.cursor_list.pop(index)
 
             if username in chatroom.manager_list:
@@ -122,6 +123,7 @@ async def chatroom_add_member(chatroom, member_name):
     chatroom.mem_list.append(member_name)
     chatroom.is_top.append(False)
     chatroom.is_notice.append(True)
+    chatroom.is_specific.append(False)
     chatroom.mem_count += 1
 
     timeline.cursor_list.append(0)
@@ -1585,7 +1587,8 @@ class UserConsumer(AsyncWebsocketConsumer):
                         "is_notice": room.is_notice[li],
                         "is_top": room.is_top[li],
                         "message_list": message_list,
-                        "is_private": room.is_private
+                        "is_private": room.is_private,
+                        "is_specific": room.is_specific[li]
                     })
                     break
 
