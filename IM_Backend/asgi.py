@@ -9,7 +9,7 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 from Chat.consumers import UserConsumer
 from Call.consumers import CallConsumer
-from django.urls import path, re_path
+from django.urls import path
 
 websocket_urlpatterns = [
     path('wsconnect', UserConsumer.as_asgi()),
