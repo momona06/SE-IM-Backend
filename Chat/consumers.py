@@ -729,7 +729,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                         if get_power(chatroom, username) != 0:
                             message.answer = 1
                             await sync_to_async(message.save)()
-                            await chatroom_add_member(chatroom, username)
+                            await chatroom_add_member(chatroom, invited_name)
 
                         await self.send(text_data=json.dumps({
                             'function': function_name,
