@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # 通过别名指向STATICFILES_DIRS目录，当然，别名也可以修改
 STATIC_URL = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, 'collect_static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'collect_static')
 
 # 列表或者元组都行
 STATICFILES_DIRS = [
@@ -18,7 +18,7 @@ STATICFILES_DIRS = [
 # TODO: Fix
 # For Deployments
 # STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 #
 # CHANNEL_LAYERS = {
 #     "default": {
@@ -51,7 +51,6 @@ ALLOWED_HOSTS = [
     '*'
 ]
 
-# Application definition
 INSTALLED_APPS = [
     'channels',
     'channels_postgres',
