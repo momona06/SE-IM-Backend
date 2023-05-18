@@ -723,7 +723,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                         }))
                     else:
                         username = await self.get_cur_username()
-                        # Fix: Dumplication
                         await database_sync_to_async(create_message)(type='invite', body=invited_name,
                                                                      time=msg_time, sender=username)
 
