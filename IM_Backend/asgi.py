@@ -8,10 +8,12 @@ from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 from Chat.consumers import UserConsumer
-from django.urls import path
+from Call.consumers import CallConsumer
+from django.urls import path, re_path
 
 websocket_urlpatterns = [
     path('wsconnect', UserConsumer.as_asgi()),
+    path('ws/call/', CallConsumer.as_asgi()),
 ]
 
 application = ProtocolTypeRouter(

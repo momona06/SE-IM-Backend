@@ -6,12 +6,36 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # 通过别名指向STATICFILES_DIRS目录，当然，别名也可以修改
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'collect_static')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'collect_static')
+
 # 列表或者元组都行
 STATICFILES_DIRS = [
     # 你也可以配置多个静态文件目录，只需拼上路径就好了
     os.path.join(BASE_DIR, 'static')
 ]
+
+# DEPLOY VIDEO
+# TODO: Fix
+# For Deployments
+# STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+#
+# CHANNEL_LAYERS = {
+#     "default": {
+#         "BACKEND": "channels.layers.InMemoryChannelLayer"
+#     }
+# }
+#
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+# SECURITY WARNING: don't run with debug turned on in production!
+# DEBUG = True
+
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(STATIC_ROOT, 'media')
 
@@ -27,7 +51,6 @@ ALLOWED_HOSTS = [
     '*'
 ]
 
-
 # Application definition
 INSTALLED_APPS = [
     'channels',
@@ -36,6 +59,7 @@ INSTALLED_APPS = [
     'FriendRelation',
     'UserManage',
     'Chat',
+    'Call',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -106,25 +130,24 @@ else:
         },
     }
 
-
 # 部署PostGreSQL
 if not DEBUG:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'postgres',                                       # 连接的数据库
+            'NAME': 'postgres',  # 连接的数据库
             'HOST': 'database-postgresql.OverFlowLab.secoder.local',  # ip地址
-            'PORT': 5432,                                             # 端口
-            'USER': 'postgres',                                       # 用户名
-            'PASSWORD': '123456'                                      # 密码
+            'PORT': 5432,  # 端口
+            'USER': 'postgres',  # 用户名
+            'PASSWORD': '123456'  # 密码
         },
         'channels_postgres': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'postgres',                                       # 连接的数据库
+            'NAME': 'postgres',  # 连接的数据库
             'HOST': 'database-postgresql.OverFlowLab.secoder.local',  # ip地址
-            'PORT': 5432,                                             # 端口
-            'USER': 'postgres',                                       # 用户名
-            'PASSWORD': '123456'                                      # 密码
+            'PORT': 5432,  # 端口
+            'USER': 'postgres',  # 用户名
+            'PASSWORD': '123456'  # 密码
         }
     }
 
@@ -134,19 +157,19 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'postgres',   # 连接的数据库
+            'NAME': 'postgres',  # 连接的数据库
             'HOST': '127.0.0.1',  # 网址
-            'PORT': 5432,         # 端口
-            'USER': 'postgres',   # 用户名
-            'PASSWORD': '1234'    # 密码
+            'PORT': 5432,  # 端口
+            'USER': 'postgres',  # 用户名
+            'PASSWORD': '1234'  # 密码
         },
         'channels_postgres': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'postgres',   # 连接的数据库
+            'NAME': 'postgres',  # 连接的数据库
             'HOST': '127.0.0.1',  # 网址
-            'PORT': 5432,         # 端口
-            'USER': 'postgres',   # 用户名
-            'PASSWORD': '1234'    # 密码
+            'PORT': 5432,  # 端口
+            'USER': 'postgres',  # 用户名
+            'PASSWORD': '1234'  # 密码
         }
     }
 
@@ -159,16 +182,15 @@ EMAIL_USE_TLS = False
 EMAIL_FROM = "2840206224@qq.com"
 
 AUTH_PASSWORD_VALIDATORS = [{
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    }, {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    }, {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    }, {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+}, {
+    'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+}, {
+    'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+}, {
+    'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+},
 ]
-
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
@@ -179,6 +201,4 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
