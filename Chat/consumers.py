@@ -746,12 +746,15 @@ class UserConsumer(AsyncWebsocketConsumer):
                         invite_list.msg_list.append(message.msg_id)
                         await database_sync_to_async(invite_list.save)()
 
+                        print("pre answer: " + str(message.answer) + " id: "+ str(message.msg_id))
+
                         await self.send(text_data=json.dumps({
                             'function': function_name,
                             'message': 'Invite Member Success',
                         }))
 
                         await manager_fetch_invite_list(chatroom)
+                        print("after answer: " + str(message.answer) + " id: " + str(message.msg_id))
 
         elif msg_type == 'image' or msg_type == 'video' or msg_type == 'audio' or msg_type == 'file':
             pass
@@ -1079,6 +1082,9 @@ class UserConsumer(AsyncWebsocketConsumer):
         chatroom = await self.find_chatroom(function_name, chatroom_id)
 
         if chatroom is not None:
+
+            print("reply add: " + str(message.answer) + " id: " + str(message.msg_id))
+
             if await self.message_pre_treat(function_name, message_type, message.answer):
 
                 invited_user = await self.check_user_exist(function_name, invited_name)
@@ -1583,6 +1589,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                             "combine_list": cur_message.combine_list,
                             "read_list": cur_message.read_list,
                             "delete_list": cur_message.delete_list,
+                            "msg_answer": cur_message.answer,
                             # "reply_count": cur_message.reply_count
                         })
                     return_field.append({
