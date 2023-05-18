@@ -1100,7 +1100,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                             if answer == 1:
                                 await chatroom_add_member(chatroom_id, username)
 
-
                             await self.send(text_data=json.dumps({
                                 'function': function_name,
                                 'message': 'Reply Add Group Success'
@@ -1337,14 +1336,12 @@ class UserConsumer(AsyncWebsocketConsumer):
                     })
                     break
 
-
         await self.send(text_data=json.dumps({
             "function": "fetchroom",
             "roomlist": return_field
         }))
 
         await self.fetch_invite_list(json_info)
-
 
     async def fetch_roominfo(self, json_info):
         """
