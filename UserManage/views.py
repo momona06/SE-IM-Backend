@@ -36,6 +36,7 @@ def user_revise(req: HttpRequest):
                 "code": -1,
                 "info": "User Not exists or Login State Error"
             })
+
         else:
             user_model = get_user_model()
             user_rev = user_model.objects.get(username=username)

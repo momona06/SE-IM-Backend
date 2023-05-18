@@ -2,7 +2,7 @@ from channels.exceptions import StopConsumer
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from asgiref.sync import sync_to_async
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate
 
 import json
 from datetime import datetime
@@ -280,12 +280,21 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == "revise_is_top":
             await self.revise_is_top(json_info)
 
+        # 修改特殊私聊/群聊属性
+        elif function == 'revise_is_specific':
+            await self.revise_is_specific(json_info)
+
         # 设置已读消息
         elif function == 'read_message':
             await self.read_message(json_info)
 
+        # 删除消息
         elif function == 'delete_message':
             await self.delete_message(json_info)
+
+        # 二次检验密码
+        elif function == 'examine_password_twice':
+            await self.examine_password_twice(json_info)
 
     async def heart_beat(self):
         """
@@ -1432,6 +1441,46 @@ class UserConsumer(AsyncWebsocketConsumer):
                             'message': 'Is_Top Revise Success'
                         }))
                         break
+
+    async def revise_is_specific(self, json_info):
+        """
+        json_info = {
+            'room_id': 114514,
+            'is_specific': True
+        }
+        """
+        username = self.cur_user
+        room_id = json_info['room_id']
+        is_specific = json_info['is_specific']
+        chatroom = await filter_first_chatroom(chatroom_id=room_id)
+        idx = await sync_to_async(chatroom.mem_list.index)(username)
+        chatroom.is_specific[idx] = is_specific
+        await sync_to_async(chatroom.save)()
+        await self.send(text_data=json.dumps({
+            'function': 'revise_is_specific',
+            'message': 'Is_Specific Revise Success'
+        }))
+
+    async def examine_password_twice(self, json_info):
+        """
+        json_info = {
+            "password": "114514"
+        }
+        """
+        username = self.cur_user
+        password = json_info['password']
+        user = await get_user(username=username)
+        access = authenticate(username=username, password=password)
+        if access:
+            await self.send(text_data=json.dumps({
+                'function': 'examine_password_twice',
+                'access': True
+            }))
+        else:
+            await self.send(text_data=json.dumps({
+                'function': 'examine_password_twice',
+                'access': False
+            }))
 
     async def remove_manager(self, json_info):
         """

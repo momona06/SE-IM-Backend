@@ -44,7 +44,10 @@ class ChatRoom(models.Model):
     invite_list_id = models.BigIntegerField(default=0)
 
     room_name = models.CharField(max_length=30, default='private_chat')
+
     is_private = models.BooleanField(default=True)
+
+
 
     mem_count = models.BigIntegerField(default=2)
     mem_list = ArrayField(
@@ -54,6 +57,9 @@ class ChatRoom(models.Model):
         models.BooleanField(default=True)
     )
     is_top = ArrayField(
+        models.BooleanField(default=False)
+    )
+    is_specific = ArrayField(
         models.BooleanField(default=False)
     )
 
@@ -79,7 +85,7 @@ async def create_chatroom(room_name, mem_list, master_name, is_private=False):
                                                           mem_count=mem_len, mem_list=mem_list,
                                                           master_name=master_name, manager_list=[],
                                                           is_notice=true_mem_len_list, is_top=false_mem_len_list,
-                                                          notice_id=0, notice_list=[])
+                                                          is_specific=false_mem_len_list, notice_id=0, notice_list=[])
     await database_sync_to_async(new_chatroom.save)()
 
     timeline = await database_sync_to_async(ChatTimeLine)(chatroom_id=new_chatroom.chatroom_id, msg_line=[],

@@ -19,6 +19,7 @@ def get_user_id(username):
 def get_addlist(username):
     return AddList.objects.get(user_name=username)
 
+
 @database_sync_to_async
 def get_message(message_id):
     return Message.objects.get(msg_id=message_id)
