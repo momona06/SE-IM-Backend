@@ -742,6 +742,10 @@ class UserConsumer(AsyncWebsocketConsumer):
                             await sync_to_async(message.save)()
                             await chatroom_add_member(chatroom, invited_name)
 
+                        invite_list = await get_invite_list(chatroom_id=chatroom.chatroom_id)
+                        invite_list.msg_list.append(message.msg_id)
+                        await database_sync_to_async(invite_list.save)()
+
                         await self.send(text_data=json.dumps({
                             'function': function_name,
                             'message': 'Invite Member Success',
