@@ -1445,14 +1445,14 @@ class UserConsumer(AsyncWebsocketConsumer):
     async def revise_is_specific(self, json_info):
         """
         json_info = {
-            'room_id': 114514,
+            'chatroom_id': 114514,
             'is_specific': True
         }
         """
         username = self.cur_user
-        room_id = json_info['room_id']
+        chatroom_id = json_info['chatroom_id']
         is_specific = json_info['is_specific']
-        chatroom = await filter_first_chatroom(chatroom_id=room_id)
+        chatroom = await filter_first_chatroom(chatroom_id=chatroom_id)
         idx = await sync_to_async(chatroom.mem_list.index)(username)
         chatroom.is_specific[idx] = is_specific
         await sync_to_async(chatroom.save)()
