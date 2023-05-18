@@ -10,5 +10,6 @@ urlpatterns = [
     path('logout', views.user_logout),
     path('revise', views.user_revise),
     path('upload', views.upload_avatar),
-    path('uploadfile', views.upload)
+    path('uploadfile', views.upload),
+    path('audio', views.audio_to_text)
 ]
