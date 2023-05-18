@@ -192,7 +192,10 @@ def user_cancel(req: HttpRequest):
 
                     timeline = ChatTimeLine.objects.filter(timeline_id=room.timeline_id).first()
 
-                    if username == room.master_name:
+                    if room.is_private:
+                        timeline.delete()
+                        room.delete()
+                    elif username == room.master_name:
                         invite_list = InviteList.objects.filter(invite_list_id=room.invite_list_id).first()
                         invite_list.delete()
 
