@@ -559,7 +559,7 @@ def audio_to_text(request):
             client = AipSpeech('33584366', 'XnMdNhg1mHCt64OZE4yPURVf', 'ZgFXLMRRvUQKnDEpvsHBu0T5ylV1aE7g')
             body = json.loads(request.body.decode("utf-8"))
             filename = str(body['url']).split('/')[-1]
-            filepath = 'collect_static/media/pic/'+filename
+            filepath = 'collect_static/media/file/'+filename
             with open(filepath, 'rb') as fp:
                 result = client.asr(fp.read(), 'wav', 16000, {'dev_pid': 1537, })
             if result['err_no'] == 0:
