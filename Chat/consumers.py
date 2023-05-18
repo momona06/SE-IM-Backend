@@ -108,7 +108,7 @@ async def chatroom_delete_member(chatroom, member_name):
 
             for message_id in timeline.msg_line:
                 message = await get_message(message_id)
-                message.read_list.pop(index)
+                # message.read_list.pop(index)
                 await database_sync_to_async(message.save)()
 
             chatroom.mem_count -= 1
@@ -737,7 +737,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                         await self.send(text_data=json.dumps(Ack_field))
 
                         # 群主/管理员权限直接拉进群
-                        if get_power(chatroom, username) != 0:
+                        if await get_power(chatroom, username) != 0:
                             message.answer = 1
                             await sync_to_async(message.save)()
                             await chatroom_add_member(chatroom, invited_name)
