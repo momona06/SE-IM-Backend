@@ -2,6 +2,8 @@ from channels.db import database_sync_to_async
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
+from utils.utils_cryptogram import async_encode
+
 
 @database_sync_to_async
 def filter_first_chatroom(chatroom_id=None, timeline_id=None):
@@ -172,7 +174,7 @@ async def create_message(type, body, time, sender, reply_id=0, reply_count=0, an
         read_list = list()
     if delete_list is None:
         delete_list = list()
-    new_message = await database_sync_to_async(Message)(type=type, body=body, time=time, sender=sender,
+    new_message = await database_sync_to_async(Message)(type=type, body=async_encode(body), time=time, sender=sender,
                                                         reply_count=reply_count, reply_id=reply_id, answer=answer,
                                                         delete_list=delete_list, read_list=read_list, combine_list=combine_list)
     await database_sync_to_async(new_message.save)()

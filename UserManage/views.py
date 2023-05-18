@@ -5,10 +5,12 @@ import json
 import re
 import random
 import os
+from aip import AipSpeech
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 
 from FriendRelation.models import FriendList, AddList, Friend
+from utils.utils_cryptogram import encode, decode
 from utils.utils_request import BAD_METHOD
 from django.contrib.auth import authenticate, get_user_model
 
@@ -60,6 +62,42 @@ def user_revise(req: HttpRequest):
                                     room.master_name = revise_content
                                 room.save()
                                 break
+
+                    friend_list = FriendList.objects.filter(user_name=username).first()
+                    if friend_list is not None:
+                        friend_list.user_name=revise_content
+                        friend_list.save()
+
+                    friend_user_list = Friend.objects.filter(user_name=username)
+                    for i in friend_user_list:
+                        if i is not None:
+                            i.user_name = revise_content
+                            i.save()
+
+                    friend_other_list = Friend.objects.filter(friend_name=username)
+                    for i in friend_other_list:
+                        if i is not None:
+                            i.user_name = revise_content
+                            i.save()
+
+                    user_add_list = AddList.objects.filter(user_name=username).first()
+
+                    user_list = []
+
+                    for reply_name in user_add_list.reply_list:
+                        if reply_name not in user_list:
+                            user_list.append(reply_name)
+
+                            revise_username_in_other_add_list(reply_name, username, revise_content)
+
+                    for apply_name in user_add_list.apply_list:
+                        if apply_name not in user_list:
+                            user_list.append(apply_name)
+
+                            revise_username_in_other_add_list(apply_name, username, revise_content)
+
+                    user_add_list.user_name = revise_content
+                    user_add_list.save()
 
                     for message in Message.objects.all()[::-1]:
                         if message.sender == username:
@@ -192,7 +230,10 @@ def user_cancel(req: HttpRequest):
 
                     timeline = ChatTimeLine.objects.filter(timeline_id=room.timeline_id).first()
 
-                    if username == room.master_name:
+                    if room.is_private:
+                        timeline.delete()
+                        room.delete()
+                    elif username == room.master_name:
                         invite_list = InviteList.objects.filter(invite_list_id=room.invite_list_id).first()
                         invite_list.delete()
 
@@ -205,8 +246,8 @@ def user_cancel(req: HttpRequest):
                             if message.sender == username:
                                 message.sender = suspended_account_name
                                 message.save()
-                            if message.type == 'invite' and message.body == username:
-                                message.body = suspended_account_name
+                            if message.type == 'invite' and decode(message.body) == username:
+                                message.body = encode(suspended_account_name)
                                 message.save()
 
                             message.read_list.pop(index)
@@ -249,6 +290,30 @@ def delete_user_in_other_add_list(reply_name, username):
             del other_add_list.apply_list[index]
             del other_add_list.apply_ensure[index]
             del other_add_list.apply_answer[index]
+
+    other_add_list.save()
+
+def revise_username_in_other_add_list(reply_name, username, revise_content):
+    """
+    更改其他用户的add_list中的用户名
+    """
+    other_add_list = AddList.objects.filter(user_name=reply_name).first()
+    lis = len(other_add_list.reply_list)
+    for i, other_name in enumerate(other_add_list.reply_list[::-1]):
+        if other_name == username:
+            index = lis - i - 1
+            other_add_list.reply_list[index] = revise_content
+            other_add_list.reply_ensure[index]= revise_content
+            other_add_list.reply_answer[index]= revise_content
+    for i, other_name in enumerate(other_add_list.apply_list[::-1]):
+        if other_name == username:
+            index = lis - i - 1
+            other_add_list.apply_list[index]= revise_content
+            other_add_list.apply_ensure[index]= revise_content
+            other_add_list.apply_answer[index]= revise_content
+
+    other_add_list.save()
+
 
 
 def check_user_data_valid(username=None, password=None):
@@ -544,6 +609,36 @@ def upload(request):
             })
             response.headers["x-frame-options"] = "SAMEORIGIN"
             return response
+        except Exception as e:
+            print(e)
+            return JsonResponse({
+                "code": -1,
+                "info": "Unexpected error"
+            })
+
+def audio_to_text(request):
+    if request.method == 'GET':
+        return HttpResponse('a2t')
+    if request.method == 'POST':
+        try:
+            client = AipSpeech('33584366', 'XnMdNhg1mHCt64OZE4yPURVf', 'ZgFXLMRRvUQKnDEpvsHBu0T5ylV1aE7g')
+            body = json.loads(request.body.decode("utf-8"))
+            filename = str(body['url']).split('/')[-1]
+            filepath = 'collect_static/media/file/'+filename
+            with open(filepath, 'rb') as fp:
+                result = client.asr(fp.read(), 'wav', 16000, {'dev_pid': 1537, })
+            if result['err_no'] == 0:
+                text = result['result'][0]
+                return JsonResponse({
+                    "code": 0,
+                    "result": text
+                })
+            else:
+                return JsonResponse({
+                    "code": 0,
+                    "result": 'error: not wav or too long'
+                })
+
         except Exception as e:
             print(e)
             return JsonResponse({
