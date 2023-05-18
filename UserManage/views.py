@@ -558,8 +558,9 @@ def audio_to_text(request):
         try:
             client = AipSpeech('33584366', 'XnMdNhg1mHCt64OZE4yPURVf', 'ZgFXLMRRvUQKnDEpvsHBu0T5ylV1aE7g')
             body = json.loads(request.body.decode("utf-8"))
-            filepath = 'collect_static/media/'+str(body['url'])
-            with open('collect_static/media/pic/1.wav', 'rb') as fp:
+            filename = str(body['url']).split('/')[-1]
+            filepath = 'collect_static/media/pic/'+str(body[filename])
+            with open(filepath, 'rb') as fp:
                 result = client.asr(fp.read(), 'wav', 16000, {'dev_pid': 1537, })
             if result['err_no'] != 0:
                 text = result['result'][0]
@@ -570,7 +571,7 @@ def audio_to_text(request):
             else:
                 return JsonResponse({
                     "code": 0,
-                    "result": 'error'
+                    "result": 'error: not wav or too long'
                 })
 
         except Exception as e:
