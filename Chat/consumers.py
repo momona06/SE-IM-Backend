@@ -1115,7 +1115,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                             await database_sync_to_async(message.save)()
 
                             if answer == 1:
-                                await chatroom_add_member(chatroom_id, username)
+                                await chatroom_add_member(chatroom, username)
 
                             await self.send(text_data=json.dumps({
                                 'function': function_name,
