@@ -108,7 +108,8 @@ async def chatroom_delete_member(chatroom, member_name):
 
             for message_id in timeline.msg_line:
                 message = await get_message(message_id)
-                # message.read_list.pop(index)
+                message.read_list.pop(index)
+                message.delete_list.pop(index)
                 await database_sync_to_async(message.save)()
 
             chatroom.mem_count -= 1
@@ -131,6 +132,7 @@ async def chatroom_add_member(chatroom, member_name):
     for message_id in timeline.msg_line:
         message = await get_message(message_id)
         message.read_list.append(False)
+        message.delete_list.append(False)
         await database_sync_to_async(message.save)()
 
     await database_sync_to_async(chatroom.save)()
