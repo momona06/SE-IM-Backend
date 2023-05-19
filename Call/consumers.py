@@ -97,3 +97,4 @@ class CallConsumer(WebsocketConsumer):
             'type': 'ICEcandidate',
             'data': event['data']
         }))
+
