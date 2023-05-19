@@ -1630,8 +1630,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                     "is_specific": room.is_specific[li]
                 })
 
-                break
-
         await self.send(text_data=json.dumps({
             "function": "fetchinvitelist",
             "room_list": return_field
