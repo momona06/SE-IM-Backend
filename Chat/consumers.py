@@ -42,8 +42,8 @@ async def manager_fetch_invite_list(chatroom):
     l.append(chatroom.master_name)
 
     for username in l:
-        for index, onliner_name in enumerate(CONSUMER_OBJECT_LIST):
-            if username == onliner_name:
+        for index, onliner in enumerate(CONSUMER_OBJECT_LIST):
+            if username == onliner.cur_user:
                 CONSUMER_OBJECT_LIST[index].fetch_invite_list({"username": username})
 
 
@@ -746,16 +746,12 @@ class UserConsumer(AsyncWebsocketConsumer):
                         invite_list.msg_list.append(message.msg_id)
                         await database_sync_to_async(invite_list.save)()
 
-
-                        print("pre answer: " + str(message.answer) + " id: "+ str(message.msg_id))
-
                         await self.send(text_data=json.dumps({
                             'function': function_name,
                             'message': 'Invite Member Success',
                         }))
 
                         await manager_fetch_invite_list(chatroom)
-                        print("after answer: " + str(message.answer) + " id: " + str(message.msg_id))
 
         elif msg_type == 'image' or msg_type == 'video' or msg_type == 'audio' or msg_type == 'file':
             pass
