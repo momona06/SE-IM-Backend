@@ -1115,7 +1115,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                             await database_sync_to_async(message.save)()
 
                             if answer == 1:
-                                await chatroom_add_member(chatroom, username)
+                                await chatroom_add_member(chatroom, invited_name)
 
                             await self.send(text_data=json.dumps({
                                 'function': function_name,
@@ -1317,7 +1317,8 @@ class UserConsumer(AsyncWebsocketConsumer):
                         cur_message = await sync_to_async(cur_message1.first)()
 
                         if cur_message.type == 'invite':
-                            continue
+                            if get_power(room, username)==0:
+                                continue
 
                         users = await sync_to_async(User.objects.filter)(username=cur_message.sender)
                         user = await sync_to_async(users.first)()
@@ -1591,10 +1592,6 @@ class UserConsumer(AsyncWebsocketConsumer):
 
                 invite_list = await get_invite_list(chatroom_id=room.chatroom_id)
 
-                await self.send(text_data=json.dumps({
-                    "QWER invite_list mes id": str(invite_list.msg_list),
-                }))
-
                 for msg in invite_list.msg_list:
                     cur_message1 = await sync_to_async(Message.objects.filter)(msg_id=msg)
                     cur_message = await sync_to_async(cur_message1.first)()
@@ -1622,12 +1619,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                         # "reply_count": cur_message.reply_count
                     })
 
-                    await self.send(text_data=json.dumps({
-                        "foo": 1,
-                        "ASDF message_list": message_list,
-                        "ZXCV room_list": return_field
-                    }))
-
 
                 return_field.append({
                     "roomid": room.chatroom_id,
@@ -1639,11 +1630,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                     "is_specific": room.is_specific[li]
                 })
 
-                await self.send(text_data=json.dumps({
-                    "foo": 2,
-                    "ASDF message_list": message_list,
-                    "ZXCV room_list": return_field
-                }))
                 break
 
         await self.send(text_data=json.dumps({
