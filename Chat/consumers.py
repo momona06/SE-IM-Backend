@@ -1623,6 +1623,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                     })
 
                     await self.send(text_data=json.dumps({
+                        "foo": 1,
                         "ASDF message_list": message_list,
                         "ZXCV room_list": return_field
                     }))
@@ -1637,6 +1638,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                     "is_specific": room.is_specific[li]
                 })
                 await self.send(text_data=json.dumps({
+                    "foo": 2,
                     "ASDF message_list": message_list,
                     "ZXCV room_list": return_field
                 }))
