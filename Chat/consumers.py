@@ -530,6 +530,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         sender = event['sender']
         room_id = event['room_id']
         read_list = event['read_list']
+        delete_list = event['delete_list']
 
         if msg_type == 'reply':
             reply_id = event['reply_id']
@@ -561,6 +562,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             'room_id': room_id,
             'avatar': avatar,
             'read_list': read_list,
+            'delete_list': delete_list,
             'is_delete': False
         }
 
@@ -658,6 +660,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                 message.read_list.append(False)
         await sync_to_async(message.save)()
         read_list = message.read_list
+        delete_list = message.delete_list
 
         avatar = os.path.join("/static/media/", str(imuser.avatar))
         if avatar == "/static/media/":
@@ -673,6 +676,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             'room_id': room_id if msg_type != 'combine' else transroom_id,
             'avatar': avatar,
             'read_list': read_list,
+            'delete_list': delete_list,
         }
 
         Ack_field = {
@@ -1402,6 +1406,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             'msg_body': await async_decode(message.body),
             'sender': message.sender,
             'read_list': message.read_list,
+            'delete_list': message.delete_list,
             'combine_list': message.combine_list
         }))
 
