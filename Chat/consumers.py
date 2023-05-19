@@ -758,7 +758,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                             'message_id': message.msg_id
                         }))
 
-                        # await manager_fetch_invite_list(chatroom)
+                        await manager_fetch_invite_list(chatroom)
 
         elif msg_type == 'image' or msg_type == 'video' or msg_type == 'audio' or msg_type == 'file':
             pass
