@@ -35,7 +35,6 @@ STATICFILES_DIRS = [
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
 
-
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(STATIC_ROOT, 'media')
 
