@@ -755,9 +755,10 @@ class UserConsumer(AsyncWebsocketConsumer):
                         await self.send(text_data=json.dumps({
                             'function': function_name,
                             'message': 'Invite Member Success',
+                            'message_id': message.msg_id
                         }))
 
-                        await manager_fetch_invite_list(chatroom)
+                        # await manager_fetch_invite_list(chatroom)
 
         elif msg_type == 'image' or msg_type == 'video' or msg_type == 'audio' or msg_type == 'file':
             pass
@@ -1357,7 +1358,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             "roomlist": return_field
         }))
 
-        await self.fetch_invite_list(json_info)
+        # await self.fetch_invite_list(json_info)
 
     async def fetch_roominfo(self, json_info):
         """
@@ -1589,6 +1590,10 @@ class UserConsumer(AsyncWebsocketConsumer):
                 message_list = list()
 
                 invite_list = await get_invite_list(chatroom_id=room.chatroom_id)
+
+                await self.send(text_data=json.dumps({
+                    "QWER invite_list mes id": str(invite_list.msg_list),
+                }))
 
                 for msg in invite_list.msg_list:
                     cur_message1 = await sync_to_async(Message.objects.filter)(msg_id=msg)
