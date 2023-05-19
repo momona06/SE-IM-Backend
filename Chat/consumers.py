@@ -1637,6 +1637,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                     "is_private": room.is_private,
                     "is_specific": room.is_specific[li]
                 })
+
                 await self.send(text_data=json.dumps({
                     "foo": 2,
                     "ASDF message_list": message_list,
