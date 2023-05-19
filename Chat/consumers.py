@@ -941,8 +941,11 @@ class UserConsumer(AsyncWebsocketConsumer):
                 mem_list = chatroom.mem_list.copy()
 
                 chat_timeline = await get_timeline(timeline_id=chatroom.timeline_id)
+
+                invite_list = await get_invite_list(chatroom_id=chatroom_id)
                 await sync_to_async(chatroom.delete)()
                 await sync_to_async(chat_timeline.delete)()
+                await sync_to_async(invite_list.delete)()
 
                 await self.send(text_data=json.dumps({
                     'function': 'delete_chat_group',
