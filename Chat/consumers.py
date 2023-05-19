@@ -1554,14 +1554,9 @@ class UserConsumer(AsyncWebsocketConsumer):
         username = json_info['username']
         return_field = []
 
-        await self.send(text_data=json.dumps({
-            "fetch_in user: " : username
-        }))
-
         async for room in ChatRoom.objects.all():
 
             await self.send(text_data=json.dumps({
-                "room_mem: " : str(room.mem_list)
             }))
 
             if room.is_private:
@@ -1569,14 +1564,14 @@ class UserConsumer(AsyncWebsocketConsumer):
 
             await self.send(text_data=json.dumps({
                 "room_name": room.room_name,
+                "room_mem: " : str(room.mem_list),
+                "user: " : username,
+                "room_manager": room.manager_list,
+                "room_master": room.master_name
             }))
 
             if username == room.master_name or username in room.manager_list:
                 li = room.mem_list.index(username)
-
-                await self.send(text_data=json.dumps({
-                    "1": 1,
-                }))
 
                 roomname = room.room_name
                 chatroom_id = room.chatroom_id
@@ -1620,7 +1615,8 @@ class UserConsumer(AsyncWebsocketConsumer):
                     })
 
                     await self.send(text_data=json.dumps({
-                        "message_list": message_list
+                        "ASDF message_list": message_list,
+                        "ZXCV room_list": return_field
                     }))
 
                 return_field.append({
@@ -1632,6 +1628,10 @@ class UserConsumer(AsyncWebsocketConsumer):
                     "is_private": room.is_private,
                     "is_specific": room.is_specific[li]
                 })
+                await self.send(text_data=json.dumps({
+                    "ASDF message_list": message_list,
+                    "ZXCV room_list": return_field
+                }))
                 break
 
         await self.send(text_data=json.dumps({
