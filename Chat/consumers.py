@@ -1345,9 +1345,7 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     async def fetch_roominfo(self, json_info):
         """
-        json_info = {
-
-        }
+        json_info = {}
         """
         chatroom_id = json_info['roomid']
         mem_list = []
