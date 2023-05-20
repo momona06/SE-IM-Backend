@@ -21,26 +21,24 @@ class CallConsumer(WebsocketConsumer):
             self.channel_name
         )
 
-    # Receive message from client WebSocket
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        event_type = text_data_json['type']
+        rtc_type = text_data_json['type']
 
-        if event_type == 'login':
+        if rtc_type == 'login':
             name = text_data_json['data']['name']
             # we will use this as room name as well
             self.my_name = name
 
-            # Join room
             async_to_sync(self.channel_layer.group_add)(
                 self.my_name,
                 self.channel_name
             )
 
-        elif event_type == 'call':
+        elif rtc_type == 'call':
             name = text_data_json['data']['name']
             print(self.my_name, "is calling", name)
-            # to notify the callee we sent an event to the group name
+            # notify the callee we sent an event to the group name
             # their ground name is the name
             async_to_sync(self.channel_layer.group_send)(
                 name, {
@@ -52,8 +50,8 @@ class CallConsumer(WebsocketConsumer):
                 }
             )
 
-        elif event_type == 'answer_call':
-            # Has received call from someone now notify the calling user
+        elif rtc_type == 'answer_call':
+            # receive call from someone now notify the calling user
             # we can notify to the group with the caller name
             caller = text_data_json['data']['caller']
 
@@ -66,7 +64,19 @@ class CallConsumer(WebsocketConsumer):
                 }
             )
 
-        elif event_type == 'ICEcandidate':
+        elif rtc_type == 'stop_call':
+            otheruser = text_data_json['data']['name']
+
+            async_to_sync(self.channel_layer.group_send)(
+                otheruser, {
+                    'type': 'call_stopped',
+                    'data': {
+                        'rtcMessage': text_data_json['data']['rtcMessage']
+                    }
+                }
+            )
+
+        elif rtc_type == 'ICEcandidate':
             user = text_data_json['data']['user']
 
             async_to_sync(self.channel_layer.group_send)(
@@ -77,6 +87,7 @@ class CallConsumer(WebsocketConsumer):
                     }
                 }
             )
+
 
     def call_received(self, event):
         print('Call received by ', self.my_name)
@@ -92,9 +103,18 @@ class CallConsumer(WebsocketConsumer):
             'data': event['data']
         }))
 
+    def call_stopped(self, event):
+        print(self.my_name, "'s call stopped")
+        self.send(text_data=json.dumps({
+            'type': 'call_stopped',
+            'data': event['data']
+        }))
+
+
     def ICEcandidate(self, event):
         self.send(text_data=json.dumps({
             'type': 'ICEcandidate',
             'data': event['data']
         }))
+
 

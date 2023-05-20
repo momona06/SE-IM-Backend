@@ -49,8 +49,6 @@ class ChatRoom(models.Model):
 
     is_private = models.BooleanField(default=True)
 
-
-
     mem_count = models.BigIntegerField(default=2)
     mem_list = ArrayField(
         models.CharField(max_length=100)
