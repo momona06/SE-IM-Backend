@@ -1656,14 +1656,17 @@ class UserConsumer(AsyncWebsocketConsumer):
                 if username not in fetch_list:
                     fetch_list.append(username)
 
-                    if self.cur_user == chatroom.master_name:
-                        invite_list = await filter_first_invite_list(chatroom_id=chatroom_id)
-                        invite_list.delete()
+            timeline = await filter_first_timeline(chatroom_id=chatroom_id)
+            if chatroom.is_private:
+                timeline.delete()
+                chatroom.delete()
+            elif self.cur_user == chatroom.master_name:
+                invite_list = InviteList.objects.filter(invite_list_id=chatroom_list.invite_list_id).first()
+                invite_list.delete()
 
-                        timeline = await filter_first_timeline(chatroom_id=chatroom_id)
-                        timeline.delete()
+                timeline.delete()
+                chatroom.delete()
 
-                        chatroom.delete()
 
         for index, user in enumerate(CONSUMER_OBJECT_LIST):
             for fetch_name in fetch_list:
