@@ -1641,18 +1641,13 @@ class UserConsumer(AsyncWebsocketConsumer):
     async def refresh(self, json_info):
         """
         json_info = {
-            'friend_list': ['abcdef','asdfgh'],
-            'chatroom_list': ['1','2'], (id)
+            'friend_list': ['abcdef', 'asdfgh'],
+            'chatroom_list': [1, 2], (id)
         }
         """
 
         chatroom_list = json_info['chatroom_list']
         fetch_list = json_info['friend_list']
-
-        await self.send(text_data=json.dumps({
-            'chatroom_list': json_info['chatroom_list'],
-            'friend_list': json_info['friend_list']
-        }))
 
         for chatroom_id in chatroom_list:
             chatroom = await filter_first_chatroom(chatroom_id=chatroom_id)
