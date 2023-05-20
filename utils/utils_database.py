@@ -62,6 +62,10 @@ def get_invite_list(chatroom_id=None, invite_list_id=None):
 def filter_first_addlist(username):
     return AddList.objects.filter(user_name=username).first()
 
+@database_sync_to_async
+def filter_first_user(username):
+    return User.objects.filter(username=username).first()
+
 
 @database_sync_to_async
 def filter_first_chatroom(chatroom_id=None, timeline_id=None):
