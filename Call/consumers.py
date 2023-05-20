@@ -69,7 +69,10 @@ class CallConsumer(WebsocketConsumer):
 
             async_to_sync(self.channel_layer.group_send)(
                 otheruser, {
-                    'type': 'call_stopped'
+                    'type': 'call_stopped',
+                    'data': {
+                        'rtcMessage': text_data_json['data']['rtcMessage']
+                    }
                 }
             )
 
@@ -103,7 +106,8 @@ class CallConsumer(WebsocketConsumer):
     def call_stopped(self, event):
         print(self.my_name, "'s call stopped")
         self.send(text_data=json.dumps({
-            'type': 'call_stopped'
+            'type': 'call_stopped',
+            'data': event['data']
         }))
 
 
