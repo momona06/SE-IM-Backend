@@ -1653,7 +1653,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             chatroom = await filter_first_chatroom(chatroom_id=chatroom_id)
 
             for username in chatroom.mem_list:
-                if not username in fetch_list:
+                if username not in fetch_list:
                     fetch_list.append(username)
 
         for index, user in enumerate(CONSUMER_OBJECT_LIST):
