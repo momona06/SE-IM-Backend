@@ -191,6 +191,9 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == 'decline':
             await self.decline_friend(json_info)
 
+        elif function == 'refresh':
+            await self.refresh(json_info)
+
         elif function == 'fetchapplylist':
             await self.fetch_apply_list(json_info)
 
@@ -1632,3 +1635,47 @@ class UserConsumer(AsyncWebsocketConsumer):
             "function": "fetchinvitelist",
             "room_list": return_field
         }))
+
+    async def refresh(self, json_info):
+        """
+        json_info = {
+            'friend_list': ['abcdef', 'asdfgh'],
+            'chatroom_list': [1, 2], (id)
+        }
+        """
+
+        chatroom_list = json_info['chatroom_list']
+        fetch_list = json_info['friend_list']
+
+        for chatroom_id in chatroom_list:
+            chatroom = await filter_first_chatroom(chatroom_id=chatroom_id)
+
+            for username in chatroom.mem_list:
+                if username not in fetch_list:
+                    fetch_list.append(username)
+
+            timeline = await filter_first_timeline(chatroom_id=chatroom_id)
+            if chatroom.is_private:
+                await database_sync_to_async(timeline.delete)()
+                await database_sync_to_async(chatroom.delete)()
+            elif self.cur_user == chatroom.master_name:
+                invite_list = await filter_first_invite_list(chatroom_id=chatroom_id)
+                await database_sync_to_async(invite_list.delete)()
+
+                await database_sync_to_async(timeline.delete)()
+                await database_sync_to_async(chatroom.delete)()
+
+
+        for index, user in enumerate(CONSUMER_OBJECT_LIST):
+            for fetch_name in fetch_list:
+                if user.cur_user == fetch_name:
+                    await CONSUMER_OBJECT_LIST[index].fetch_invite_list({"username": fetch_name})
+                    await CONSUMER_OBJECT_LIST[index].fetch_room({"username": fetch_name})
+                    await CONSUMER_OBJECT_LIST[index].fetch_friend_list({"username": fetch_name})
+                    break
+
+        await self.send(text_data=json.dumps({
+            "function": "refresh",
+            "message": "Success"
+        }))
+
