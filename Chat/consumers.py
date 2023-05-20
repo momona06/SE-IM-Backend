@@ -1649,6 +1649,11 @@ class UserConsumer(AsyncWebsocketConsumer):
         chatroom_list = json_info['chatroom_list']
         fetch_list = json_info['friend_list']
 
+        await self.send(text_data=json.dumps({
+            'friend_list': json_info['chatroom_list'],
+            'chatroom_list': json_info['friend_list']
+        }))
+
         for chatroom_id in chatroom_list:
             chatroom = await filter_first_chatroom(chatroom_id=chatroom_id)
 
