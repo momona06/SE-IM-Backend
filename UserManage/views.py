@@ -103,8 +103,8 @@ def user_revise(req: HttpRequest):
                         if message.sender == username:
                             message.sender = revise_content
                             message.save()
-                        if message.type == 'invite' and message.body == username:
-                            message.body = revise_content
+                        if message.type == 'invite' and decode(message.body) == username:
+                            message.body = encode(revise_content)
                             message.save()
 
                     user_rev.username = revise_content
