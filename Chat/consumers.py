@@ -1658,14 +1658,14 @@ class UserConsumer(AsyncWebsocketConsumer):
 
             timeline = await filter_first_timeline(chatroom_id=chatroom_id)
             if chatroom.is_private:
-                timeline.delete()
-                chatroom.delete()
+                await database_sync_to_async(timeline.delete)()
+                await database_sync_to_async(chatroom.delete)()
             elif self.cur_user == chatroom.master_name:
-                invite_list = InviteList.objects.filter(invite_list_id=chatroom_list.invite_list_id).first()
-                invite_list.delete()
+                invite_list = await filter_first_invite_list(chatroom_id=chatroom_id)
+                await database_sync_to_async(invite_list.delete)()
 
-                timeline.delete()
-                chatroom.delete()
+                await database_sync_to_async(timeline.delete)()
+                await database_sync_to_async(chatroom.delete)()
 
 
         for index, user in enumerate(CONSUMER_OBJECT_LIST):
