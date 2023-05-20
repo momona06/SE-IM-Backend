@@ -6,7 +6,6 @@ from channels.generic.websocket import WebsocketConsumer
 class CallConsumer(WebsocketConsumer):
     def connect(self):
         self.accept()
-        # Response to client that we are connected
         self.send(text_data=json.dumps({
             'type': 'connection',
             'data': {
@@ -15,7 +14,6 @@ class CallConsumer(WebsocketConsumer):
         }))
 
     def disconnect(self, close_code):
-        # Leave room group
         async_to_sync(self.channel_layer.group_discard)(
             self.my_name,
             self.channel_name
@@ -27,7 +25,6 @@ class CallConsumer(WebsocketConsumer):
 
         if rtc_type == 'login':
             name = text_data_json['data']['name']
-            # we will use this as room name as well
             self.my_name = name
 
             async_to_sync(self.channel_layer.group_add)(
@@ -38,8 +35,6 @@ class CallConsumer(WebsocketConsumer):
         elif rtc_type == 'call':
             name = text_data_json['data']['name']
             print(self.my_name, "is calling", name)
-            # notify the callee we sent an event to the group name
-            # their ground name is the name
             async_to_sync(self.channel_layer.group_send)(
                 name, {
                     'type': 'call_received',
@@ -51,8 +46,6 @@ class CallConsumer(WebsocketConsumer):
             )
 
         elif rtc_type == 'answer_call':
-            # receive call from someone now notify the calling user
-            # we can notify to the group with the caller name
             caller = text_data_json['data']['caller']
 
             async_to_sync(self.channel_layer.group_send)(
@@ -65,10 +58,10 @@ class CallConsumer(WebsocketConsumer):
             )
 
         elif rtc_type == 'stop_call':
-            otheruser = text_data_json['data']['name']
+            other_user = text_data_json['data']['name']
 
             async_to_sync(self.channel_layer.group_send)(
-                otheruser, {
+                other_user, {
                     'type': 'call_stopped',
                     'data': {
                         'rtcMessage': text_data_json['data']['rtcMessage']
@@ -87,7 +80,6 @@ class CallConsumer(WebsocketConsumer):
                     }
                 }
             )
-
 
     def call_received(self, event):
         print('Call received by ', self.my_name)
@@ -110,11 +102,8 @@ class CallConsumer(WebsocketConsumer):
             'data': event['data']
         }))
 
-
     def ICEcandidate(self, event):
         self.send(text_data=json.dumps({
             'type': 'ICEcandidate',
             'data': event['data']
         }))
-
-
