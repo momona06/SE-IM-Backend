@@ -1325,11 +1325,14 @@ class UserConsumer(AsyncWebsocketConsumer):
 
                         users = await sync_to_async(User.objects.filter)(username=cur_message.sender)
                         user = await sync_to_async(users.first)()
-                        imusers = await sync_to_async(IMUser.objects.filter)(user=user)
-                        imuser = await sync_to_async(imusers.first)()
-                        avatar = os.path.join("/static/media/", str(imuser.avatar))
-                        if avatar == "/static/media/":
-                            avatar += "pic/default.jpeg"
+                        if user is None:
+                            avatar = "/static/media/pic/default.jpeg"
+                        else:
+                            imusers = await sync_to_async(IMUser.objects.filter)(user=user)
+                            imuser = await sync_to_async(imusers.first)()
+                            avatar = os.path.join("/static/media/", str(imuser.avatar))
+                            if avatar == "/static/media/":
+                                avatar += "pic/default.jpeg"
 
                         is_delete = cur_message.delete_list[li]
 
@@ -1599,12 +1602,15 @@ class UserConsumer(AsyncWebsocketConsumer):
 
                     users = await sync_to_async(User.objects.filter)(username=await async_decode(cur_message.body))
                     user = await sync_to_async(users.first)()
-                    imusers = await sync_to_async(IMUser.objects.filter)(user=user)
-                    imuser = await sync_to_async(imusers.first)()
 
-                    avatar = os.path.join("/static/media/", str(imuser.avatar))
-                    if avatar == "/static/media/":
-                        avatar += "pic/default.jpeg"
+                    if user is None:
+                        avatar = "/static/media/pic/default.jpeg"
+                    else:
+                        imusers = await sync_to_async(IMUser.objects.filter)(user=user)
+                        imuser = await sync_to_async(imusers.first)()
+                        avatar = os.path.join("/static/media/", str(imuser.avatar))
+                        if avatar == "/static/media/":
+                            avatar += "pic/default.jpeg"
 
                     message_list.append({
                         "msg_body": await async_decode(cur_message.body),
