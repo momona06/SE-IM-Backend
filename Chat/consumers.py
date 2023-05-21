@@ -1571,14 +1571,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             if room.is_private:
                 continue
 
-            await self.send(text_data=json.dumps({
-                "room_name": room.room_name,
-                "room_mem: " : str(room.mem_list),
-                "user: " : username,
-                "room_manager": room.manager_list,
-                "room_master": room.master_name
-            }))
-
             if username == room.master_name or username in room.manager_list:
                 li = room.mem_list.index(username)
 
@@ -1646,12 +1638,14 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
         json_info = {
             'friend_list': ['abcdef', 'asdfgh'],
-            'chatroom_list': [1, 2], (id)
+            'chatroom_list': [1, 2], (id),
+            'username': 'ashitemaru'
         }
         """
 
         chatroom_list = json_info['chatroom_list']
         fetch_list = json_info['friend_list']
+        username_new = json_info['refresh']
 
         for chatroom_id in chatroom_list:
             chatroom = await filter_first_chatroom(chatroom_id=chatroom_id)
@@ -1661,15 +1655,20 @@ class UserConsumer(AsyncWebsocketConsumer):
                     fetch_list.append(username)
 
             timeline = await filter_first_timeline(chatroom_id=chatroom_id)
-            if chatroom.is_private:
-                await database_sync_to_async(timeline.delete)()
-                await database_sync_to_async(chatroom.delete)()
-            elif self.cur_user == chatroom.master_name:
-                invite_list = await filter_first_invite_list(chatroom_id=chatroom_id)
-                await database_sync_to_async(invite_list.delete)()
 
-                await database_sync_to_async(timeline.delete)()
-                await database_sync_to_async(chatroom.delete)()
+            if username_new == '':
+                if chatroom.is_private:
+                    await database_sync_to_async(timeline.delete)()
+                    await database_sync_to_async(chatroom.delete)()
+                elif self.cur_user == chatroom.master_name:
+                    invite_list = await filter_first_invite_list(chatroom_id=chatroom_id)
+                    await database_sync_to_async(invite_list.delete)()
+
+                    await database_sync_to_async(timeline.delete)()
+                    await database_sync_to_async(chatroom.delete)()
+            else:
+                self.cur_user = username_new
+
 
 
         for index, user in enumerate(CONSUMER_OBJECT_LIST):
