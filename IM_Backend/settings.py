@@ -40,12 +40,12 @@ MEDIA_ROOT = os.path.join(STATIC_ROOT, 'media')
 
 SECRET_KEY = 'django-insecure-xvv16d@^4vu6-_^8w73_wt+xqf-wfppqevn)_zgye!#7l^6=p$'
 
-envDep = os.getenv('DEPLOY')
-if envDep is None:
-    DEBUG = True
-else:
-    DEBUG = False
-
+# envDep = os.getenv('DEPLOY')
+# if envDep is None:
+#     DEBUG = True
+# else:
+#     DEBUG = False
+DEBUG = False
 ALLOWED_HOSTS = [
     '*'
 ]
@@ -97,7 +97,7 @@ TEMPLATES = [
 ASGI_APPLICATION = "IM_Backend.asgi.application"
 
 # 部署CHANNEL_LAYER
-if not DEBUG:
+if DEBUG:
     CHANNEL_LAYERS = {
         'default': {
             'BACKEND': 'channels_postgres.core.PostgresChannelLayer',
@@ -129,7 +129,7 @@ else:
     }
 
 # 部署PostGreSQL
-if not DEBUG:
+if DEBUG:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',

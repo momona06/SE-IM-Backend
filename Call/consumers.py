@@ -64,7 +64,6 @@ class CallConsumer(WebsocketConsumer):
                 other_user, {
                     'type': 'call_stopped',
                     'data': {
-                        'rtcMessage': text_data_json['data']['rtcMessage']
                     }
                 }
             )

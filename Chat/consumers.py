@@ -304,6 +304,9 @@ class UserConsumer(AsyncWebsocketConsumer):
         elif function == 'examine_password_twice':
             await self.examine_password_twice(json_info)
 
+        elif function == "fetch_message":
+            await self.fetch_message(json_info)
+
     async def heart_beat(self):
         """
         json_info = {}
@@ -735,9 +738,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                         }))
                     else:
                         username = await self.get_cur_username()
-                        # Fix: Dumplication
-                        # message = await database_sync_to_async(create_message)(type='invite', body=invited_name,
-                        #                                                       time=msg_time, sender=username)
 
                         # Msg R3 for online case
                         await self.group_send(chatroom_name, Msg_field)
