@@ -146,8 +146,8 @@ class UserManageTest(TestCase):
         res_lout = self.user_logout(USERNAME, token)
 
     def test_email(self):
-        username = random.randint(100_000_000_000, 999_999_999_999)
-        password = random.randint(100_000_000_000, 999_999_999_999)
+        username = USERNAME
+        password = PASSWORD
         self.user_register(username, password)
         email = "zhoujin@mails.tsinghua.edu.cn"
         res = self.user_send_email(email)
