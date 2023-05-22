@@ -590,11 +590,13 @@ class UserConsumer(AsyncWebsocketConsumer):
         read_message_list = event['read_message_list']
         chatroom_id = event['chatroom_id']
         read_user = event['read_user']
+        index = event['index']
         return_field = {
             'function': 'read_message',
             'read_user': read_user,
             'chatroom_id': chatroom_id,
-            'read_message_list': read_message_list
+            'read_message_list': read_message_list,
+            'index': index
         }
         await self.send(text_data=json.dumps(return_field))
 
@@ -690,7 +692,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             'msg_id': msg_id,
         }
 
-        if msg_type == 'text' or msg_type == 'notice':
+        if msg_type == 'text' or msg_type == 'notice' or msg_type == 'image' or msg_type == 'video' \
+                or msg_type == 'audio' or msg_type == 'file':
             # Msg R3 for online case
             await self.group_send(chatroom_name, Msg_field)
 
@@ -762,9 +765,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                         }))
 
                         await manager_fetch_invite_list(chatroom)
-
-        elif msg_type == 'image' or msg_type == 'video' or msg_type == 'audio' or msg_type == 'file':
-            pass
 
     async def acknowledge_message(self, json_info):
         """
@@ -1238,6 +1238,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         Read_field = {
             'type': 'read_diffuse',
             'read_message_list': read_message_list,
+            'index': member_lis,
             'read_user': username,
             'chatroom_id': chatroom_id,
         }
@@ -1271,6 +1272,9 @@ class UserConsumer(AsyncWebsocketConsumer):
         }
         """
         username = await self.get_cur_username()
+        await self.send(text_data=json.dumps({
+            "user": username
+        }))
         flist = await get_friendlist(username)
 
         return_list = []
@@ -1565,9 +1569,6 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         async for room in ChatRoom.objects.all():
 
-            await self.send(text_data=json.dumps({
-            }))
-
             if room.is_private:
                 continue
 
@@ -1646,32 +1647,37 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
         json_info = {
             'friend_list': ['abcdef', 'asdfgh'],
-            'chatroom_list': [1, 2], (id)
+            'chatroom_list': [1, 2], (id),
+            'username': 'ashitemaru'
         }
         """
 
         chatroom_list = json_info['chatroom_list']
         fetch_list = json_info['friend_list']
+        username_new = json_info['refresh']
 
         for chatroom_id in chatroom_list:
             chatroom = await filter_first_chatroom(chatroom_id=chatroom_id)
 
             for username in chatroom.mem_list:
-                if username not in fetch_list:
+                if username not in fetch_list and username != self.cur_user:
                     fetch_list.append(username)
 
             timeline = await filter_first_timeline(chatroom_id=chatroom_id)
-            if chatroom.is_private:
-                await database_sync_to_async(timeline.delete)()
-                await database_sync_to_async(chatroom.delete)()
-            elif self.cur_user == chatroom.master_name:
-                invite_list = await filter_first_invite_list(chatroom_id=chatroom_id)
-                await database_sync_to_async(invite_list.delete)()
 
-                await database_sync_to_async(timeline.delete)()
-                await database_sync_to_async(chatroom.delete)()
+            if username_new == '':
+                if chatroom.is_private:
+                    await database_sync_to_async(timeline.delete)()
+                    await database_sync_to_async(chatroom.delete)()
+                elif self.cur_user == chatroom.master_name:
+                    invite_list = await filter_first_invite_list(chatroom_id=chatroom_id)
+                    await database_sync_to_async(invite_list.delete)()
 
+                    await database_sync_to_async(timeline.delete)()
+                    await database_sync_to_async(chatroom.delete)()
 
+        if username_new != '':
+            self.cur_user = username_new
         for index, user in enumerate(CONSUMER_OBJECT_LIST):
             for fetch_name in fetch_list:
                 if user.cur_user == fetch_name:
