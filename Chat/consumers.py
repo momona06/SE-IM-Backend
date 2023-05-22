@@ -1667,9 +1667,9 @@ class UserConsumer(AsyncWebsocketConsumer):
 
                     await database_sync_to_async(timeline.delete)()
                     await database_sync_to_async(chatroom.delete)()
-            else:
-                self.cur_user = username_new
 
+        if username_new != '':
+            self.cur_user = username_new
 
 
         for index, user in enumerate(CONSUMER_OBJECT_LIST):
