@@ -1572,14 +1572,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             if room.is_private:
                 continue
 
-            await self.send(text_data=json.dumps({
-                "room_name": room.room_name,
-                "room_mem: " : str(room.mem_list),
-                "user: " : username,
-                "room_manager": room.manager_list,
-                "room_master": room.master_name
-            }))
-
             if username == room.master_name or username in room.manager_list:
                 li = room.mem_list.index(username)
 
@@ -1675,9 +1667,11 @@ class UserConsumer(AsyncWebsocketConsumer):
 
                     await database_sync_to_async(timeline.delete)()
                     await database_sync_to_async(chatroom.delete)()
+            else:
+                self.cur_user = username_new
 
-        if username_new != '':
-            self.cur_user = username_new
+
+
         for index, user in enumerate(CONSUMER_OBJECT_LIST):
             for fetch_name in fetch_list:
                 if user.cur_user == fetch_name:
