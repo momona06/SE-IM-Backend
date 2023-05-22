@@ -1404,10 +1404,16 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
         json_info = {
             'msg_id': 124
+            'father_id: 123
         }
         """
         msg_id = json_info['msg_id']
         message = await filter_first_message(msg_id=msg_id)
+        father_id = ''
+
+        if 'father_id' in json_info:
+            father_id = json_info['father_id']
+
         await self.send(text_data=json.dumps({
             "function": "fetchmessage",
             'msg_id': message.msg_id,
@@ -1417,7 +1423,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             'sender': message.sender,
             'read_list': message.read_list,
             'delete_list': message.delete_list,
-            'combine_list': message.combine_list
+            'combine_list': message.combine_list,
+            'father_id': father_id
         }))
 
     async def revise_is_notice(self, json_info):
