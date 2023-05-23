@@ -551,6 +551,11 @@ def bind_email(request):
                     "code": 0,
                     "info": "绑定成功"
                 })
+            else:
+                return JsonResponse({
+                    "code": -1,
+                    "info": "验证码错误"
+                })
         except Exception as e:
             print(e)
             return JsonResponse({
