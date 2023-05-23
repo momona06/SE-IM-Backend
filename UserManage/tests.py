@@ -222,7 +222,7 @@ class UserManageTest(TestCase):
         timeline_group.save()
 
         invite_list = InviteList.objects.get(chatroom_id=chatroom_group.chatroom_id)
-        invite_list.msg_list.append(invite_message.id)
+        invite_list.msg_list.append(invite_message.msg_id)
         invite_list.save()
 
         res_cel = self.user_cancel(USERNAME, input_password)
