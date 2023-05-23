@@ -280,6 +280,8 @@ class UserManageTest(TestCase):
         USERNAME = '321321'
 
         self.user_register(USERNAME, PAS)
+        res_lin = self.user_login(USERNAME, PAS)
+        token = res_lin.json()["token"]
 
         USERNAME_1 = '1234567'
 
