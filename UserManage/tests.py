@@ -266,7 +266,7 @@ class UserManageTest(TestCase):
 
         # no email yet
         revise_field_list = ["username", "password"]
-        revise_content_list = ["test01", "1234567"]
+        revise_content_list = ["321321", "1234567"]
         # for field, content in zip(revise_field_list, revise_content_list):
         res_rev = self.user_revise(revise_field_list[1], revise_content_list[1], USERNAME, input_password, token)
         self.assertEqual(res_rev.json()["code"], 0)
@@ -274,7 +274,6 @@ class UserManageTest(TestCase):
 
         self.user_revise(revise_field_list[1], input_password, USERNAME, revise_content_list[1], token)
         token = res_lin.json()["token"]
-
 
         USERNAME_1 = '1234567'
 
