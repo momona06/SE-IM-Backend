@@ -151,5 +151,7 @@ class UserManageTest(TestCase):
         self.user_register(username, password)
         email = "zhoujin@mails.tsinghua.edu.cn"
         res = self.user_send_email(email)
-        # res = self.userBindEmail(email,res_sms_code,username)
+        res_sms_code = 123456
+        bind_res = self.userBindEmail(email, res_sms_code, username)
         self.assertEqual(res.json()["code"], 0)
+        self.assertEqual(bind_res.json()["code"], -1)
