@@ -308,14 +308,10 @@ def revise_username_in_other_add_list(reply_name, username, revise_content):
         if other_name == username:
             index = lis - i - 1
             other_add_list.reply_list[index] = revise_content
-            other_add_list.reply_ensure[index]= revise_content
-            other_add_list.reply_answer[index]= revise_content
     for i, other_name in enumerate(other_add_list.apply_list[::-1]):
         if other_name == username:
             index = lis - i - 1
             other_add_list.apply_list[index]= revise_content
-            other_add_list.apply_ensure[index]= revise_content
-            other_add_list.apply_answer[index]= revise_content
 
     other_add_list.save()
 

@@ -313,59 +313,59 @@ class UserManageTest(TestCase):
 
         friend_1 = Friend(user_name=USERNAME_1, friend_name=USERNAME, group_name=friendlist_1.group_list[0])
         friend_1.save()
-        #
-        # chatroom = sync_create_chatroom('private_chat', [USERNAME, USERNAME_1], USERNAME, is_private=True)
-        # chatroom.save()
-        #
-        # read_list = [False, False]
-        #
-        # message = create_message(body='1234', sender=USERNAME, read_list=read_list)
-        # message.save()
-        #
-        # timeline = ChatTimeLine.objects.get(chatroom_id=chatroom.chatroom_id)
-        # timeline.msg_line.append(message.msg_id)
-        # timeline.save()
-        #
-        # chatroom_group = sync_create_chatroom('111', [USERNAME, USERNAME_1], USERNAME, is_private=False)
-        # chatroom_group.save()
-        #
-        # invite_message = create_message(type='invite',body='111',sender=USERNAME, read_list=read_list)
-        # invite_message.save()
-        #
-        # message_group = create_message(body='123', sender=USERNAME, read_list=read_list)
-        # message_group.save()
-        #
-        # timeline_group = ChatTimeLine.objects.get(chatroom_id=chatroom_group.chatroom_id)
-        # timeline_group.msg_line.append(invite_message.msg_id)
-        # timeline_group.msg_line.append(message_group.msg_id)
-        # timeline_group.save()
-        #
-        # invite_list = InviteList.objects.get(chatroom_id=chatroom_group.chatroom_id)
-        # invite_list.msg_list.append(invite_message.msg_id)
-        # invite_list.save()
+
+        chatroom = sync_create_chatroom('private_chat', [USERNAME, USERNAME_1], USERNAME, is_private=True)
+        chatroom.save()
+
+        read_list = [False, False]
+
+        message = create_message(body='1234', sender=USERNAME, read_list=read_list)
+        message.save()
+
+        timeline = ChatTimeLine.objects.get(chatroom_id=chatroom.chatroom_id)
+        timeline.msg_line.append(message.msg_id)
+        timeline.save()
+
+        chatroom_group = sync_create_chatroom('111', [USERNAME, USERNAME_1], USERNAME, is_private=False)
+        chatroom_group.save()
+
+        invite_message = create_message(type='invite',body='111',sender=USERNAME, read_list=read_list)
+        invite_message.save()
+
+        message_group = create_message(body='123', sender=USERNAME, read_list=read_list)
+        message_group.save()
+
+        timeline_group = ChatTimeLine.objects.get(chatroom_id=chatroom_group.chatroom_id)
+        timeline_group.msg_line.append(invite_message.msg_id)
+        timeline_group.msg_line.append(message_group.msg_id)
+        timeline_group.save()
+
+        invite_list = InviteList.objects.get(chatroom_id=chatroom_group.chatroom_id)
+        invite_list.msg_list.append(invite_message.msg_id)
+        invite_list.save()
 
         self.user_revise(revise_field_list[0], revise_content_list[0], USERNAME, input_password, token)
-        #
-        # self.assertFalse(User.objects.filter(username=USERNAME).exists())
-        # self.assertTrue(User.objects.filter(username=revise_content_list[0]).exists())
-        #
-        # self.assertFalse(Friend.objects.filter(user_name=USERNAME).exists())
-        # self.assertFalse(Friend.objects.filter(friend_name=USERNAME).exists())
-        # self.assertTrue(Friend.objects.filter(user_name=revise_content_list[0]).exists())
-        # self.assertTrue(Friend.objects.filter(friend_name=revise_content_list[0]).exists())
-        #
-        # self.assertFalse(AddList.objects.filter(user_name=USERNAME).exists())
-        # self.assertTrue(AddList.objects.filter(user_name=revise_content_list[0]).exists())
-        #
-        # self.assertEqual(revise_content_list[0], AddList.objects.get(user_name=USERNAME_1).reply_list[0])
-        #
-        # self.assertFalse(ChatRoom.objects.filter(master_name=USERNAME).exists())
-        # self.assertTrue(ChatRoom.objects.filter(master_name=revise_content_list[0]).exists())
-        #
-        # self.assertFalse(ChatRoom.objects.filter(mem_list=[USERNAME, USERNAME_1]).exists())
-        #
-        # self.assertEqual(revise_content_list[0],Message.objects.get(msg_id=message_group.msg_id).sender)
-        # self.assertEqual(revise_content_list[0],Message.objects.get(msg_id=message.msg_id).sender)
+
+        self.assertFalse(User.objects.filter(username=USERNAME).exists())
+        self.assertTrue(User.objects.filter(username=revise_content_list[0]).exists())
+
+        self.assertFalse(Friend.objects.filter(user_name=USERNAME).exists())
+        self.assertFalse(Friend.objects.filter(friend_name=USERNAME).exists())
+        self.assertTrue(Friend.objects.filter(user_name=revise_content_list[0]).exists())
+        self.assertTrue(Friend.objects.filter(friend_name=revise_content_list[0]).exists())
+
+        self.assertFalse(AddList.objects.filter(user_name=USERNAME).exists())
+        self.assertTrue(AddList.objects.filter(user_name=revise_content_list[0]).exists())
+
+        self.assertEqual(revise_content_list[0], AddList.objects.get(user_name=USERNAME_1).reply_list[0])
+
+        self.assertFalse(ChatRoom.objects.filter(master_name=USERNAME).exists())
+        self.assertTrue(ChatRoom.objects.filter(master_name=revise_content_list[0]).exists())
+
+        self.assertFalse(ChatRoom.objects.filter(mem_list=[USERNAME, USERNAME_1]).exists())
+
+        self.assertEqual(revise_content_list[0],Message.objects.get(msg_id=message_group.msg_id).sender)
+        self.assertEqual(revise_content_list[0],Message.objects.get(msg_id=message.msg_id).sender)
 
 
     def test_email(self):
