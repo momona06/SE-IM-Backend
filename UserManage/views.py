@@ -33,6 +33,9 @@ def user_revise(req: HttpRequest):
         token = str(body["token"])
         input_password = str(body["input_password"])
         user = authenticate(username=username, password=input_password)
+
+        _test = username
+
         if user is None:
             return JsonResponse({
                 "code": -1,
@@ -91,7 +94,6 @@ def user_revise(req: HttpRequest):
 
                             revise_username_in_other_add_list(reply_name, username, revise_content)
 
-                    print(4)
                     for apply_name in user_add_list.apply_list:
                         if apply_name not in user_list:
                             user_list.append(apply_name)
@@ -121,6 +123,9 @@ def user_revise(req: HttpRequest):
                         "info": "Revise_field Error"
                     })
                 user_rev.save()
+                if revise_field == 'username':
+                    for i in User.objects.filter(username=_test):
+                        print(i)
                 return JsonResponse({
                     "code": 0,
                     "info": "Revise Succeed"
