@@ -126,6 +126,8 @@ def user_revise(req: HttpRequest):
                 if revise_field == 'username':
                     for i in User.objects.filter(username=_test):
                         print(i)
+                        print("?")
+                        print(user_rev.username)
                 return JsonResponse({
                     "code": 0,
                     "info": "Revise Succeed"
