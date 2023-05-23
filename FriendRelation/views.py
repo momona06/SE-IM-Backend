@@ -50,7 +50,8 @@ def delete_friend(req: HttpRequest):
             for room in ChatRoom.objects.all():
                 if room.is_private and (username in room.mem_list) and (friend_name in room.mem_list):
                     timeline = ChatTimeLine.objects.filter(chatroom_id=room.chatroom_id).first()
-                    timeline.delete()
+                    if timeline is not None:
+                        timeline.delete()
                     room.delete()
                     break
 
