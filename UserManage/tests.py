@@ -272,6 +272,7 @@ class UserManageTest(TestCase):
         # for field, content in zip(revise_field_list, revise_content_list):
         res_rev = self.user_revise(revise_field_list[1], revise_content_list[1], USERNAME, input_password, token)
         self.assertEqual(res_rev.json()["code"], 0)
+        print(res_rev.json())
         # self.assertEqual(res_rev.json()["info"],"dd")
 
         self.user_revise(revise_field_list[1], input_password, USERNAME, revise_content_list[1], token)
