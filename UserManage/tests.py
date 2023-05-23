@@ -204,7 +204,7 @@ class UserManageTest(TestCase):
         message.save()
 
         timeline = ChatTimeLine.objects.get(chatroom_id=chatroom.chatroom_id)
-        timeline.msg_line.append(message)
+        timeline.msg_line.append(message.msg_id)
         timeline.save()
 
         chatroom_group = sync_create_chatroom('111', [USERNAME, USERNAME_1], USERNAME, is_private=False)
