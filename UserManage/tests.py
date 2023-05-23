@@ -277,12 +277,6 @@ class UserManageTest(TestCase):
         self.user_revise(revise_field_list[1], input_password, USERNAME, revise_content_list[1], token)
         token = res_lin.json()["token"]
 
-        USERNAME = '321321'
-
-        self.user_register(USERNAME, PAS)
-        res_lin = self.user_login(USERNAME, PAS)
-        token = res_lin.json()["token"]
-
         USERNAME_1 = '1234567'
 
         self.user_register(USERNAME_1, PAS)
