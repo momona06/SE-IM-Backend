@@ -542,9 +542,9 @@ def bind_email(request):
             cur_email = str(body["email"])
             cur_code = str(body['code'])
             cur_user = str(body["username"])
+            user_model = get_user_model()
+            user = user_model.objects.get(username=cur_user)
             if EmailCode.objects.filter(email=cur_email, code=cur_code).first() is not None:
-                user_model = get_user_model()
-                user = user_model.objects.get(username=cur_user)
                 user.email = cur_email
                 user.save()
                 return JsonResponse({
