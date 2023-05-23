@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from UserManage.models import IMUser
 from FriendRelation.models import Friend, FriendList
-
+from Chat.models import ChatRoom, ChatTimeLine
 USERNAME = "test00"
 PAS = "123456"
 
@@ -137,6 +137,11 @@ class FriendRelationTest(TestCase):
         friend_list2 = FriendList.objects.get(user_name=username_1)
         friend2 = Friend(user_name=username_1, friend_name=USERNAME, group_name=friend_list2.group_list[0])
         friend2.save()
+        mem_list = []
+        mem_list.append(USERNAME)
+        mem_list.append(username_1)
+        room = ChatRoom(is_private=True, mem_list=mem_list)
+        room.save()
 
         res = self.friend_delete(USERNAME, 0, username_1)
         self.assertEqual(res.json()["code"], -2)
