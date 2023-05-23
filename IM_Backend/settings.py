@@ -96,6 +96,7 @@ TEMPLATES = [
 
 ASGI_APPLICATION = "IM_Backend.asgi.application"
 PAS1 = '123456'
+PAS2 = '1234'
 # 部署CHANNEL_LAYER
 if not DEBUG:
     CHANNEL_LAYERS = {
@@ -123,7 +124,7 @@ else:
                 'NAME': 'postgres',
                 'PORT': 5432,
                 'USER': 'postgres',
-                'PASSWORD': '1234'
+                'PASSWORD': PAS2
             },
         },
     }
@@ -137,7 +138,7 @@ if not DEBUG:
             'HOST': 'database-postgresql.OverFlowLab.secoder.local',  # ip地址
             'PORT': 5432,  # 端口
             'USER': 'postgres',  # 用户名
-            'PASSWORD': '123456'  # 密码
+            'PASSWORD': PAS1  # 密码
         },
         'channels_postgres': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -145,7 +146,7 @@ if not DEBUG:
             'HOST': 'database-postgresql.OverFlowLab.secoder.local',  # ip地址
             'PORT': 5432,  # 端口
             'USER': 'postgres',  # 用户名
-            'PASSWORD': '123456'  # 密码
+            'PASSWORD': PAS1  # 密码
         }
     }
 
@@ -159,7 +160,7 @@ else:
             'HOST': '127.0.0.1',  # 网址
             'PORT': 5432,  # 端口
             'USER': 'postgres',  # 用户名
-            'PASSWORD': '1234'  # 密码
+            'PASSWORD': PAS2  # 密码
         },
         'channels_postgres': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -167,15 +168,15 @@ else:
             'HOST': '127.0.0.1',  # 网址
             'PORT': 5432,  # 端口
             'USER': 'postgres',  # 用户名
-            'PASSWORD': '1234'  # 密码
+            'PASSWORD': PAS2  # 密码
         }
     }
-
+EMAIL_PAS = "yeqobqvmlxlpdghg"
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = "smtp.qq.com"
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "2840206224@qq.com"
-EMAIL_HOST_PASSWORD = "yeqobqvmlxlpdghg"
+EMAIL_HOST_PASSWORD = EMAIL_PAS
 EMAIL_USE_TLS = False
 EMAIL_FROM = "2840206224@qq.com"
 
