@@ -1,8 +1,11 @@
+from asgiref.sync import async_to_sync
 from django.test import TestCase
+
+from Chat.models import ChatRoom, create_chatroom, InviteList, Message, ChatTimeLine
 from UserManage.models import IMUser
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
-from FriendRelation.models import FriendList
+from FriendRelation.models import FriendList, AddList, Friend
 import json
 import random
 
@@ -108,13 +111,90 @@ class UserManageTest(TestCase):
         res_lin = self.user_login(USERNAME, PAS)
         self.assertEqual(res_lin.json()["code"], 0)
 
+        token_0 = res_lin.json()["token"]
+
         user_model = get_user_model()
         self.assertTrue(user_model.objects.filter(username=USERNAME).exists())
         user = user_model.objects.filter(username=USERNAME).first()
         im_user = IMUser.objects.filter(user=user).first()
 
+        USERNAME_1 = '1234567'
+
+        self.user_register(USERNAME_1, PAS)
+        res_lin_1 = self.user_login(USERNAME_1, PAS)
+
+        token_1 = res_lin_1.json()["token"]
+
+        addlist_0 = AddList.objects.get(user_name=USERNAME)
+        friendlist_0 = FriendList.objects.get(user_name=USERNAME)
+
+        addlist_0.apply_list.append(USERNAME_1)
+        addlist_0.apply_answer.append(True)
+        addlist_0.apply_ensure.append(True)
+
+        addlist_0.save()
+
+        addlist_1 = AddList.objects.get(user_name=USERNAME_1)
+        friendlist_1 = FriendList.objects.get(user_name=USERNAME_1)
+
+        addlist_1.reply_list.append(USERNAME)
+        addlist_1.reply_answer.append(True)
+        addlist_1.reply_ensure.append(True)
+
+        addlist_1.save()
+
+        friend_0 = Friend(user_name=USERNAME, friend_name=USERNAME_1, group_name=friendlist_0.group_list[0])
+        friend_0.save()
+
+        friend_1 = Friend(user_name=USERNAME_1, friend_name=USERNAME, group_name=friendlist_1.group_list[0])
+        friend_1.save()
+
+        chatroom = async_to_sync(create_chatroom)('private_chat', [USERNAME, USERNAME_1], USERNAME, is_private=True)
+        chatroom.save()
+
+        message = Message(body='1234', sender=USERNAME)
+        message.save()
+
+        timeline = ChatTimeLine.objects.get(chatroom_id=chatroom.chatroom_id)
+        timeline.msg_line.append(message)
+        timeline.save()
+
+        chatroom_group = async_to_sync(create_chatroom)('111', [USERNAME, USERNAME_1], USERNAME, is_private=False)
+        chatroom_group.save()
+
+        invite_message = Message(type='invite',body='111',sender=USERNAME)
+        invite_message.save()
+
+        message_group = Message(body='123', sender=USERNAME)
+        message_group.save()
+
+        timeline_group = ChatTimeLine.objects.get(chatroom_id=chatroom_group.chatroom_id)
+        timeline_group.msg_line.append(invite_message.id)
+        timeline_group.msg_line.append(message_group.id)
+        timeline_group.save()
+
+        invite_list = InviteList.objects.get(chatroom_id=chatroom_group.chatroom_id)
+        invite_list.msg_list.append(invite_message.id)
+        invite_list.save()
+
         res_cel = self.user_cancel(USERNAME, input_password)
         self.assertFalse(user_model.objects.filter(username=USERNAME).exists())
+
+        self.assertFalse(Friend.objects.filter(username=USERNAME).exists())
+        self.assertFalse(Friend.objects.filter(friend_name=USERNAME).exists())
+
+        self.assertFalse(AddList.objects.filter(user_name=USERNAME).exists())
+        self.assertEqual(0, len(AddList.objects.get(user_name=USERNAME_1).reply_list))
+        self.assertEqual(0, len(AddList.objects.get(user_name=USERNAME_1).reply_answer))
+        self.assertEqual(0, len(AddList.objects.get(user_name=USERNAME_1).reply_ensure))
+
+        self.assertTrue(ChatRoom.objects.filter(master_name=USERNAME).exists())
+
+        self.assertFalse(ChatRoom.objects.filter(mem_list=[USERNAME, USERNAME_1]).exists())
+        self.assertTrue(ChatRoom.objects.filter(mem_list=[USERNAME_1]).exists())
+
+        self.assertEqual('AccountSuspended',Message.objects.get(msg_id=message_group.msg_id).sender)
+        self.assertEqual(USERNAME,Message.objects.get(msg_id=message.msg_id).sender)
 
     def test_revise(self):
         # username = secrets.token_hex(10)
