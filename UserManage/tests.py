@@ -251,6 +251,8 @@ class UserManageTest(TestCase):
         # username = secrets.token_hex(10)
         # password = secrets.token_hex(10)
 
+        USERNAME = '123123'
+
         input_password = PAS
         res_reg = self.user_register(USERNAME, PAS)
         res_lin = self.user_login(USERNAME, PAS)
@@ -274,6 +276,10 @@ class UserManageTest(TestCase):
 
         self.user_revise(revise_field_list[1], input_password, USERNAME, revise_content_list[1], token)
         token = res_lin.json()["token"]
+
+        USERNAME = '321321'
+
+        self.user_register(USERNAME, PAS)
 
         USERNAME_1 = '1234567'
 
