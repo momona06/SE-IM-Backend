@@ -217,8 +217,8 @@ class UserManageTest(TestCase):
         message_group.save()
 
         timeline_group = ChatTimeLine.objects.get(chatroom_id=chatroom_group.chatroom_id)
-        timeline_group.msg_line.append(invite_message.id)
-        timeline_group.msg_line.append(message_group.id)
+        timeline_group.msg_line.append(invite_message.msg_id)
+        timeline_group.msg_line.append(message_group.msg_id)
         timeline_group.save()
 
         invite_list = InviteList.objects.get(chatroom_id=chatroom_group.chatroom_id)
