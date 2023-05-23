@@ -95,7 +95,7 @@ TEMPLATES = [
 ]
 
 ASGI_APPLICATION = "IM_Backend.asgi.application"
-
+PAS1 = '123456'
 # 部署CHANNEL_LAYER
 if not DEBUG:
     CHANNEL_LAYERS = {
@@ -107,7 +107,7 @@ if not DEBUG:
                 'NAME': 'postgres',
                 'PORT': 5432,
                 'USER': 'postgres',
-                'PASSWORD': '123456'
+                'PASSWORD': PAS1
             },
         },
     }
