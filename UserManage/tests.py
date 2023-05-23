@@ -283,40 +283,40 @@ class UserManageTest(TestCase):
         self.user_register(USERNAME, PAS)
         res_lin = self.user_login(USERNAME, PAS)
         token = res_lin.json()["token"]
-        #
-        # USERNAME_1 = '1234567'
-        #
-        # self.user_register(USERNAME_1, PAS)
-        # res_lin_1 = self.user_login(USERNAME_1, PAS)
-        #
-        # token_1 = res_lin_1.json()["token"]
-        #
-        # addlist_0 = AddList.objects.get(user_name=USERNAME)
-        # friendlist_0 = FriendList.objects.get(user_name=USERNAME)
-        #
-        # addlist_0.apply_list.append(USERNAME_1)
-        # addlist_0.apply_answer.append(True)
-        # addlist_0.apply_ensure.append(True)
-        #
-        # addlist_0.save()
-        #
-        # addlist_1 = AddList.objects.get(user_name=USERNAME_1)
-        # friendlist_1 = FriendList.objects.get(user_name=USERNAME_1)
-        #
-        # addlist_1.reply_list.append(USERNAME)
-        # addlist_1.reply_answer.append(True)
-        # addlist_1.reply_ensure.append(True)
-        #
-        # addlist_1.save()
-        #
-        # friend_0 = Friend(user_name=USERNAME, friend_name=USERNAME_1, group_name=friendlist_0.group_list[0])
-        # friend_0.save()
-        #
-        # friend_1 = Friend(user_name=USERNAME_1, friend_name=USERNAME, group_name=friendlist_1.group_list[0])
-        # friend_1.save()
-        #
-        # chatroom = sync_create_chatroom('private_chat', [USERNAME, USERNAME_1], USERNAME, is_private=True)
-        # chatroom.save()
+
+        USERNAME_1 = '1234567'
+
+        self.user_register(USERNAME_1, PAS)
+        res_lin_1 = self.user_login(USERNAME_1, PAS)
+
+        token_1 = res_lin_1.json()["token"]
+
+        addlist_0 = AddList.objects.get(user_name=USERNAME)
+        friendlist_0 = FriendList.objects.get(user_name=USERNAME)
+
+        addlist_0.apply_list.append(USERNAME_1)
+        addlist_0.apply_answer.append(True)
+        addlist_0.apply_ensure.append(True)
+
+        addlist_0.save()
+
+        addlist_1 = AddList.objects.get(user_name=USERNAME_1)
+        friendlist_1 = FriendList.objects.get(user_name=USERNAME_1)
+
+        addlist_1.reply_list.append(USERNAME)
+        addlist_1.reply_answer.append(True)
+        addlist_1.reply_ensure.append(True)
+
+        addlist_1.save()
+
+        friend_0 = Friend(user_name=USERNAME, friend_name=USERNAME_1, group_name=friendlist_0.group_list[0])
+        friend_0.save()
+
+        friend_1 = Friend(user_name=USERNAME_1, friend_name=USERNAME, group_name=friendlist_1.group_list[0])
+        friend_1.save()
+
+        chatroom = sync_create_chatroom('private_chat', [USERNAME, USERNAME_1], USERNAME, is_private=True)
+        chatroom.save()
         #
         # read_list = [False, False]
         #
