@@ -55,7 +55,7 @@ class FriendRelationTest(TestCase):
         }
         return self.client.delete("/friend/deletefgroup", data=payload, content_type="application/json")
 
-    def user_cancel(self, username, input_PAS):
+    def user_cancel(self, username, input_password):
         payload = {
             "username": username,
             "input_password": input_password
