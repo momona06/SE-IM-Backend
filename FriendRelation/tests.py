@@ -170,7 +170,9 @@ class FriendRelationTest(TestCase):
         token = self.user_login(USERNAME, PAS).json()["token"]
 
         self.friend_group_create(USERNAME, token, "1")
-
+        flist = FriendList.objects.filter(user_name=USERNAME).first()
+        flist.friend_list.append('114514')
+        flist.save()
         # token fail
         res = self.friend_group_delete(USERNAME, 0, "1")
         self.assertEqual(res.json()["code"], -2)
