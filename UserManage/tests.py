@@ -1,4 +1,3 @@
-from asgiref.sync import async_to_sync
 from django.test import TestCase
 
 from Chat.models import ChatRoom, InviteList, Message, ChatTimeLine
@@ -180,7 +179,7 @@ class UserManageTest(TestCase):
         friend_1 = Friend(user_name=USERNAME_1, friend_name=USERNAME, group_name=friendlist_1.group_list[0])
         friend_1.save()
 
-        chatroom = async_to_sync(sync_create_chatroom)('private_chat', [USERNAME, USERNAME_1], USERNAME, is_private=True)
+        chatroom = sync_create_chatroom('private_chat', [USERNAME, USERNAME_1], USERNAME, is_private=True)
         chatroom.save()
 
         message = Message(body='1234', sender=USERNAME)
@@ -190,7 +189,7 @@ class UserManageTest(TestCase):
         timeline.msg_line.append(message)
         timeline.save()
 
-        chatroom_group = async_to_sync(sync_create_chatroom)('111', [USERNAME, USERNAME_1], USERNAME, is_private=False)
+        chatroom_group = sync_create_chatroom('111', [USERNAME, USERNAME_1], USERNAME, is_private=False)
         chatroom_group.save()
 
         invite_message = Message(type='invite',body='111',sender=USERNAME)
