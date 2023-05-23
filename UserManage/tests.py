@@ -230,7 +230,7 @@ class UserManageTest(TestCase):
         res_cel = self.user_cancel(USERNAME, input_password)
         self.assertFalse(user_model.objects.filter(username=USERNAME).exists())
 
-        self.assertFalse(Friend.objects.filter(username=USERNAME).exists())
+        self.assertFalse(Friend.objects.filter(user_name=USERNAME).exists())
         self.assertFalse(Friend.objects.filter(friend_name=USERNAME).exists())
 
         self.assertFalse(AddList.objects.filter(user_name=USERNAME).exists())
