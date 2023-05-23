@@ -64,7 +64,6 @@ def user_revise(req: HttpRequest):
                                 room.save()
                                 break
 
-                    print(2)
                     friend_list = FriendList.objects.filter(user_name=username).first()
                     if friend_list is not None:
                         friend_list.user_name=revise_content
@@ -76,7 +75,6 @@ def user_revise(req: HttpRequest):
                             i.user_name = revise_content
                             i.save()
 
-                    print(3)
                     friend_other_list = Friend.objects.filter(friend_name=username)
                     for i in friend_other_list:
                         if i is not None:
@@ -85,7 +83,6 @@ def user_revise(req: HttpRequest):
 
                     user_add_list = AddList.objects.filter(user_name=username).first()
 
-                    print(4)
                     user_list = []
 
                     for reply_name in user_add_list.reply_list:
@@ -94,13 +91,14 @@ def user_revise(req: HttpRequest):
 
                             revise_username_in_other_add_list(reply_name, username, revise_content)
 
-                    print(5)
+                    print(4)
                     for apply_name in user_add_list.apply_list:
                         if apply_name not in user_list:
                             user_list.append(apply_name)
 
                             revise_username_in_other_add_list(apply_name, username, revise_content)
 
+                    print(5)
                     user_add_list.user_name = revise_content
                     user_add_list.save()
 
