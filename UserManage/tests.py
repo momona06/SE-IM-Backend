@@ -272,7 +272,6 @@ class UserManageTest(TestCase):
         # for field, content in zip(revise_field_list, revise_content_list):
         res_rev = self.user_revise(revise_field_list[1], revise_content_list[1], USERNAME, input_password, token)
         self.assertEqual(res_rev.json()["code"], 0)
-        print(res_rev.json())
         # self.assertEqual(res_rev.json()["info"],"dd")
 
         self.user_revise(revise_field_list[1], input_password, USERNAME, revise_content_list[1], token)
@@ -302,18 +301,18 @@ class UserManageTest(TestCase):
 
         addlist_1 = AddList.objects.get(user_name=USERNAME_1)
         friendlist_1 = FriendList.objects.get(user_name=USERNAME_1)
-        #
-        # addlist_1.reply_list.append(USERNAME)
-        # addlist_1.reply_answer.append(True)
-        # addlist_1.reply_ensure.append(True)
-        #
-        # addlist_1.save()
-        #
-        # friend_0 = Friend(user_name=USERNAME, friend_name=USERNAME_1, group_name=friendlist_0.group_list[0])
-        # friend_0.save()
-        #
-        # friend_1 = Friend(user_name=USERNAME_1, friend_name=USERNAME, group_name=friendlist_1.group_list[0])
-        # friend_1.save()
+
+        addlist_1.reply_list.append(USERNAME)
+        addlist_1.reply_answer.append(True)
+        addlist_1.reply_ensure.append(True)
+
+        addlist_1.save()
+
+        friend_0 = Friend(user_name=USERNAME, friend_name=USERNAME_1, group_name=friendlist_0.group_list[0])
+        friend_0.save()
+
+        friend_1 = Friend(user_name=USERNAME_1, friend_name=USERNAME, group_name=friendlist_1.group_list[0])
+        friend_1.save()
         #
         # chatroom = sync_create_chatroom('private_chat', [USERNAME, USERNAME_1], USERNAME, is_private=True)
         # chatroom.save()
