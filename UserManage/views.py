@@ -506,8 +506,6 @@ def send_email(request: HttpRequest):
     """
     发送邮箱验证码
     """
-    if request.method == 'GET':
-        return HttpResponse("send_email")
     if request.method == 'POST':
         try:
             body = json.loads(request.body.decode("utf-8"))
@@ -538,8 +536,6 @@ def bind_email(request):
     """
     绑定邮箱
     """
-    if request.method == 'GET':
-        return HttpResponse('bind_email')
     if request.method == 'POST':
         try:
             body = json.loads(request.body.decode("utf-8"))
@@ -568,8 +564,6 @@ def upload_avatar(request):
     """
     上传头像
     """
-    if request.method == 'GET':
-        return HttpResponse('upload')
     if request.method == 'POST':
         try:
             cur_pic = request.FILES.get("avatar")
@@ -596,8 +590,6 @@ def upload(request):
     """
     聊天文件上传
     """
-    if request.method == 'GET':
-        return HttpResponse('upload')
     if request.method == 'POST':
         try:
             cur_file = request.FILES.get("file")
@@ -618,8 +610,6 @@ def upload(request):
             })
 
 def audio_to_text(request):
-    if request.method == 'GET':
-        return HttpResponse('a2t')
     if request.method == 'POST':
         try:
             client = AipSpeech('33584366', 'XnMdNhg1mHCt64OZE4yPURVf', 'ZgFXLMRRvUQKnDEpvsHBu0T5ylV1aE7g')
@@ -639,7 +629,6 @@ def audio_to_text(request):
                     "code": 0,
                     "result": 'error: not wav or too long'
                 })
-
         except Exception as e:
             print(e)
             return JsonResponse({
