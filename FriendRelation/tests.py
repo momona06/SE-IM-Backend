@@ -149,7 +149,9 @@ class FriendRelationTest(TestCase):
         is_specific = []
         is_specific.append(False)
         is_specific.append(False)
-        room = ChatRoom(is_private=True, is_notice=is_notice, is_top=is_top, is_specific=is_specific, mem_list=mem_list)
+        manager_list = []
+        notice_list = []
+        room = ChatRoom(is_private=True, is_notice=is_notice, is_top=is_top, is_specific=is_specific, mem_list=mem_list, manager_list=manager_list, notice_list=notice_list)
         room.save()
 
         res = self.friend_delete(USERNAME, 0, username_1)
