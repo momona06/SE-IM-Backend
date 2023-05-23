@@ -9,7 +9,7 @@ from UserManage.models import IMUser
 from FriendRelation.models import Friend, FriendList
 
 USERNAME = "test00"
-PASSWORD = "123456"
+PAS = "123456"
 
 
 class FriendRelationTest(TestCase):
@@ -55,7 +55,7 @@ class FriendRelationTest(TestCase):
         }
         return self.client.delete("/friend/deletefgroup", data=payload, content_type="application/json")
 
-    def user_cancel(self, username, input_password):
+    def user_cancel(self, username, input_PAS):
         payload = {
             "username": username,
             "input_password": input_password
@@ -65,9 +65,9 @@ class FriendRelationTest(TestCase):
     def test_fgroup_create(self):
         fgroup_name = "111"
 
-        self.user_cancel(USERNAME, PASSWORD)
-        self.user_register(USERNAME, PASSWORD)
-        res_login = self.user_login(USERNAME, PASSWORD)
+        self.user_cancel(USERNAME, PAS)
+        self.user_register(USERNAME, PAS)
+        res_login = self.user_login(USERNAME, PAS)
 
         token = res_login.json()["token"]
         res = self.friend_group_create(USERNAME, token, fgroup_name)
@@ -83,9 +83,9 @@ class FriendRelationTest(TestCase):
         fgroup_name = "1111"
         fname_base = 999999
 
-        self.user_cancel(USERNAME,PASSWORD)
-        self.user_register(USERNAME, PASSWORD)
-        res_login = self.user_login(USERNAME, PASSWORD)
+        self.user_cancel(USERNAME,PAS)
+        self.user_register(USERNAME, PAS)
+        res_login = self.user_login(USERNAME, PAS)
         token = res_login.json()["token"]
         cur_list = []
 
@@ -113,9 +113,9 @@ class FriendRelationTest(TestCase):
         fgroup_name = "1111"
         fname_base = 9999999
 
-        self.user_cancel(USERNAME, PASSWORD)
-        self.user_register(USERNAME, PASSWORD)
-        res_login = self.user_login(USERNAME, PASSWORD)
+        self.user_cancel(USERNAME, PAS)
+        self.user_register(USERNAME, PAS)
+        res_login = self.user_login(USERNAME, PAS)
         token = res_login.json()["token"]
         self.friend_group_create(USERNAME, token, fgroup_name)
         res = self.friend_to_group_add(USERNAME, token, fname_base, fgroup_name)
@@ -124,12 +124,12 @@ class FriendRelationTest(TestCase):
     def test_delete_friend(self):
         username_1 = USERNAME + str(1)
 
-        self.user_cancel(USERNAME, PASSWORD)
-        self.user_cancel(username_1, PASSWORD)
-        self.user_register(USERNAME, PASSWORD)
-        self.user_register(username_1, PASSWORD)
+        self.user_cancel(USERNAME, PAS)
+        self.user_cancel(username_1, PAS)
+        self.user_register(USERNAME, PAS)
+        self.user_register(username_1, PAS)
 
-        token = self.user_login(USERNAME, PASSWORD).json()["token"]
+        token = self.user_login(USERNAME, PAS).json()["token"]
 
         friend_list1 = FriendList.objects.get(user_name=USERNAME)
         friend1 = Friend(user_name=USERNAME, friend_name=username_1, group_name=friend_list1.group_list[0])
@@ -148,10 +148,10 @@ class FriendRelationTest(TestCase):
         self.assertEqual(res.json()["code"], 0)
 
     def test_delete_fgroup(self):
-        self.user_cancel(USERNAME, PASSWORD)
-        self.user_register(USERNAME, PASSWORD)
+        self.user_cancel(USERNAME, PAS)
+        self.user_register(USERNAME, PAS)
 
-        token = self.user_login(USERNAME, PASSWORD).json()["token"]
+        token = self.user_login(USERNAME, PAS).json()["token"]
 
         self.friend_group_create(USERNAME, token, "1")
 
@@ -200,9 +200,9 @@ class FriendRelationTest(TestCase):
     def test_check_user(self):
         username_1 = USERNAME
 
-        self.user_cancel(USERNAME, PASSWORD)
-        self.user_register(USERNAME, PASSWORD)
-        res_login = self.user_login(USERNAME, PASSWORD)
+        self.user_cancel(USERNAME, PAS)
+        self.user_register(USERNAME, PAS)
+        res_login = self.user_login(USERNAME, PAS)
 
         token = res_login.json()["token"]
 
@@ -211,7 +211,7 @@ class FriendRelationTest(TestCase):
 
         username_1 = USERNAME + "11"
 
-        self.user_register(username_1, PASSWORD)
+        self.user_register(username_1, PAS)
         user_model = get_user_model()
         self.assertTrue(user_model.objects.filter(username=username_1).exists())
 
@@ -232,11 +232,11 @@ class FriendRelationTest(TestCase):
         username_2 = USERNAME + "12"
         username_3 = USERNAME + "123"
 
-        self.user_cancel(USERNAME, PASSWORD)
-        self.user_register(USERNAME, PASSWORD)
-        self.user_register(username_1, PASSWORD)
-        self.user_register(username_2, PASSWORD)
-        self.user_register(username_3, PASSWORD)
+        self.user_cancel(USERNAME, PAS)
+        self.user_register(USERNAME, PAS)
+        self.user_register(username_1, PAS)
+        self.user_register(username_2, PAS)
+        self.user_register(username_3, PAS)
 
         user_model = get_user_model()
         self.assertTrue(user_model.objects.filter(username=username_1).exists())

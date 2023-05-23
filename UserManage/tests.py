@@ -6,7 +6,7 @@ from FriendRelation.models import FriendList
 import json
 import random
 
-PASSWORD = "123456"
+PAS = "123456"
 USERNAME = "test00"
 
 
@@ -68,8 +68,8 @@ class UserManageTest(TestCase):
         # username = secrets.token_hex(4)
         # password = secrets.token_hex(4)
 
-        self.user_cancel(USERNAME, PASSWORD)
-        res = self.user_register(USERNAME, PASSWORD)
+        self.user_cancel(USERNAME, PAS)
+        res = self.user_register(USERNAME, PAS)
 
         self.assertJSONEqual(res.content, {"code": 0, "info": "Register Succeed"})
         self.assertEqual(res.json()["code"], 0)
@@ -82,9 +82,9 @@ class UserManageTest(TestCase):
         # username = secrets.token_hex(10)
         # password = secrets.token_hex(10)
 
-        self.user_cancel(USERNAME, PASSWORD)
-        res_reg = self.user_register(USERNAME, PASSWORD)
-        res_lin = self.user_login(USERNAME, PASSWORD)
+        self.user_cancel(USERNAME, PAS)
+        res_reg = self.user_register(USERNAME, PAS)
+        res_lin = self.user_login(USERNAME, PAS)
         self.assertEqual(res_reg.json()["code"], 0)
         self.assertEqual(res_lin.json()["code"], 0)
         user_model = get_user_model()
@@ -101,11 +101,11 @@ class UserManageTest(TestCase):
     def test_cancel(self):
         # username = secrets.token_hex(10)
         # password = secrets.token_hex(10)
-        self.user_cancel(USERNAME, PASSWORD)
-        input_password = PASSWORD
+        self.user_cancel(USERNAME, PAS)
+        input_password = PAS
 
-        res_reg = self.user_register(USERNAME, PASSWORD)
-        res_lin = self.user_login(USERNAME, PASSWORD)
+        res_reg = self.user_register(USERNAME, PAS)
+        res_lin = self.user_login(USERNAME, PAS)
         self.assertEqual(res_lin.json()["code"], 0)
 
         user_model = get_user_model()
@@ -120,9 +120,9 @@ class UserManageTest(TestCase):
         # username = secrets.token_hex(10)
         # password = secrets.token_hex(10)
 
-        input_password = PASSWORD
-        res_reg = self.user_register(USERNAME, PASSWORD)
-        res_lin = self.user_login(USERNAME, PASSWORD)
+        input_password = PAS
+        res_reg = self.user_register(USERNAME, PAS)
+        res_lin = self.user_login(USERNAME, PAS)
         self.assertEqual(res_reg.json()["code"], 0)
         self.assertEqual(res_lin.json()["code"], 0)
 
@@ -147,7 +147,7 @@ class UserManageTest(TestCase):
 
     def test_email(self):
         username = USERNAME
-        password = PASSWORD
+        password = PAS
         self.user_register(username, password)
         email = "zhoujin@mails.tsinghua.edu.cn"
         res = self.user_send_email(email)
