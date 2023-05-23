@@ -1,7 +1,7 @@
 from asgiref.sync import async_to_sync
 from django.test import TestCase
 
-from Chat.models import ChatRoom, create_chatroom, InviteList, Message, ChatTimeLine
+from Chat.models import ChatRoom, InviteList, Message, ChatTimeLine
 from UserManage.models import IMUser
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
@@ -11,6 +11,37 @@ import random
 
 PAS = "123456"
 USERNAME = "test00"
+
+def sync_create_chatroom(room_name, mem_list, master_name, is_private=False):
+    """
+    参考：room_name='private_chat'
+    """
+    mem_len = len(mem_list)
+    true_mem_len_list = [True for _ in range(mem_len)]
+    false_mem_len_list = [False for _ in range(mem_len)]
+    new_chatroom = ChatRoom(is_private=is_private, room_name=room_name,
+                                                          mem_count=mem_len, mem_list=mem_list,
+                                                          master_name=master_name, manager_list=[],
+                                                          is_notice=true_mem_len_list, is_top=false_mem_len_list,
+                                                          is_specific=false_mem_len_list, notice_id=0, notice_list=[])
+    new_chatroom.save()
+
+    timeline = ChatTimeLine(chatroom_id=new_chatroom.chatroom_id, msg_line=[],
+                                                          cursor_list=[])
+    timeline.cursor_list = [0 for _ in range(mem_len)]
+    timeline.save()
+
+    invite_list = InviteList(chatroom_id=new_chatroom.chatroom_id, msg_list=[])
+    invite_list.save()
+
+    new_chatroom.timeline_id = timeline.timeline_id
+    timeline.chatroom_id = new_chatroom.chatroom_id
+
+    new_chatroom.invite_list_id = invite_list.invite_list_id
+
+    new_chatroom.save()
+    timeline.save()
+    return new_chatroom
 
 
 class UserManageTest(TestCase):
@@ -149,7 +180,7 @@ class UserManageTest(TestCase):
         friend_1 = Friend(user_name=USERNAME_1, friend_name=USERNAME, group_name=friendlist_1.group_list[0])
         friend_1.save()
 
-        chatroom = async_to_sync(create_chatroom)('private_chat', [USERNAME, USERNAME_1], USERNAME, is_private=True)
+        chatroom = async_to_sync(sync_create_chatroom)('private_chat', [USERNAME, USERNAME_1], USERNAME, is_private=True)
         chatroom.save()
 
         message = Message(body='1234', sender=USERNAME)
@@ -159,7 +190,7 @@ class UserManageTest(TestCase):
         timeline.msg_line.append(message)
         timeline.save()
 
-        chatroom_group = async_to_sync(create_chatroom)('111', [USERNAME, USERNAME_1], USERNAME, is_private=False)
+        chatroom_group = async_to_sync(sync_create_chatroom)('111', [USERNAME, USERNAME_1], USERNAME, is_private=False)
         chatroom_group.save()
 
         invite_message = Message(type='invite',body='111',sender=USERNAME)
