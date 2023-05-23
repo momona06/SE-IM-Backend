@@ -98,11 +98,9 @@ def user_revise(req: HttpRequest):
 
                             revise_username_in_other_add_list(apply_name, username, revise_content)
 
-                    print(5)
                     user_add_list.user_name = revise_content
                     user_add_list.save()
 
-                    print(6)
                     for message in Message.objects.all()[::-1]:
                         if message.sender == username:
                             message.sender = revise_content
@@ -112,7 +110,6 @@ def user_revise(req: HttpRequest):
                             message.save()
 
                     user_rev.username = revise_content
-                    print(7)
 
                 elif revise_field == "password":
                     user_rev.set_password(revise_content)
