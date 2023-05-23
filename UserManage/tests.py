@@ -8,8 +8,26 @@ from FriendRelation.models import FriendList, AddList, Friend
 import json
 import random
 
+from utils.utils_cryptogram import encode
+
 PAS = "123456"
 USERNAME = "test00"
+
+def create_message(body,sender,time='2023-05-24 23:59:59',type='text', reply_id=0, reply_count=0, answer=-1, read_list=None, combine_list=None,
+                         delete_list=None):
+
+    if combine_list is None:
+        combine_list = list()
+    if read_list is None:
+        read_list = list()
+    if delete_list is None:
+        delete_list = list()
+    body = encode(body)
+    new_message = Message(type=type, body=body, time=time, sender=sender,
+                                                        reply_count=reply_count, reply_id=reply_id, answer=answer,
+                                                        delete_list=delete_list, read_list=read_list, combine_list=combine_list)
+    new_message.save()
+    return new_message
 
 def sync_create_chatroom(room_name, mem_list, master_name, is_private=False):
     """
@@ -182,7 +200,7 @@ class UserManageTest(TestCase):
         chatroom = sync_create_chatroom('private_chat', [USERNAME, USERNAME_1], USERNAME, is_private=True)
         chatroom.save()
 
-        message = Message(body='1234', sender=USERNAME)
+        message = create_message(body='1234', sender=USERNAME)
         message.save()
 
         timeline = ChatTimeLine.objects.get(chatroom_id=chatroom.chatroom_id)
@@ -192,10 +210,10 @@ class UserManageTest(TestCase):
         chatroom_group = sync_create_chatroom('111', [USERNAME, USERNAME_1], USERNAME, is_private=False)
         chatroom_group.save()
 
-        invite_message = Message(type='invite',body='111',sender=USERNAME)
+        invite_message = create_message(type='invite',body='111',sender=USERNAME)
         invite_message.save()
 
-        message_group = Message(body='123', sender=USERNAME)
+        message_group = create_message(body='123', sender=USERNAME)
         message_group.save()
 
         timeline_group = ChatTimeLine.objects.get(chatroom_id=chatroom_group.chatroom_id)
