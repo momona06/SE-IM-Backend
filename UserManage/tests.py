@@ -200,7 +200,9 @@ class UserManageTest(TestCase):
         chatroom = sync_create_chatroom('private_chat', [USERNAME, USERNAME_1], USERNAME, is_private=True)
         chatroom.save()
 
-        message = create_message(body='1234', sender=USERNAME)
+        read_list = [False, False]
+
+        message = create_message(body='1234', sender=USERNAME, read_list=read_list)
         message.save()
 
         timeline = ChatTimeLine.objects.get(chatroom_id=chatroom.chatroom_id)
@@ -210,10 +212,10 @@ class UserManageTest(TestCase):
         chatroom_group = sync_create_chatroom('111', [USERNAME, USERNAME_1], USERNAME, is_private=False)
         chatroom_group.save()
 
-        invite_message = create_message(type='invite',body='111',sender=USERNAME)
+        invite_message = create_message(type='invite',body='111',sender=USERNAME, read_list=read_list)
         invite_message.save()
 
-        message_group = create_message(body='123', sender=USERNAME)
+        message_group = create_message(body='123', sender=USERNAME, read_list=read_list)
         message_group.save()
 
         timeline_group = ChatTimeLine.objects.get(chatroom_id=chatroom_group.chatroom_id)
@@ -243,6 +245,7 @@ class UserManageTest(TestCase):
 
         self.assertEqual('AccountSuspended',Message.objects.get(msg_id=message_group.msg_id).sender)
         self.assertEqual(USERNAME,Message.objects.get(msg_id=message.msg_id).sender)
+        self.assertEqual(1, len(Message.objects.get(msg_id=message_group.msg_id).read_list))
 
     def test_revise(self):
         # username = secrets.token_hex(10)
