@@ -662,7 +662,7 @@ def fetch_message(request):
                     "code": 0,
                     "info": "fetch a message",
                     "msg_id": cur_message.msg_id,
-                    "msg_body": decode(cur_message.msg_body),
+                    "msg_body": decode(cur_message.body),
                     "msg_time": cur_message.time,
                     "msg_type": cur_message.type,
                     "msg_sender": cur_message.sender,
@@ -679,5 +679,5 @@ def fetch_message(request):
             print(e)
             return JsonResponse({
                 "code": -1,
-                "info": e
+                "info": "unexpected error of fetch_message"
             })
