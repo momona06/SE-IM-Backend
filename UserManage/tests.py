@@ -340,7 +340,7 @@ class UserManageTest(TestCase):
 
         self.user_revise(revise_field_list[0], revise_content_list[0], USERNAME, input_password, token)
 
-        self.assertTrue(User.objects.filter(username=USERNAME).exists())
+        self.assertFalse(User.objects.filter(username=USERNAME).exists())
         self.assertTrue(User.objects.filter(username=revise_content_list[0]).exists())
 
         self.assertFalse(Friend.objects.filter(user_name=USERNAME).exists())
