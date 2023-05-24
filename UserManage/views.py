@@ -670,8 +670,8 @@ def fetch_message(request):
                 })
             else:
                 return JsonResponse({
-                    "code": -1,
-                    "info": "fetch fault",
+                    "code": -2,
+                    "info": "no message",
                     "msg_id": msg_id
                 })
 
@@ -679,5 +679,5 @@ def fetch_message(request):
             print(e)
             return JsonResponse({
                 "code": -1,
-                "info": "Unexpected error"
+                "info": e
             })
