@@ -245,10 +245,7 @@ def search_user(request):
                 avatar = os.path.join("/static/media/", str(imuser.avatar))
                 if avatar == "/static/media/":
                     avatar += "pic/default.jpeg"
-                userinfos.append({
-                    'username': user.username,
-                    'avatar': avatar
-                })
+                userinfos.append(user.username)
 
             response_data = {
                 "code": 0,
