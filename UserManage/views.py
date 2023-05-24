@@ -650,21 +650,22 @@ def fetch_message(request):
     if request.method == 'POST':
         try:
             body = json.loads(request.body.decode("utf-8"))
-            msg_list = body['combine_list']
-            return_field = list()
-
-            for id in msg_list:
-                cur_message = Message.objects.filter(msg_id=id).first()
-                return_field.append({
-                    "msg_id": cur_message.msg_id,
-                    "msg_body": decode(cur_message.msg_body),
-                    "msg_time": cur_message.time,
-                    "msg_type": cur_message.type,
-                    "msg_sender": cur_message.sender
-                })
+            msg_id = str(body['msg_id'])
+            cur_message = Message.objects.filter(msg_id=msg_id).first()
+            user = User.objects.filter(username=cur_message.sender).first()
+            imuser = IMUser.objects.filter(user=user).first()
+            avatar = os.path.join("/static/media/", str(imuser.avatar))
+            if avatar == "/static/media/":
+                avatar += "pic/default.jpeg"
             return JsonResponse({
                 "code": 0,
-                "msg_list": return_field
+                "info": "fetch a message",
+                "msg_id": cur_message.msg_id,
+                "msg_body": decode(cur_message.msg_body),
+                "msg_time": cur_message.time,
+                "msg_type": cur_message.type,
+                "msg_sender": cur_message.sender,
+                "avatar": avatar
             })
         except Exception as e:
             print(e)
