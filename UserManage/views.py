@@ -33,6 +33,9 @@ def user_revise(req: HttpRequest):
         token = str(body["token"])
         input_password = str(body["input_password"])
         user = authenticate(username=username, password=input_password)
+
+        _test = username
+
         if user is None:
             return JsonResponse({
                 "code": -1,
@@ -50,6 +53,7 @@ def user_revise(req: HttpRequest):
                 })
             else:
                 if revise_field == "username":
+                    print(revise_content)
                     for room in ChatRoom.objects.all()[::-1]:
                         for index, user in enumerate(room.mem_list):
                             if user == username:
@@ -119,6 +123,11 @@ def user_revise(req: HttpRequest):
                         "info": "Revise_field Error"
                     })
                 user_rev.save()
+                if revise_field == 'username':
+                    for i in User.objects.filter(username=_test):
+                        print(i)
+                        print("?")
+                        print(user_rev.username)
                 return JsonResponse({
                     "code": 0,
                     "info": "Revise Succeed"
@@ -303,14 +312,10 @@ def revise_username_in_other_add_list(reply_name, username, revise_content):
         if other_name == username:
             index = lis - i - 1
             other_add_list.reply_list[index] = revise_content
-            other_add_list.reply_ensure[index]= revise_content
-            other_add_list.reply_answer[index]= revise_content
     for i, other_name in enumerate(other_add_list.apply_list[::-1]):
         if other_name == username:
             index = lis - i - 1
             other_add_list.apply_list[index]= revise_content
-            other_add_list.apply_ensure[index]= revise_content
-            other_add_list.apply_answer[index]= revise_content
 
     other_add_list.save()
 
