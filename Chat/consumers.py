@@ -1409,30 +1409,58 @@ class UserConsumer(AsyncWebsocketConsumer):
     async def fetch_message(self, json_info):
         """
         json_info = {
-            'msg_id': 124
             'father_id: 123
         }
         """
-        msg_id = json_info['msg_id']
-        message = await filter_first_message(msg_id=msg_id)
-        father_id = ''
+        # msg_id = json_info['msg_id']
+        # message = await filter_first_message(msg_id=msg_id)
+        # father_id = ''
 
-        if 'father_id' in json_info:
-            father_id = json_info['father_id']
+        #if 'father_id' in json_info:
+        #   father_id = json_info['father_id']
+
+        # await self.send(text_data=json.dumps({
+        #     "function": "fetchmessage",
+        #     'msg_id': message.msg_id,
+        #     'msg_type': message.type,
+        #     'msg_time': message.time,
+        #     'msg_body': await async_decode(message.body),
+        #     'sender': message.sender,
+        #     'read_list': message.read_list,
+        #     'delete_list': message.delete_list,
+        #     'combine_list': message.combine_list,
+        #     'reply_id': message.reply_id,
+        #     'father_id': father_id
+        # }))
+
+        father_id = json_info['father_id']
+        father_message = await filter_first_message(msg_id=father_id)
+        message_info_list = []
+        for msg_id in father_message.combine_list:
+            message = await filter_first_message(msg_id=msg_id)
+            message_info_list.append({
+                'msg_id': message.msg_id,
+                'msg_type': message.type,
+                'msg_time': message.time,
+                'msg_body': await async_decode(message.body),
+                'sender': message.sender,
+                'read_list': message.read_list,
+                'delete_list': message.delete_list,
+                'combine_list': message.combine_list,
+                'reply_id': message.reply_id
+            })
 
         await self.send(text_data=json.dumps({
-            "function": "fetchmessage",
-            'msg_id': message.msg_id,
-            'msg_type': message.type,
-            'msg_time': message.time,
-            'msg_body': await async_decode(message.body),
-            'sender': message.sender,
-            'read_list': message.read_list,
-            'delete_list': message.delete_list,
-            'combine_list': message.combine_list,
-            'reply_id': message.reply_id,
-            'father_id': father_id
+            'function': 'fetchmessage',
+            'father_id': father_id,
+            'message_info_list': message_info_list
         }))
+
+
+
+
+
+
 
     async def revise_is_notice(self, json_info):
         """
