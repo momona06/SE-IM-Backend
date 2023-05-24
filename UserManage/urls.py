@@ -11,5 +11,6 @@ urlpatterns = [
     path('revise', views.user_revise),
     path('upload', views.upload_avatar),
     path('uploadfile', views.upload),
-    path('audio', views.audio_to_text)
+    path('audio', views.audio_to_text),
+    path('message', views.fetch_message)
 ]
