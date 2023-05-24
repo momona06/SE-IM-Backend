@@ -800,10 +800,14 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
         json_info = {
             'msg_id': 114514,
+            'is_private': False,
+            'is_admin': False,
         }
         """
         # 初始化
         msg_id = json_info['msg_id']
+        is_private = json_info['is_private']
+        is_admin = json_info['is_admin']
 
         room_id = self.room_id
         room_name = self.room_name
@@ -822,15 +826,16 @@ class UserConsumer(AsyncWebsocketConsumer):
         delta_hours = delta.seconds // 3600
         delta_minutes = (delta.seconds % 3600) // 60
 
-        if delta_days != 0 or delta_hours != 0 or delta_minutes > 5:
-            await self.send(text_data=json.dumps({
-                'function': 'withdraw_overtime',
-                'msg_id': msg_id,
-            }))
-            return
-
         chatroom = await filter_first_chatroom(chatroom_id=room_id)
         timeline = await get_timeline(chatroom_id=room_id)
+
+        if is_private or (not is_private and not is_admin):
+            if delta_days != 0 or delta_hours != 0 or delta_minutes > 5:
+                await self.send(text_data=json.dumps({
+                    'function': 'withdraw_overtime',
+                    'msg_id': msg_id,
+                }))
+                return
 
         lis = await sync_to_async(timeline.msg_line.index)(msg_id)
 
@@ -1324,7 +1329,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                         cur_message = await sync_to_async(cur_message1.first)()
 
                         if cur_message.type == 'invite':
-                            if get_power(room, username)==0:
+                            if get_power(room, username) == 0:
                                 continue
 
                         users = await sync_to_async(User.objects.filter)(username=cur_message.sender)
@@ -1626,7 +1631,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                         # "reply_count": cur_message.reply_count
                     })
 
-
                 return_field.append({
                     "roomid": room.chatroom_id,
                     "roomname": roomname,
@@ -1678,7 +1682,6 @@ class UserConsumer(AsyncWebsocketConsumer):
         if username_new != '':
             self.cur_user = username_new
 
-
         for index, user in enumerate(CONSUMER_OBJECT_LIST):
             for fetch_name in fetch_list:
                 if user.cur_user == fetch_name:
@@ -1691,4 +1694,3 @@ class UserConsumer(AsyncWebsocketConsumer):
             "function": "refresh",
             "message": "Success"
         }))
-
