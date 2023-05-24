@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from UserManage.models import IMUser
 from FriendRelation.models import FriendList, Friend
 from Chat.models import ChatRoom, ChatTimeLine
+import os
 
 
 def delete_friend(req: HttpRequest):
@@ -238,14 +239,21 @@ def search_user(request):
             my_username = str(body['my_username'])
             search_username = str(body['search_username'])
             users = User.objects.filter(username__icontains=search_username).exclude(username=my_username)
-            usernames = list()
+            userinfos = list()
             for user in users:
-                usernames.append(user.username)
+                imuser = IMUser.objects.filter(user=user).first()
+                avatar = os.path.join("/static/media/", str(imuser.avatar))
+                if avatar == "/static/media/":
+                    avatar += "pic/default.jpeg"
+                userinfos.append({
+                    'username': user.username,
+                    'avatar': avatar
+                })
 
             response_data = {
                 "code": 0,
                 "info": "Search Succeed",
-                "search_user_list": usernames,
+                "search_user_list": userinfos,
             }
 
             return JsonResponse(response_data, safe=False)

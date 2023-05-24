@@ -645,3 +645,45 @@ def audio_to_text(request):
                 "code": -1,
                 "info": "Unexpected error"
             })
+
+def fetch_message(request):
+    if request.method == 'POST':
+        try:
+            body = json.loads(request.body.decode("utf-8"))
+            combine_list = (body['combine_list'])
+            return_field = list()
+            for msg_id in combine_list:
+                cur_message = Message.objects.filter(msg_id=msg_id).first()
+                if cur_message is not None:
+                    user = User.objects.filter(username=cur_message.sender).first()
+                    imuser = IMUser.objects.filter(user=user).first()
+                    avatar = os.path.join("/static/media/", str(imuser.avatar))
+                    if avatar == "/static/media/":
+                        avatar += "pic/default.jpeg"
+                    return_field.append({
+                        "code": 0,
+                        "info": "fetch a message",
+                        "msg_id": cur_message.msg_id,
+                        "msg_body": decode(cur_message.body),
+                        "msg_time": cur_message.time,
+                        "msg_type": cur_message.type,
+                        "msg_sender": cur_message.sender,
+                        "avatar": avatar
+                    })
+                else:
+                    return JsonResponse({
+                        "code": -2,
+                        "info": "no message",
+                        "msg_id": msg_id
+                    })
+            return JsonResponse({
+                "code": 0,
+                "msg_list": return_field
+            })
+
+        except Exception as e:
+            print(e)
+            return JsonResponse({
+                "code": -1,
+                "info": "unexpected error of fetch_message"
+            })
