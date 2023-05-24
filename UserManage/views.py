@@ -81,7 +81,7 @@ def user_revise(req: HttpRequest):
                     friend_other_list = Friend.objects.filter(friend_name=username)
                     for i in friend_other_list:
                         if i is not None:
-                            i.user_name = revise_content
+                            i.friend_name = revise_content
                             i.save()
 
                     user_add_list = AddList.objects.filter(user_name=username).first()
