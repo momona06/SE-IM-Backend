@@ -645,3 +645,30 @@ def audio_to_text(request):
                 "code": -1,
                 "info": "Unexpected error"
             })
+
+def fetch_message(request):
+    if request.method == 'POST':
+        try:
+            body = json.loads(request.body.decode("utf-8"))
+            msg_list = body['combine_list']
+            return_field = list()
+
+            for id in msg_list:
+                cur_message = Message.objects.filter(msg_id=id).first()
+                return_field.append({
+                    "msg_id": cur_message.msg_id,
+                    "msg_body": decode(cur_message.msg_body),
+                    "msg_time": cur_message.time,
+                    "msg_type": cur_message.type,
+                    "msg_sender": cur_message.sender
+                })
+            return JsonResponse({
+                "code": 0,
+                "msg_list": return_field
+            })
+        except Exception as e:
+            print(e)
+            return JsonResponse({
+                "code": -1,
+                "info": "Unexpected error"
+            })
