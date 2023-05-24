@@ -758,6 +758,16 @@ class UserConsumer(AsyncWebsocketConsumer):
                         invite_list.msg_list.append(message.msg_id)
                         await database_sync_to_async(invite_list.save)()
 
+
+                        for li, onliner in enumerate(CONSUMER_OBJECT_LIST):
+                            if onliner.cur_user == invited_name:
+                                await CONSUMER_OBJECT_LIST[li].channel_layer.group_add(chatroom_name,
+                                                                                       onliner.channel_name)
+                                break
+
+
+
+
                         await self.send(text_data=json.dumps({
                             'function': function_name,
                             'message': 'Invite Member Success',
