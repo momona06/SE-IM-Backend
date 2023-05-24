@@ -1355,6 +1355,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                             "combine_list": cur_message.combine_list,
                             "read_list": cur_message.read_list,
                             "is_delete": is_delete,
+                            "reply_id": cur_message.reply_id,
                             # "reply_count": cur_message.reply_count
                         })
                     return_field.append({
@@ -1429,6 +1430,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             'read_list': message.read_list,
             'delete_list': message.delete_list,
             'combine_list': message.combine_list,
+            'reply_id': message.reply_id,
             'father_id': father_id
         }))
 
