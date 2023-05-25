@@ -758,15 +758,11 @@ class UserConsumer(AsyncWebsocketConsumer):
                         invite_list.msg_list.append(message.msg_id)
                         await database_sync_to_async(invite_list.save)()
 
-
                         for li, onliner in enumerate(CONSUMER_OBJECT_LIST):
                             if onliner.cur_user == invited_name:
                                 await CONSUMER_OBJECT_LIST[li].channel_layer.group_add(chatroom_name,
                                                                                        onliner.channel_name)
                                 break
-
-
-
 
                         await self.send(text_data=json.dumps({
                             'function': function_name,
@@ -1037,7 +1033,6 @@ class UserConsumer(AsyncWebsocketConsumer):
                         'function': 'transfer_master',
                         'message': 'Transfer Master Success'
                     }))
-
 
     async def reply_add_group(self, json_info):
         """
@@ -1377,7 +1372,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         # message = await filter_first_message(msg_id=msg_id)
         # father_id = ''
 
-        #if 'father_id' in json_info:
+        # if 'father_id' in json_info:
         #   father_id = json_info['father_id']
 
         # await self.send(text_data=json.dumps({
@@ -1416,12 +1411,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             'father_id': father_id,
             'message_info_list': message_info_list
         }))
-
-
-
-
-
-
 
     async def revise_is_notice(self, json_info):
         """
