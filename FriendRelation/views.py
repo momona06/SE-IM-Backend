@@ -241,11 +241,14 @@ def search_user(request):
             users = User.objects.filter(username__icontains=search_username).exclude(username=my_username)
             userinfos = list()
             for user in users:
-                # imuser = IMUser.objects.filter(user=user).first()
-                # avatar = os.path.join("/static/media/", str(imuser.avatar))
-                # if avatar == "/static/media/":
-                #     avatar += "pic/default.jpeg"
-                userinfos.append(user.username)
+                imuser = IMUser.objects.filter(user=user).first()
+                avatar = os.path.join("/static/media/", str(imuser.avatar))
+                if avatar == "/static/media/":
+                    avatar += "pic/default.jpeg"
+                userinfos.append({
+                    'username': user.username,
+                    'avatar': avatar
+                })
 
             response_data = {
                 "code": 0,
