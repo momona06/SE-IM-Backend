@@ -4,10 +4,8 @@ pyOpenSSL
 
 django-cors-headers
 
-# pymysql
-# mysqlclient==2.1.0
-
 pytest
+pytest-asyncio
 pytest-django
 coverage
 
@@ -15,10 +13,14 @@ pycodestyle
 pylint
 
 channels
-# channels_redis
+channels_postgres
+
 daphne
 psycopg2
 
 selenium
+pillow
+baidu-aip
+chardet
 
-# uWSGI
+gunicorn

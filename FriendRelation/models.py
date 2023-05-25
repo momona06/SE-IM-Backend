@@ -1,11 +1,13 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
-# friend of a imuser
+
+# friend of an imuser
 class Friend(models.Model):
+    # owner of the friend
     user_name = models.CharField(
         max_length=100
-    ) # owner of the friend
+    )
     friend_name = models.CharField(
         max_length=100
     )
@@ -13,7 +15,8 @@ class Friend(models.Model):
         max_length=100
     )
 
-# friendlist of a imuser
+
+# friendlist of an imuser
 class FriendList(models.Model):
     user_name = models.CharField(
         max_length=100,
@@ -24,10 +27,10 @@ class FriendList(models.Model):
         models.CharField(max_length=100)
     )
 
-
     friend_list = ArrayField(
-        models.CharField(max_length=100) # friend_name
+        models.CharField(max_length=100)
     )
+
 
 class AddList(models.Model):
     user_name = models.CharField(
@@ -60,5 +63,3 @@ class AddList(models.Model):
     apply_ensure = ArrayField(
         models.BooleanField(default=False)
     )
-
-
