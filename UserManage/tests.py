@@ -13,9 +13,9 @@ from utils.utils_cryptogram import encode
 PAS = "123456"
 USERNAME = "test00"
 
-def create_message(body,sender,time='2023-05-24 23:59:59',type='text', reply_id=0, reply_count=0, answer=-1, read_list=None, combine_list=None,
-                         delete_list=None):
 
+def create_message(body, sender, time='2023-05-24 23:59:59', type='text', reply_id=0,
+                   reply_count=0, answer=-1, read_list=None, combine_list=None, delete_list=None):
     if combine_list is None:
         combine_list = list()
     if read_list is None:
@@ -24,10 +24,11 @@ def create_message(body,sender,time='2023-05-24 23:59:59',type='text', reply_id=
         delete_list = list()
     body = encode(body)
     new_message = Message(type=type, body=body, time=time, sender=sender,
-                                                        reply_count=reply_count, reply_id=reply_id, answer=answer,
-                                                        delete_list=delete_list, read_list=read_list, combine_list=combine_list)
+                          reply_count=reply_count, reply_id=reply_id, answer=answer,
+                          delete_list=delete_list, read_list=read_list, combine_list=combine_list)
     new_message.save()
     return new_message
+
 
 def sync_create_chatroom(room_name, mem_list, master_name, is_private=False):
     """
@@ -37,14 +38,14 @@ def sync_create_chatroom(room_name, mem_list, master_name, is_private=False):
     true_mem_len_list = [True for _ in range(mem_len)]
     false_mem_len_list = [False for _ in range(mem_len)]
     new_chatroom = ChatRoom(is_private=is_private, room_name=room_name,
-                                                          mem_count=mem_len, mem_list=mem_list,
-                                                          master_name=master_name, manager_list=[],
-                                                          is_notice=true_mem_len_list, is_top=false_mem_len_list,
-                                                          is_specific=false_mem_len_list, notice_id=0, notice_list=[])
+                            mem_count=mem_len, mem_list=mem_list,
+                            master_name=master_name, manager_list=[],
+                            is_notice=true_mem_len_list, is_top=false_mem_len_list,
+                            is_specific=false_mem_len_list, notice_id=0, notice_list=[])
     new_chatroom.save()
 
     timeline = ChatTimeLine(chatroom_id=new_chatroom.chatroom_id, msg_line=[],
-                                                          cursor_list=[])
+                            cursor_list=[])
     timeline.cursor_list = [0 for _ in range(mem_len)]
     timeline.save()
 
@@ -116,8 +117,6 @@ class UserManageTest(TestCase):
         return self.client.post("/user/email", data=payload, content_type="application/json")
 
     def test_register(self):
-        # username = secrets.token_hex(4)
-        # password = secrets.token_hex(4)
 
         self.user_cancel(USERNAME, PAS)
         res = self.user_register(USERNAME, PAS)
@@ -130,8 +129,6 @@ class UserManageTest(TestCase):
         self.assertTrue(IMUser.objects.filter(user=user).exists())
 
     def test_login_logout(self):
-        # username = secrets.token_hex(10)
-        # password = secrets.token_hex(10)
 
         self.user_cancel(USERNAME, PAS)
         res_reg = self.user_register(USERNAME, PAS)
@@ -150,8 +147,6 @@ class UserManageTest(TestCase):
         self.assertEqual(res_lout.json()["code"], 0)
 
     def test_cancel(self):
-        # username = secrets.token_hex(10)
-        # password = secrets.token_hex(10)
         self.user_cancel(USERNAME, PAS)
         input_password = PAS
 
@@ -212,7 +207,7 @@ class UserManageTest(TestCase):
         chatroom_group = sync_create_chatroom('111', [USERNAME, USERNAME_1], USERNAME, is_private=False)
         chatroom_group.save()
 
-        invite_message = create_message(type='invite',body='111',sender=USERNAME, read_list=read_list)
+        invite_message = create_message(type='invite', body='111', sender=USERNAME, read_list=read_list)
         invite_message.save()
 
         message_group = create_message(body='123', sender=USERNAME, read_list=read_list)
@@ -243,13 +238,11 @@ class UserManageTest(TestCase):
         self.assertFalse(ChatRoom.objects.filter(mem_list=[USERNAME, USERNAME_1]).exists())
         self.assertTrue(ChatRoom.objects.filter(mem_list=[USERNAME_1]).exists())
 
-        self.assertEqual('AccountSuspended',Message.objects.get(msg_id=message_group.msg_id).sender)
-        self.assertEqual(USERNAME,Message.objects.get(msg_id=message.msg_id).sender)
+        self.assertEqual('AccountSuspended', Message.objects.get(msg_id=message_group.msg_id).sender)
+        self.assertEqual(USERNAME, Message.objects.get(msg_id=message.msg_id).sender)
         self.assertEqual(2, len(Message.objects.get(msg_id=message_group.msg_id).read_list))
 
     def test_revise(self):
-        # username = secrets.token_hex(10)
-        # password = secrets.token_hex(10)
 
         USERNAME = '123123'
 
@@ -266,13 +259,11 @@ class UserManageTest(TestCase):
 
         token = res_lin.json()['token']
 
-        # no email yet
         revise_field_list = ["username", "password"]
         revise_content_list = ["321321", "1234567"]
-        # for field, content in zip(revise_field_list, revise_content_list):
+
         res_rev = self.user_revise(revise_field_list[1], revise_content_list[1], USERNAME, input_password, token)
         self.assertEqual(res_rev.json()["code"], 0)
-        # self.assertEqual(res_rev.json()["info"],"dd")
 
         self.user_revise(revise_field_list[1], input_password, USERNAME, revise_content_list[1], token)
         token = res_lin.json()["token"]
@@ -323,7 +314,7 @@ class UserManageTest(TestCase):
         chatroom_group = sync_create_chatroom('111', [USERNAME, USERNAME_1], USERNAME, is_private=False)
         chatroom_group.save()
 
-        invite_message = create_message(type='invite',body='111',sender=USERNAME, read_list=read_list)
+        invite_message = create_message(type='invite', body='111', sender=USERNAME, read_list=read_list)
         invite_message.save()
 
         message_group = create_message(body='123', sender=USERNAME, read_list=read_list)
@@ -358,9 +349,8 @@ class UserManageTest(TestCase):
 
         self.assertFalse(ChatRoom.objects.filter(mem_list=[USERNAME, USERNAME_1]).exists())
 
-        self.assertEqual(revise_content_list[0],Message.objects.get(msg_id=message_group.msg_id).sender)
-        self.assertEqual(revise_content_list[0],Message.objects.get(msg_id=message.msg_id).sender)
-
+        self.assertEqual(revise_content_list[0], Message.objects.get(msg_id=message_group.msg_id).sender)
+        self.assertEqual(revise_content_list[0], Message.objects.get(msg_id=message.msg_id).sender)
 
     def test_email(self):
         username = USERNAME

@@ -61,7 +61,6 @@ def delete_friend(req: HttpRequest):
                 'info': "Delete Friend Succeed"
             })
         except Exception as e:
-            print(e)
             return JsonResponse({
                 "code": -5,
                 "info": e

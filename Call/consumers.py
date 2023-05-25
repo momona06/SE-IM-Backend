@@ -34,7 +34,6 @@ class CallConsumer(WebsocketConsumer):
 
         elif rtc_type == 'call':
             name = text_data_json['data']['name']
-            print(self.my_name, "is calling", name)
             async_to_sync(self.channel_layer.group_send)(
                 name, {
                     'type': 'call_received',
@@ -81,21 +80,18 @@ class CallConsumer(WebsocketConsumer):
             )
 
     def call_received(self, event):
-        print('Call received by ', self.my_name)
         self.send(text_data=json.dumps({
             'type': 'call_received',
             'data': event['data']
         }))
 
     def call_answered(self, event):
-        print(self.my_name, "'s call answered")
         self.send(text_data=json.dumps({
             'type': 'call_answered',
             'data': event['data']
         }))
 
     def call_stopped(self, event):
-        print(self.my_name, "'s call stopped")
         self.send(text_data=json.dumps({
             'type': 'call_stopped',
             'data': event['data']

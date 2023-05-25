@@ -53,7 +53,6 @@ def user_revise(req: HttpRequest):
                 })
             else:
                 if revise_field == "username":
-                    print(revise_content)
                     for room in ChatRoom.objects.all()[::-1]:
                         for index, user in enumerate(room.mem_list):
                             if user == username:
