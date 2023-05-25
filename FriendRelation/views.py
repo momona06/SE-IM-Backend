@@ -324,7 +324,7 @@ def check_user(request):
                 "username": check_user_v.username,
                 "is_friend": is_friend,
                 "info": "User found",
-                "avatar":avatar
+                "avatar": avatar
             })
         except Exception as e:
             print(e)
