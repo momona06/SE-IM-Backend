@@ -442,68 +442,63 @@ def user_login(request, identity, password, login_filter):
     """
     用户登录
     """
-    try:
+
+    if login_filter == "username":
+        user = User.objects.filter(username=identity).first()
+    else:
+        user = User.objects.filter(email=identity).first()
+
+    if not user:
+        return JsonResponse({
+            "code": -4,
+            "info": "User not exists",
+        })
+    else:
         if login_filter == "username":
-            user = User.objects.filter(username=identity).first()
+            tem_user = authenticate(username=identity, password=password)
         else:
-            user = User.objects.filter(email=identity).first()
+            cur_user = User.objects.get(email=identity).username
+            tem_user = authenticate(username=cur_user, password=password)
 
-        if not user:
-            return JsonResponse({
-                "code": -4,
-                "info": "User not exists",
-            })
-        else:
-            if login_filter == "username":
-                tem_user = authenticate(username=identity, password=password)
-            else:
-                cur_user = User.objects.get(email=identity).username
-                tem_user = authenticate(username=cur_user, password=password)
-
-            if tem_user:
-                tem_im_user = IMUser.objects.filter(user=tem_user).first()
-                if tem_im_user is not None:
-                    # if not tem_im_user.is_login:
-                    tem_im_user.token = get_new_token()
-                    tem_im_user.is_login = True
-                    tem_im_user.save()
-                # else:
-                #     return JsonResponse({
-                #         "code": -7,
-                #         "info": "User already login",
-                #     })
-                else:
-                    return JsonResponse({
-                        "code": -1,
-                        "info": "Unexpected error"
-                    })
-                    # tem_im_user = create_im_user(tem_user,get_new_token())
-                    # tem_im_user.save()
-                avatar = os.path.join("/static/media/", str(tem_im_user.avatar))
-                if avatar == "/static/media/":
-                    avatar += "pic/default.jpeg"
-
-                response = JsonResponse({
-                    "username": tem_im_user.user.username,
-                    "token": tem_im_user.token,
-                    "avatar": avatar,
-                    "code": 0,
-                    "password": password,
-                    "info": "Login Succeed",
-                })
-                response.headers["x-frame-options"] = "SAMEORIGIN"
-                return response
+        if tem_user:
+            tem_im_user = IMUser.objects.filter(user=tem_user).first()
+            if tem_im_user is not None:
+                # if not tem_im_user.is_login:
+                tem_im_user.token = get_new_token()
+                tem_im_user.is_login = True
+                tem_im_user.save()
+            # else:
+            #     return JsonResponse({
+            #         "code": -7,
+            #         "info": "User already login",
+            #     })
             else:
                 return JsonResponse({
-                    "code": -2,
-                    "info": "Wrong Password",
+                    "code": -1,
+                    "info": "Unexpected error"
                 })
-    except Exception as e:
-        print(e)
-        return JsonResponse({
-            "code": -1,
-            "info": "Unexpected error"
-        })
+                # tem_im_user = create_im_user(tem_user,get_new_token())
+                # tem_im_user.save()
+            avatar = os.path.join("/static/media/", str(tem_im_user.avatar))
+            if avatar == "/static/media/":
+                avatar += "pic/default.jpeg"
+
+            response = JsonResponse({
+                "username": tem_im_user.user.username,
+                "token": tem_im_user.token,
+                "avatar": avatar,
+                "code": 0,
+                "password": password,
+                "info": "Login Succeed",
+            })
+            response.headers["x-frame-options"] = "SAMEORIGIN"
+            return response
+        else:
+            return JsonResponse({
+                "code": -2,
+                "info": "Wrong Password",
+            })
+
 
 
 def send_email(request: HttpRequest):
