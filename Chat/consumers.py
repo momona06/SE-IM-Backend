@@ -1343,8 +1343,18 @@ class UserConsumer(AsyncWebsocketConsumer):
         notice_list = []
         rooms = await sync_to_async(ChatRoom.objects.filter)(chatroom_id=chatroom_id)
         room = await sync_to_async(rooms.first)()
-        for user in room.mem_list:
-            mem_list.append(user)
+        for username in room.mem_list:
+            users = await sync_to_async(User.objects.filter)(username=username)
+            user = await sync_to_async(users.first)()
+            imusers = await sync_to_async(IMUser.objects.filter)(user=user)
+            imuser = await sync_to_async(imusers.first)()
+            avatar = os.path.join("/static/media/", str(imuser.avatar))
+            if avatar == "/static/media/":
+                avatar += "pic/default.jpeg"
+            mem_list.append({
+                "username": username,
+                "avatar": avatar
+            })
         for manager in room.manager_list:
             manager_list.append(manager)
         for notice in room.notice_list:
