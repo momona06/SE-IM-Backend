@@ -245,7 +245,10 @@ def search_user(request):
                 avatar = os.path.join("/static/media/", str(imuser.avatar))
                 if avatar == "/static/media/":
                     avatar += "pic/default.jpeg"
-                userinfos.append(user.username)
+                userinfos.append({
+                    "username": user.username,
+                    "avatar": avatar
+                })
 
             response_data = {
                 "code": 0,
@@ -312,12 +315,16 @@ def check_user(request):
                 })
 
             is_friend = check_friend_relation(my_username, check_name)
-
+            imuser = IMUser.objects.filter(user=check_user_v).first()
+            avatar = os.path.join("/static/media/", str(imuser.avatar))
+            if avatar == "/static/media/":
+                avatar += "pic/default.jpeg"
             return JsonResponse({
                 "code": 0,
                 "username": check_user_v.username,
                 "is_friend": is_friend,
                 "info": "User found",
+                "avatar":avatar
             })
         except Exception as e:
             print(e)
